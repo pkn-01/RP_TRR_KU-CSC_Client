@@ -1,12 +1,7 @@
 export const DEPARTMENT_OPTIONS = [
   "IT",
-  "HR",
-  "Accounting",
-  "Marketing",
-  "Admin",
-  "Sales",
-  "Production",
-  "Logistics",
-  "R&D",
-  "Other",
+  "ลูกหีบ",
+  "ฝ่ายอ้อย",
+  "กฏหมาย",
+  "บัญชี",
 ];
