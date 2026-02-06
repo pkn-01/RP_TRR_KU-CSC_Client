@@ -284,7 +284,7 @@ function RepairFormContent() {
             </h1>
             <div className="flex items-center gap-1.5 text-gray-500">
               <span className="text-sm">กรุณากรอกรายละเอียดปัญหาพี่แจ้งเจ้าหน้าที่</span>
-              <Pencil className="w-3.5 h-3.5" />
+              
             </div>
           </div>
         </div>
@@ -419,7 +419,7 @@ function RepairFormContent() {
                   ปัญหา<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <CirclePlus className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+      
                   <textarea
                     id="details"
                     rows={4}
