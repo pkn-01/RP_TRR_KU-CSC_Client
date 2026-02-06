@@ -9,101 +9,64 @@ import {
   ChevronRight,
   Search,
   Calendar,
-  Settings,
   Wrench,
   AlertTriangle,
-  History,
   ArrowLeft,
+  Ticket,
 } from "lucide-react";
 import { apiFetch } from "@/services/api";
-import liff from "@line/liff";
 
 function TrackingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [lineUserId, setLineUserId] = useState<string>(
-    searchParams.get("lineUserId") || "",
-  );
-  const [isInitializing, setIsInitializing] = useState(
-    !searchParams.get("lineUserId"),
-  );
 
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Get ticket code from URL if available
+  const initialTicketCode = searchParams.get("ticketCode") || "";
+
+  const [ticketCode, setTicketCode] = useState(initialTicketCode);
+  const [ticket, setTicket] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // LIFF Initialization
+  // Auto-search if ticket code is in URL
   useEffect(() => {
-    const initLiff = async () => {
-      // If we already have lineUserId from URL, no need to init for ID (but good for consistency)
-      if (lineUserId) {
-        setIsInitializing(false);
-        return;
-      }
-
-      try {
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
-        if (!liffId) {
-          setError("System Error: LIFF ID missing");
-          return;
-        }
-
-        if (!liff.id) {
-          // Use a timeout to prevent permanent hang in LINE app
-          const initPromise = liff.init({
-            liffId,
-            withLoginOnExternalBrowser: true,
-          });
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("LIFF initialization timeout")),
-              10000,
-            ),
-          );
-
-          await Promise.race([initPromise, timeoutPromise]);
-        }
-
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-
-        const profile = await liff.getProfile();
-        setLineUserId(profile.userId);
-      } catch (err: any) {
-        console.error("LIFF Init Error:", err);
-        setError("ไม่สามารถยืนยันตัวตนกับ LINE ได้");
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    initLiff();
+    if (initialTicketCode) {
+      handleSearch();
+    }
   }, []);
 
-  useEffect(() => {
-    if (lineUserId) {
-      fetchTickets();
-    } else if (!isInitializing) {
-      setLoading(false);
-      setError("ไม่พบรหัสผู้ใช้ LINE กรุณาเข้าใช้งานผ่านช่องทางที่กำหนด");
+  const handleSearch = async () => {
+    if (!ticketCode.trim()) {
+      setError("กรุณาระบุรหัสการแจ้งซ่อม");
+      return;
     }
-  }, [lineUserId, isInitializing]);
 
-  const fetchTickets = async () => {
     setLoading(true);
+    setError(null);
+    setHasSearched(true);
+
     try {
       const data = await apiFetch(
-        `/api/repairs/liff/my-tickets?lineUserId=${lineUserId}`,
+        `/api/repairs/liff/ticket-public/${ticketCode.trim()}`,
       );
-      setTickets(data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Failed to fetch tickets:", err);
-      setError("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+      setTicket(data);
+    } catch (err: any) {
+      console.error("Failed to fetch ticket:", err);
+      if (err.message?.includes("404") || err.message?.includes("not found")) {
+        setError("ไม่พบรหัสการแจ้งซ่อมนี้ในระบบ");
+      } else {
+        setError("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+      }
+      setTicket(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
     }
   };
 
@@ -117,6 +80,8 @@ function TrackingContent() {
         return "bg-orange-100 text-orange-700 border-orange-200";
       case "PENDING":
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "ASSIGNED":
+        return "bg-purple-100 text-purple-700 border-purple-200";
       case "CANCELLED":
         return "bg-gray-100 text-gray-700 border-gray-200";
       default:
@@ -134,6 +99,8 @@ function TrackingContent() {
         return "รออะไหล่";
       case "PENDING":
         return "รอดำเนินการ";
+      case "ASSIGNED":
+        return "มอบหมายแล้ว";
       case "CANCELLED":
         return "ยกเลิก";
       default:
@@ -141,31 +108,16 @@ function TrackingContent() {
     }
   };
 
-  const getUrgencyIcon = (urgency: string) => {
+  const getUrgencyLabel = (urgency: string) => {
     switch (urgency) {
       case "CRITICAL":
-        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        return { label: "ด่วนมาก", color: "text-red-600 bg-red-50" };
       case "URGENT":
-        return <AlertCircle className="w-4 h-4 text-orange-500" />;
+        return { label: "ด่วน", color: "text-orange-600 bg-orange-50" };
       default:
-        return <Clock className="w-4 h-4 text-blue-500" />;
+        return { label: "ปกติ", color: "text-blue-600 bg-blue-50" };
     }
   };
-
-  if (isInitializing || loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-slate-600 font-medium animate-pulse">
-            {isInitializing
-              ? "กำลังยืนยันตัวตน..."
-              : "กำลังโหลดข้อมูลการแจ้งซ่อม..."}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-12 font-sans">
@@ -173,176 +125,243 @@ function TrackingContent() {
       <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
         <div className="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/repairs/liff/form")}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-slate-700" />
           </button>
           <h1 className="text-xl font-bold text-slate-800">
-            ติดตามสถานะงานซ่อม
+            ติดตามสถานะแจ้งซ่อม
           </h1>
-          <div className="w-10"></div> {/* Spacer for symmetry */}
+          <div className="w-10"></div>
         </div>
       </div>
 
       <div className="max-w-xl mx-auto px-4 mt-6">
-        {error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-6 rounded-2xl text-center shadow-sm">
+        {/* Search Box */}
+        <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-[#5D3A29]/10 rounded-full flex items-center justify-center">
+              <Ticket className="w-5 h-5 text-[#5D3A29]" />
+            </div>
+            <div>
+              <h2 className="font-bold text-slate-800">
+                ค้นหาด้วยรหัสแจ้งซ่อม
+              </h2>
+              <p className="text-sm text-slate-500">
+                กรอกรหัสที่ได้รับหลังจากแจ้งซ่อม
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={ticketCode}
+                onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
+                onKeyPress={handleKeyPress}
+                placeholder="เช่น REP-1234567890"
+                className="w-full pl-12 pr-4 py-3 bg-slate-100 border-0 rounded-xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] font-mono"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              disabled={loading}
+              className="px-6 py-3 bg-[#5D3A29] hover:bg-[#4A2E21] disabled:bg-slate-300 text-white rounded-xl font-medium transition-colors"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                "ค้นหา"
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-6 rounded-2xl text-center shadow-sm mb-6">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-80" />
-            <h3 className="font-bold text-lg mb-1">เกิดข้อผิดพลาด</h3>
+            <h3 className="font-bold text-lg mb-1">ไม่พบข้อมูล</h3>
             <p className="text-sm opacity-90">{error}</p>
-            <button
-              onClick={fetchTickets}
-              className="mt-4 bg-red-600 text-white px-6 py-2 rounded-full font-medium shadow-md hover:bg-red-700 transition"
-            >
-              ลองใหม่อีกครั้ง
-            </button>
           </div>
-        ) : tickets.length === 0 ? (
-          <div className="bg-white border rounded-2xl p-10 text-center shadow-sm">
-            <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-blue-500 opacity-80" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">
-              ไม่พบประวัติการแจ้งซ่อม
-            </h3>
-            <p className="text-slate-500 mb-8 max-w-xs mx-auto leading-relaxed">
-              คุณยังไม่เคยส่งรายการแจ้งซ่อมในระบบ
-              หากมีปัญหาสามารถกดปุ่มด้านล่างเพื่อแจ้งซ่อมได้ทันที
-            </p>
-            <button
-              onClick={() =>
-                router.push(`/repairs/liff/form?lineUserId=${lineUserId}`)
-              }
-              className="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all"
-            >
-              🚀 แจ้งซ่อมตอนนี้
-            </button>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col items-center py-12">
+            <div className="w-12 h-12 border-4 border-[#5D3A29] border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-slate-600 font-medium">กำลังค้นหา...</p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Stats Summary */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white p-4 rounded-2xl border shadow-sm">
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">
-                  ทั้งหมด
-                </p>
-                <p className="text-2xl font-black text-slate-800">
-                  {tickets.length}{" "}
-                  <span className="text-sm font-normal text-slate-400">
-                    รายการ
-                  </span>
-                </p>
-              </div>
-              <div className="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-100 text-white">
-                <p className="text-blue-100 text-xs font-semibold uppercase tracking-wider mb-1">
-                  กำลังดำเนินการ
-                </p>
-                <p className="text-2xl font-black">
-                  {
-                    tickets.filter(
-                      (t) =>
-                        t.status === "IN_PROGRESS" || t.status === "PENDING",
-                    ).length
-                  }{" "}
-                  <span className="text-sm font-normal text-blue-200">
-                    รายการ
-                  </span>
-                </p>
+        )}
+
+        {/* Ticket Result */}
+        {ticket && !loading && (
+          <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            {/* Status Header */}
+            <div
+              className={`p-4 ${
+                ticket.status === "COMPLETED"
+                  ? "bg-green-500"
+                  : ticket.status === "IN_PROGRESS"
+                    ? "bg-blue-500"
+                    : ticket.status === "WAITING_PARTS"
+                      ? "bg-orange-500"
+                      : ticket.status === "ASSIGNED"
+                        ? "bg-purple-500"
+                        : ticket.status === "CANCELLED"
+                          ? "bg-gray-500"
+                          : "bg-yellow-500"
+              } text-white`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-80">สถานะปัจจุบัน</p>
+                  <p className="text-xl font-bold">
+                    {getStatusLabel(ticket.status)}
+                  </p>
+                </div>
+                {ticket.status === "COMPLETED" ? (
+                  <CheckCircle2 className="w-10 h-10 opacity-80" />
+                ) : ticket.status === "IN_PROGRESS" ? (
+                  <Wrench className="w-10 h-10 opacity-80" />
+                ) : (
+                  <Clock className="w-10 h-10 opacity-80" />
+                )}
               </div>
             </div>
 
-            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">
-              ประวัติรายการ
-            </h2>
+            {/* Ticket Details */}
+            <div className="p-5 space-y-4">
+              {/* Ticket Code */}
+              <div className="flex items-center justify-between pb-4 border-b">
+                <span className="text-slate-500 text-sm">รหัสแจ้งซ่อม</span>
+                <span className="font-mono font-bold text-slate-800">
+                  {ticket.ticketCode}
+                </span>
+              </div>
 
-            <div className="space-y-4">
-              {tickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  onClick={() =>
-                    router.push(
-                      `/repairs/liff?action=history&id=${ticket.ticketCode}&lineUserId=${lineUserId}`,
-                    )
-                  }
-                  className="bg-white border rounded-2xl p-5 shadow-sm active:scale-[0.98] transition-transform cursor-pointer relative overflow-hidden group"
-                >
-                  {/* Status Indicator Bar */}
-                  <div
-                    className={`absolute left-0 top-0 bottom-0 w-1 ${
-                      ticket.status === "COMPLETED"
-                        ? "bg-green-500"
-                        : ticket.status === "IN_PROGRESS"
-                          ? "bg-blue-500"
-                          : ticket.status === "WAITING_PARTS"
-                            ? "bg-orange-500"
-                            : "bg-yellow-500"
-                    }`}
-                  ></div>
-
-                  <div className="flex justify-between items-start mb-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(ticket.status)}`}
-                    >
-                      {getStatusLabel(ticket.status)}
-                    </span>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
-                  </div>
-
-                  <h3 className="text-lg font-bold text-slate-800 mb-1 leading-tight">
-                    {ticket.problemTitle}
-                  </h3>
-                  <p className="text-slate-500 text-sm line-clamp-2 mb-4 leading-relaxed">
+              {/* Problem Title */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1">
+                  {ticket.problemTitle}
+                </h3>
+                {ticket.problemDescription && (
+                  <p className="text-slate-600 text-sm">
                     {ticket.problemDescription}
                   </p>
+                )}
+              </div>
 
-                  <div className="flex flex-wrap items-center gap-y-2 gap-x-4 pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="text-xs text-slate-600 font-medium">
-                        {new Date(ticket.createdAt).toLocaleDateString(
-                          "th-TH",
-                          { day: "numeric", month: "short", year: "2-digit" },
-                        )}
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-slate-500 mb-1">ผู้แจ้ง</p>
+                  <p className="font-medium text-slate-800 text-sm">
+                    {ticket.reporterName}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-slate-500 mb-1">แผนก</p>
+                  <p className="font-medium text-slate-800 text-sm">
+                    {ticket.reporterDepartment || "-"}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-slate-500 mb-1">สถานที่</p>
+                  <p className="font-medium text-slate-800 text-sm">
+                    {ticket.location || "-"}
+                  </p>
+                </div>
+                <div
+                  className={`rounded-xl p-3 ${getUrgencyLabel(ticket.urgency).color}`}
+                >
+                  <p className="text-xs opacity-70 mb-1">ความเร่งด่วน</p>
+                  <p className="font-medium text-sm">
+                    {getUrgencyLabel(ticket.urgency).label}
+                  </p>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="flex items-center gap-4 pt-4 border-t text-sm">
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    แจ้งเมื่อ:{" "}
+                    {new Date(ticket.createdAt).toLocaleDateString("th-TH", {
+                      day: "numeric",
+                      month: "short",
+                      year: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Assignees */}
+              {ticket.assignees && ticket.assignees.length > 0 && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-slate-500 mb-2">ผู้รับผิดชอบ</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ticket.assignees.map((assignee: any) => (
+                      <span
+                        key={assignee.user.id}
+                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium"
+                      >
+                        {assignee.user.name}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg">
-                      {getUrgencyIcon(ticket.urgency)}
-                      <span className="text-xs text-slate-600 font-medium">
-                        {ticket.urgency === "CRITICAL"
-                          ? "ด่วนมาก"
-                          : ticket.urgency === "URGENT"
-                            ? "ด่วน"
-                            : "ปกติ"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-lg ml-auto">
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
-                        {ticket.ticketCode}
-                      </span>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
+
+              {/* Message to Reporter */}
+              {ticket.messageToReporter && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-slate-500 mb-2">
+                    ข้อความจากทีมซ่อม
+                  </p>
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                    <p className="text-blue-800 text-sm">
+                      {ticket.messageToReporter}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Empty State - Before Search */}
+        {!hasSearched && !ticket && !loading && (
+          <div className="bg-white border rounded-2xl p-10 text-center shadow-sm">
+            <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">
+              ติดตามสถานะการแจ้งซ่อม
+            </h3>
+            <p className="text-slate-500 max-w-xs mx-auto leading-relaxed">
+              กรอกรหัสการแจ้งซ่อมที่ได้รับหลังจากส่งฟอร์มเพื่อติดตามสถานะ
+            </p>
           </div>
         )}
       </div>
 
-      {/* Floating Action Button */}
-      {!error && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-xs px-4">
-          <button
-            onClick={() =>
-              router.push(`/repairs/liff/form?lineUserId=${lineUserId}`)
-            }
-            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-all"
-          >
-            <Wrench className="w-5 h-5 text-blue-400" />
-            <span>แจ้งซ่อมเพิ่มเติม</span>
-          </button>
-        </div>
-      )}
+      {/* Floating Button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-xs px-4">
+        <button
+          onClick={() => router.push("/repairs/liff/form")}
+          className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-all"
+        >
+          <Wrench className="w-5 h-5 text-emerald-400" />
+          <span>แจ้งซ่อมใหม่</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -352,7 +371,7 @@ export default function TrackingPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#5D3A29] border-t-transparent rounded-full animate-spin"></div>
         </div>
       }
     >

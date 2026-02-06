@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { apiFetch } from "@/services/api";
 import { uploadData } from "@/services/uploadService";
 import Swal from "sweetalert2";
 import {
-  ChevronLeft,
   Camera,
   MapPinHouse,
   Phone,
@@ -49,7 +47,6 @@ const URGENCY_OPTIONS = [
 
 function RepairFormContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -67,64 +64,6 @@ function RepairFormContent() {
   const [successData, setSuccessData] = useState<{ ticketCode: string } | null>(
     null,
   );
-  const [lineUserId, setLineUserId] = useState(
-    searchParams.get("lineUserId") || "",
-  );
-  const [lineDisplayName, setLineDisplayName] = useState("");
-  const [linePictureUrl, setLinePictureUrl] = useState("");
-
-  // Initialize LIFF - optimized for speed
-  useEffect(() => {
-    let isMounted = true;
-
-    // Skip LIFF init if we already have lineUserId from URL params
-    const urlLineUserId = searchParams.get("lineUserId");
-    if (urlLineUserId) {
-      return;
-    }
-
-    const initLiff = async () => {
-      try {
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-        if (!liffId) return;
-
-        const liff = (await import("@line/liff")).default;
-
-        // Check if already initialized
-        if (!liff.id) {
-          // Reduced timeout from 10s to 5s for faster failure
-          const initPromise = liff.init({ liffId });
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("LIFF initialization timeout")),
-              5000,
-            ),
-          );
-          await Promise.race([initPromise, timeoutPromise]);
-        }
-
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          if (isMounted) {
-            setLineUserId(profile.userId);
-            setLineDisplayName(profile.displayName);
-            setLinePictureUrl(profile.pictureUrl || "");
-          }
-        } else {
-          liff.login();
-        }
-      } catch (error) {
-        console.error("LIFF Init Error:", error);
-        // Don't show alert for timeout - just continue with form
-        // User can still submit the form without LINE profile
-      }
-    };
-
-    initLiff();
-    return () => {
-      isMounted = false;
-    };
-  }, [searchParams]);
 
   const handleChange = useCallback(
     (
@@ -171,7 +110,18 @@ function RepairFormContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.dept) {
+
+    // Validate required fields
+    if (!formData.name.trim()) {
+      await showAlert({
+        icon: "warning",
+        title: "แจ้งเตือน",
+        text: "กรุณาระบุชื่อผู้แจ้ง",
+      });
+      return;
+    }
+
+    if (!formData.dept.trim()) {
       await showAlert({
         icon: "warning",
         title: "แจ้งเตือน",
@@ -180,20 +130,37 @@ function RepairFormContent() {
       return;
     }
 
+    if (!formData.phone.trim()) {
+      await showAlert({
+        icon: "warning",
+        title: "แจ้งเตือน",
+        text: "กรุณาระบุเบอร์โทรติดต่อ",
+      });
+      return;
+    }
+
+    if (!formData.issueType.trim()) {
+      await showAlert({
+        icon: "warning",
+        title: "แจ้งเตือน",
+        text: "กรุณาระบุปัญหาที่พบ",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Always use Guest - no LINE login required
       const dataPayload = {
-        reporterName: formData.name.trim() || lineDisplayName || "ไม่ระบุชื่อ",
-        reporterLineId: lineUserId || "Guest",
+        reporterName: formData.name.trim(),
+        reporterLineId: "Guest",
         reporterDepartment: formData.dept,
-        reporterPhone: formData.phone || "-",
+        reporterPhone: formData.phone,
         problemTitle: formData.issueType,
         problemDescription: formData.details,
         location: formData.location,
         urgency: formData.urgency,
         problemCategory: "OTHER",
-        displayName: lineDisplayName || undefined,
-        pictureUrl: linePictureUrl || undefined,
       };
 
       const response = await uploadData(
@@ -266,15 +233,35 @@ function RepairFormContent() {
           </p>
 
           {/* Ticket Code Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
             <p className="text-sm text-slate-500 mb-2">รหัสการแจ้งซ่อม</p>
             <p className="text-2xl font-mono font-bold text-emerald-600 tracking-wider">
               {successData.ticketCode}
             </p>
           </div>
 
+          {/* Important Note */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+            <p className="text-sm text-amber-800 font-medium mb-1">
+              กรุณาจดรหัสนี้ไว้
+            </p>
+            <p className="text-xs text-amber-700">
+              ใช้รหัสนี้เพื่อติดตามสถานะการแจ้งซ่อมของคุณ
+            </p>
+          </div>
+
           {/* Action Buttons */}
           <div className="space-y-3">
+            <button
+              onClick={() =>
+                router.push(
+                  `/repairs/liff/tracking?ticketCode=${successData.ticketCode}`,
+                )
+              }
+              className="w-full py-3 bg-[#5D3A29] hover:bg-[#4A2E21] text-white rounded-xl font-medium transition-all duration-200"
+            >
+              ติดตามสถานะ
+            </button>
             <button
               onClick={handleNewRequest}
               className="w-full py-3 bg-white hover:bg-slate-50 text-slate-600 rounded-xl font-medium border border-slate-200 transition-all duration-200"
@@ -376,6 +363,7 @@ function RepairFormContent() {
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    required
                     placeholder="0XX-XXX-XXXX"
                     className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all"
                   />
