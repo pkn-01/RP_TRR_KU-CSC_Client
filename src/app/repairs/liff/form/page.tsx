@@ -53,7 +53,6 @@ function RepairFormContent() {
     name: "",
     dept: "",
     phone: "",
-    issueType: "",
     details: "",
     urgency: "NORMAL",
     location: "",
@@ -140,11 +139,11 @@ function RepairFormContent() {
       return;
     }
 
-    if (!formData.issueType.trim()) {
+    if (!formData.details.trim()) {
       await showAlert({
         icon: "warning",
         title: "แจ้งเตือน",
-        text: "กรุณาระบุปัญหาที่พบ",
+        text: "กรุณาระบุปัญหา",
       });
       return;
     }
@@ -157,7 +156,7 @@ function RepairFormContent() {
         reporterLineId: "Guest",
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
-        problemTitle: formData.issueType,
+        problemTitle: formData.details,
         problemDescription: formData.details,
         location: formData.location,
         urgency: formData.urgency,
@@ -192,7 +191,6 @@ function RepairFormContent() {
       name: "",
       dept: "",
       phone: "",
-      issueType: "",
       details: "",
       urgency: "NORMAL",
       location: "",
@@ -281,11 +279,11 @@ function RepairFormContent() {
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           <div className="flex-1">
-            <h1 className="text-xl font-semibold text-[#5D3A29]">
-              แบบฟอร์มแจ้งซ่อม
+            <h1 className="text-xl font-semibold text-[#518EE5]">
+              แจ้งซ่อมออนไลน์
             </h1>
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="text-sm">กรุณากรอกข้อมูลให้ครบถ้วน</span>
+              <span className="text-sm">กรุณากรอกรายละเอียดปัญหาพี่แจ้งเจ้าหน้าที่</span>
               <Pencil className="w-3.5 h-3.5" />
             </div>
           </div>
@@ -418,7 +416,7 @@ function RepairFormContent() {
                   htmlFor="details"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  รายละเอียดเพิ่มเติม
+                  ปัญหา<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <CirclePlus className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
