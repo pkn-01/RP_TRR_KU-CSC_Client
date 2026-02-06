@@ -16,6 +16,7 @@ import {
   Pencil,
   ChevronDown,
 } from "lucide-react";
+import { DEPARTMENT_OPTIONS } from "@/constants/departments";
 
 // Pre-imported SweetAlert for faster alerts
 const showAlert = (options: {
@@ -335,16 +336,24 @@ function RepairFormContent() {
                   แผนก/ฝ่าย<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
                   <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
+                  <select
                     id="dept"
                     value={formData.dept}
                     onChange={handleChange}
                     required
-                    placeholder="ระบุแผนก/ฝ่าย"
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all"
-                  />
+                    className="w-full pl-12 pr-10 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all cursor-pointer"
+                  >
+                    <option value="" disabled>
+                      ระบุแผนก/ฝ่าย
+                    </option>
+                    {DEPARTMENT_OPTIONS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -382,28 +391,6 @@ function RepairFormContent() {
             </div>
 
             <div className="space-y-4">
-              {/* Issue Type Field */}
-              <div>
-                <label
-                  htmlFor="issueType"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  ปัญหาที่พบ<span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <ShieldAlert className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    id="issueType"
-                    value={formData.issueType}
-                    onChange={handleChange}
-                    required
-                    placeholder="เช่น คอมพิวเตอร์ค้าง ปริ้นเตอร์เปิดไม่ติด"
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all"
-                  />
-                </div>
-              </div>
-
               {/* Location Field */}
               <div>
                 <label
