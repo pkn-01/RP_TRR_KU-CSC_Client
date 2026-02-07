@@ -182,11 +182,13 @@ function RepairPageContent() {
         ticketId: data.id,
         description: formData.problemDescription,
         image: imagePreview,
-        createdAt: new Date().toLocaleDateString("th-TH", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }),
+        createdAt: new Date()
+          .toLocaleDateString("th-TH", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })
+          .replace(/\//g, "."),
         urgency: formData.urgency,
       });
     } catch (err) {
@@ -200,9 +202,9 @@ function RepairPageContent() {
 
   if (success.show) {
     return (
-      <div className="min-h-screen bg-[#4A6FA5] p-4 flex flex-col">
-        {/* Helper Header */}
-        <div className="flex justify-between items-center text-white mb-4 px-2">
+      <div className="min-h-screen bg-[#5B77A8] flex flex-col font-sans overflow-hidden">
+        {/* LINE Header */}
+        <div className="flex justify-between items-center text-white px-4 py-3 bg-[#5B77A8]">
           <button onClick={() => (window.location.href = "/")} className="p-1">
             <svg
               width="24"
@@ -210,18 +212,19 @@ function RepairPageContent() {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
+
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="w-5 h-5 bg-[#00E02D] rounded-full flex items-center justify-center">
               <svg
-                width="14"
-                height="14"
+                width="12"
+                height="12"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
@@ -232,13 +235,14 @@ function RepairPageContent() {
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <span className="font-semibold text-lg">Kanna</span>
+            <span className="font-bold text-[17px]">Kanna</span>
           </div>
-          <div className="flex gap-4">
+
+          <div className="flex items-center gap-3">
             <button>
               <svg
-                width="20"
-                height="20"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -252,12 +256,12 @@ function RepairPageContent() {
             </button>
             <button>
               <svg
-                width="20"
-                height="20"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -267,89 +271,106 @@ function RepairPageContent() {
           </div>
         </div>
 
-        <div className="flex-1 flex items-start justify-center pt-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div className="p-6 pb-8">
-              {/* Status Badges */}
-              <div className="flex justify-end gap-2 mb-4 absolute top-0 right-0 p-4 z-10">
-                <span className="bg-[#FFC107] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                  รอรับเรื่อง
+        {/* Chat Area Content */}
+        <div className="flex-1 overflow-y-auto px-4 pb-20 flex flex-col items-center">
+          {/* Today Badge */}
+          <div className="my-6">
+            <span className="bg-black/15 text-white/90 text-[11px] px-3 py-1 rounded-full font-medium">
+              Today
+            </span>
+          </div>
+
+          {/* Ticket Card */}
+          <div className="bg-white rounded-[24px] w-full max-w-[340px] shadow-sm overflow-hidden p-6 relative">
+            {/* Status Badges */}
+            <div className="flex justify-end gap-1.5 mb-2">
+              <span className="bg-[#FFC107] text-white px-3 py-0.5 rounded-full text-[13px] font-bold">
+                รอรับเรื่อง
+              </span>
+              {(success.urgency === "URGENT" ||
+                success.urgency === "CRITICAL") && (
+                <span className="bg-[#FF5D23] text-white px-3 py-0.5 rounded-full text-[13px] font-bold">
+                  ด่วน
                 </span>
-                {(success.urgency === "URGENT" ||
-                  success.urgency === "CRITICAL") && (
-                  <span className="bg-[#FF5722] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                    ด่วน
-                  </span>
-                )}
-              </div>
+              )}
+            </div>
 
-              {/* Ticket ID */}
-              <div className="mb-4 mt-8">
-                <h3 className="text-xl font-bold text-gray-800">
-                  ID: {success.ticketCode}
-                </h3>
-              </div>
+            {/* Ticket ID */}
+            <div className="mb-4">
+              <h3 className="text-[20px] font-bold text-black tracking-tight">
+                ID:{success.ticketCode}
+              </h3>
+            </div>
 
-              {/* Image Area */}
-              <div className="w-full aspect-[4/3] bg-blue-50 rounded-xl mb-4 overflow-hidden relative border border-blue-100 flex items-center justify-center">
-                {success.image ? (
-                  <img
-                    src={success.image}
-                    alt="Problem"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-center p-4">
-                    <div className="w-20 h-20 bg-blue-100/50 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Upload className="w-8 h-8 text-blue-300" />
-                    </div>
-                    <p className="text-blue-300 text-sm font-medium">
-                      ไม่มีรูปภาพ
-                    </p>
-
-                    {/* Decorative clouds/hills for empty state similar to design */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-[#8BC34A] rounded-t-[50%] scale-150 translate-y-1/4 opacity-80"></div>
-                    <div className="absolute top-10 left-10 w-16 h-10 bg-white/40 rounded-full blur-sm"></div>
-                    <div className="absolute top-6 right-20 w-24 h-14 bg-white/40 rounded-full blur-sm"></div>
+            {/* Image Area */}
+            <div className="w-full aspect-[4.2/3] bg-[#E1F1FD] rounded-[4px] mb-4 overflow-hidden relative border border-[#D5E6F5] flex items-center justify-center">
+              {success.image ? (
+                <img
+                  src={success.image}
+                  alt="Problem"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="relative w-full h-full bg-[#E1F1FD]">
+                  {/* Hills */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[45%] bg-[#8CC63F]">
+                    <div className="absolute top-0 left-[-20%] w-[80%] h-full bg-[#7BB032] rounded-t-[100%]"></div>
+                    <div className="absolute top-[-10%] right-[-10%] w-[70%] h-full bg-[#8CC63F] rounded-t-[100%]"></div>
                   </div>
-                )}
-              </div>
+                  {/* Clouds */}
+                  <div className="absolute top-[15%] left-[10%] w-[18%] h-[12%] bg-white/50 rounded-full blur-[2px]"></div>
+                  <div className="absolute top-[20%] right-[15%] w-[25%] h-[15%] bg-white/50 rounded-full blur-[2px]"></div>
+                </div>
+              )}
+            </div>
 
-              {/* Description */}
-              <div className="bg-gray-100 rounded-xl p-4 min-h-[100px] mb-4 text-gray-600 text-sm relative">
-                {success.description || "รายละเอียด..."}
-              </div>
+            {/* Description Box */}
+            <div className="bg-[#E5E5E5] rounded-[16px] p-4 min-h-[100px] mb-4 text-[#666666] text-[14px] leading-tight flex items-start">
+              {success.description || "รายละเอียด..."}
+            </div>
 
-              {/* Timestamp */}
-              <div className="text-gray-500 text-xs mt-2">
-                แจ้งเมื่อ {success.createdAt}
-              </div>
+            {/* Timestamp */}
+            <div className="text-[#666666] text-[12px] font-medium ml-1">
+              แจ้งเมื่อ {success.createdAt}
             </div>
           </div>
         </div>
 
-        {/* Bottom Actions - mimicking standard app/chat interface */}
-        <div className="mt-auto bg-white p-3 flex items-center gap-3 rounded-t-xl opacity-90 mx-[-16px] mb-[-16px]">
-          <button className="p-2">
+        {/* LINE Taskbar (Bottom) */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-3 flex items-center gap-1">
+          <button className="p-1 px-2">
             <svg
-              width="24"
-              height="24"
+              width="26"
+              height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#999"
+              stroke="#9EABB9"
               strokeWidth="2"
             >
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
           </button>
-          <button className="p-2">
+          <button className="p-1 px-2">
             <svg
-              width="24"
-              height="24"
+              width="26"
+              height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#999"
+              stroke="#9EABB9"
+              strokeWidth="2.5"
+            >
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19 21H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l2-3h4l2 3h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z"></path>
+            </svg>
+          </button>
+          <button className="p-1 px-2 mr-1">
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#9EABB9"
               strokeWidth="2"
             >
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -357,35 +378,27 @@ function RepairPageContent() {
               <polyline points="21 15 16 10 5 21"></polyline>
             </svg>
           </button>
-          <button className="p-2">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#999"
-              strokeWidth="2"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <polyline points="11 3 11 11 14 8 17 11 17 3"></polyline>
-            </svg>
-          </button>
-          <div className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-gray-400 text-sm">
-            Aa
+
+          <div className="flex-1 bg-[#F5F6F8] rounded-[20px] px-4 py-2 text-[#C4C9D0] text-[16px] flex justify-between items-center border border-gray-100">
+            <span>Aa</span>
+            <div className="flex gap-2">
+              <div className="w-[3px] h-[3px] bg-[#9EABB9] rounded-full"></div>
+              <div className="w-[3px] h-[3px] bg-[#9EABB9] rounded-full"></div>
+            </div>
           </div>
-          <button className="p-2">
+
+          <button className="p-1 px-3">
             <svg
-              width="24"
-              height="24"
+              width="26"
+              height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#999"
+              stroke="#9EABB9"
               strokeWidth="2"
             >
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
               <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
           </button>
         </div>
