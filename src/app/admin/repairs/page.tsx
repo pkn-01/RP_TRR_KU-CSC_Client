@@ -60,8 +60,16 @@ function AdminRepairsContent() {
   const itemsPerPage = 10;
 
   // Stats
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const stats = {
     total: repairs.length,
+    today: repairs.filter((r) => {
+      const createdAt = new Date(r.createdAt);
+      createdAt.setHours(0, 0, 0, 0);
+      return createdAt.getTime() === today.getTime();
+    }).length,
     pending: repairs.filter((r) => r.status === "PENDING").length,
     inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
     completed: repairs.filter((r) => r.status === "COMPLETED").length,
@@ -264,12 +272,19 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard label="รายการซ่อมทั้งหมด" value={stats.total} />
-          <StatCard label="รอรับงาน" value={stats.pending} />
-          <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
-          <StatCard label="เสร็จสิ้น" value={stats.completed} />
-          <StatCard label="ยกเลิก" value={stats.cancelled} />
+        <div className="flex flex-wrap gap-3">
+          {/* First Row */}
+          <div className="flex gap-3 flex-wrap">
+            <StatCard label="รายการวันนี้" value={stats.today} />
+            <StatCard label="รอการดำเนินการ" value={stats.pending} />
+            <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
+            <StatCard label="เสร็จสิ้น" value={stats.completed} />
+          </div>
+          {/* Second Row */}
+          <div className="flex gap-3">
+            <StatCard label="รายการทั้งหมด" value={stats.total} />
+            <StatCard label="ยกเลิก" value={stats.cancelled} />
+          </div>
         </div>
 
         {/* Filters */}
@@ -413,7 +428,10 @@ function AdminRepairsContent() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                  เลข/รหัส
+                  รหัส
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  เวลา
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   ปัญหา
@@ -422,7 +440,7 @@ function AdminRepairsContent() {
                   สถานที่
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                  สถานะ
+                  ความเร่งด่วน
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
                   จัดการ
@@ -442,6 +460,19 @@ function AdminRepairsContent() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700">
+                      {new Date(repair.createdAt).toLocaleDateString("th-TH", {
+                        day: "numeric",
+                        month: "short",
+                        year: "2-digit",
+                      })}{" "}
+                      {new Date(repair.createdAt).toLocaleTimeString("th-TH", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
                     <span className="text-sm text-gray-900">
                       {repair.problemTitle}
                     </span>
@@ -452,8 +483,20 @@ function AdminRepairsContent() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-700">
-                      {statusLabels[repair.status] || repair.status}
+                    <span
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
+                        repair.urgency === "CRITICAL"
+                          ? "bg-red-100 text-red-700"
+                          : repair.urgency === "URGENT"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {repair.urgency === "CRITICAL"
+                        ? "ด่วนมาก"
+                        : repair.urgency === "URGENT"
+                          ? "ด่วน"
+                          : "ปกติ"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -484,7 +527,7 @@ function AdminRepairsContent() {
               {paginatedRepairs.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     ไม่พบรายการ
