@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useCallback,
+  FormEvent,
+  ChangeEvent,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2, Upload, X } from "lucide-react";
 import { apiFetch } from "@/services/api";
@@ -33,30 +40,28 @@ const URGENCY_LEVELS = [
 interface SuccessState {
   show: boolean;
   ticketCode?: string;
-}
-
-interface FormData {
-  reporterName: string;
-  reporterDepartment: string;
-  reporterPhone: string;
-  reporterLineId?: string;
-  problemCategory: string;
-  problemTitle: string;
-  problemDescription: string;
-  location: string;
-  urgency: string;
+  ticketId?: string;
+  description?: string;
+  image?: string;
+  createdAt?: string;
+  urgency?: string;
 }
 
 function RepairPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [lineUserId, setLineUserId] = useState<string>("");
-  const [formData, setFormData] = useState<FormData>({
+  const lineUserId = searchParams.get("userId");
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<SuccessState>({ show: false });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [formData, setFormData] = useState({
     reporterName: "",
     reporterDepartment: "",
     reporterPhone: "",
     reporterLineId: "",
-    problemCategory: "HARDWARE",
+    problemCategory: "",
     problemTitle: "",
     problemDescription: "",
     location: "",
@@ -65,35 +70,16 @@ function RepairPageContent() {
 
   const [files, setFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<SuccessState>({ show: false });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    // ดึง lineUserId จาก URL params (ถ้ามี)
-    const id = searchParams.get("lineUserId") || "";
-    setLineUserId(id);
-
-    // ตั้งค่า reporterLineId ด้วย
-    if (id) {
-      setFormData((prev) => ({
-        ...prev,
-        reporterLineId: id,
-      }));
-    }
-  }, [searchParams]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
+
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -103,79 +89,58 @@ function RepairPageContent() {
     }
   };
 
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selectedFiles = e.target.files;
-      if (selectedFiles) {
-        const newFiles: File[] = [];
-        const newPreviews: string[] = [];
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      const totalFiles = files.length + selectedFiles.length;
 
-        const remainingSlots = 3 - files.length;
-        const filesToProcess = Math.min(selectedFiles.length, remainingSlots);
-
-        for (let i = 0; i < filesToProcess; i++) {
-          const file = selectedFiles[i];
-          newFiles.push(file);
-          // Use object URL for faster preview
-          const url = URL.createObjectURL(file);
-          newPreviews.push(url);
-        }
-
-        setFiles((prev) => [...prev, ...newFiles]);
-        setFilePreviews((prev) => [...prev, ...newPreviews]);
+      if (totalFiles > 3) {
+        alert("สามารถแนบรูปภาพได้สูงสุด 3 รูป");
+        return;
       }
-    },
-    [files.length],
-  );
 
-  const removeFile = useCallback((index: number) => {
-    setFiles((prev) => {
-      const newFiles = [...prev];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
+      setFiles((prev) => [...prev, ...selectedFiles]);
+
+      const newPreviews = selectedFiles.map((file) =>
+        URL.createObjectURL(file),
+      );
+      setFilePreviews((prev) => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
     setFilePreviews((prev) => {
-      const newPreviews = [...prev];
-      const removedUrl = newPreviews.splice(index, 1)[0];
-      if (removedUrl) URL.revokeObjectURL(removedUrl);
+      const newPreviews = prev.filter((_, index) => index !== indexToRemove);
+      URL.revokeObjectURL(prev[indexToRemove]);
       return newPreviews;
     });
-  }, []);
+  };
 
-  // Clean up all object URLs when component unmounts
-  useEffect(() => {
-    return () => {
-      filePreviews.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [filePreviews]);
-
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.reporterName.trim()) {
-      newErrors.reporterName = "กรุณากรอกชื่อเล่น";
+      newErrors.reporterName = "กรุณาระบุชื่อผู้แจ้ง";
     }
-    if (!formData.reporterDepartment.trim()) {
+    if (!formData.reporterDepartment) {
       newErrors.reporterDepartment = "กรุณาเลือกแผนก";
     }
     if (!formData.problemCategory) {
       newErrors.problemCategory = "กรุณาเลือกประเภทปัญหา";
     }
     if (!formData.problemTitle.trim()) {
-      newErrors.problemTitle = "กรุณากรอกปัญหาที่พบ";
-    }
-    if (formData.problemTitle.length < 10) {
-      newErrors.problemTitle = "ปัญหาต้องมีความยาวอย่างน้อย 10 ตัวอักษร";
+      newErrors.problemTitle = "กรุณาระบุหัวข้อปัญหา";
     }
     if (!formData.location.trim()) {
-      newErrors.location = "กรุณากรอกสถานที่";
+      newErrors.location = "กรุณาระบุสถานที่";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -205,9 +170,25 @@ function RepairPageContent() {
 
       const data = await uploadData(endpoint, dataPayload, files);
 
-      setSuccess({ show: true, ticketCode: data.ticketCode });
+      // Create a preview URL for the first file if available
+      let imagePreview = undefined;
+      if (files.length > 0) {
+        imagePreview = URL.createObjectURL(files[0]);
+      }
 
-      setSuccess({ show: true, ticketCode: data.ticketCode });
+      setSuccess({
+        show: true,
+        ticketCode: data.ticketCode,
+        ticketId: data.id,
+        description: formData.problemDescription,
+        image: imagePreview,
+        createdAt: new Date().toLocaleDateString("th-TH", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }),
+        urgency: formData.urgency,
+      });
     } catch (err) {
       setErrors({
         submit: err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการส่ง",
@@ -219,52 +200,194 @@ function RepairPageContent() {
 
   if (success.show) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-900 px-4 py-8 transition-colors duration-300">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-md text-center border border-gray-100 dark:border-slate-700">
-          <div className="flex justify-center mb-6">
-            <div className="rounded-full bg-green-100 dark:bg-green-900/30 p-4">
-              <CheckCircle2 className="w-16 h-16 text-green-600 dark:text-green-400" />
+      <div className="min-h-screen bg-[#4A6FA5] p-4 flex flex-col">
+        {/* Helper Header */}
+        <div className="flex justify-between items-center text-white mb-4 px-2">
+          <button onClick={() => (window.location.href = "/")} className="p-1">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span className="font-semibold text-lg">Kanna</span>
+          </div>
+          <div className="flex gap-4">
+            <button>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </button>
+            <button>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-start justify-center pt-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-6 pb-8">
+              {/* Status Badges */}
+              <div className="flex justify-end gap-2 mb-4 absolute top-0 right-0 p-4 z-10">
+                <span className="bg-[#FFC107] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                  รอรับเรื่อง
+                </span>
+                {(success.urgency === "URGENT" ||
+                  success.urgency === "CRITICAL") && (
+                  <span className="bg-[#FF5722] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    ด่วน
+                  </span>
+                )}
+              </div>
+
+              {/* Ticket ID */}
+              <div className="mb-4 mt-8">
+                <h3 className="text-xl font-bold text-gray-800">
+                  ID: {success.ticketCode}
+                </h3>
+              </div>
+
+              {/* Image Area */}
+              <div className="w-full aspect-[4/3] bg-blue-50 rounded-xl mb-4 overflow-hidden relative border border-blue-100 flex items-center justify-center">
+                {success.image ? (
+                  <img
+                    src={success.image}
+                    alt="Problem"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center p-4">
+                    <div className="w-20 h-20 bg-blue-100/50 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Upload className="w-8 h-8 text-blue-300" />
+                    </div>
+                    <p className="text-blue-300 text-sm font-medium">
+                      ไม่มีรูปภาพ
+                    </p>
+
+                    {/* Decorative clouds/hills for empty state similar to design */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-[#8BC34A] rounded-t-[50%] scale-150 translate-y-1/4 opacity-80"></div>
+                    <div className="absolute top-10 left-10 w-16 h-10 bg-white/40 rounded-full blur-sm"></div>
+                    <div className="absolute top-6 right-20 w-24 h-14 bg-white/40 rounded-full blur-sm"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="bg-gray-100 rounded-xl p-4 min-h-[100px] mb-4 text-gray-600 text-sm relative">
+                {success.description || "รายละเอียด..."}
+              </div>
+
+              {/* Timestamp */}
+              <div className="text-gray-500 text-xs mt-2">
+                แจ้งเมื่อ {success.createdAt}
+              </div>
             </div>
           </div>
-          <h2 className="text-3xl font-bold mb-3 text-gray-900 dark:text-white">
-            แจ้งซ่อมสำเร็จ!
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            เราได้รับข้อมูลของคุณเรียบร้อยแล้ว <br />
-            ทีมงานจะดำเนินการตรวจสอบโดยเร็วที่สุด
-          </p>
+        </div>
 
-          <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-xl mb-6 border border-gray-200 dark:border-slate-600">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide font-semibold">
-              เลขที่รายการ (Ticket ID)
-            </p>
-            <p className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-              {success.ticketCode}
-            </p>
-          </div>
-
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 mb-8">
-            <p className="text-sm text-blue-900 dark:text-blue-200">
-              💡 คุณสามารถตรวจสอบสถานะได้ทันทีโดยกดปุ่ม <br />
-              <span className="font-semibold">"📋 ตรวจสอบสถานะ"</span> ใน LINE
-              Menu
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => (window.location.href = "/")}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow-lg shadow-blue-600/20 transition-all duration-200"
+        {/* Bottom Actions - mimicking standard app/chat interface */}
+        <div className="mt-auto bg-white p-3 flex items-center gap-3 rounded-t-xl opacity-90 mx-[-16px] mb-[-16px]">
+          <button className="p-2">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#999"
+              strokeWidth="2"
             >
-              กลับหน้าหลัก
-            </button>
-            <button
-              onClick={() => (window.location.href = "line://nv/notification")}
-              className="w-full bg-white dark:bg-slate-700 text-gray-700 dark:text-white py-3 rounded-xl font-medium border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-all"
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <button className="p-2">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#999"
+              strokeWidth="2"
             >
-              ปิดหน้านี้
-            </button>
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </button>
+          <button className="p-2">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#999"
+              strokeWidth="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <polyline points="11 3 11 11 14 8 17 11 17 3"></polyline>
+            </svg>
+          </button>
+          <div className="flex-1 bg-gray-100 rounded-full px-4 py-2 text-gray-400 text-sm">
+            Aa
           </div>
+          <button className="p-2">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#999"
+              strokeWidth="2"
+            >
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
         </div>
       </div>
     );
