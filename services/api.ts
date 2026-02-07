@@ -1,13 +1,6 @@
 // Use environment variable, or fallback to production URL, then localhost for dev
 const getBaseUrl = () => {
-  // Check window first to force proxy usage on client (Browser)
-  if (typeof window !== 'undefined') {
-    // In the browser, use relative path to let Next.js rewrites handle the proxying
-    // This avoids CORS and Mixed Content issues on mobile/ngrok
-    return "";
-  }
-
-  // Then check env var (for Server-Side Rendering)
+  // Check env var first
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
