@@ -51,8 +51,12 @@ function RepairFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read lineUserId from URL (when user comes from LINE OA)
+  // Read lineUserId from URL (fallback for when passed from another page)
   const lineUserIdFromUrl = searchParams.get("lineUserId") || "";
+
+  // State for LINE user ID (from LIFF SDK or URL)
+  const [lineUserId, setLineUserId] = useState<string>(lineUserIdFromUrl);
+  const [liffInitialized, setLiffInitialized] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -71,6 +75,65 @@ function RepairFormContent() {
     linkingCode?: string;
     hasLineUserId?: boolean;
   } | null>(null);
+
+  // Initialize LIFF SDK and get user profile
+  useEffect(() => {
+    const initLiff = async () => {
+      try {
+        const liff = (await import("@line/liff")).default;
+        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
+
+        if (!liffId) {
+          console.warn("LIFF ID not configured, using URL param or guest mode");
+          setLiffInitialized(true);
+          return;
+        }
+
+        await liff.init({ liffId });
+        setLiffInitialized(true);
+
+        // Check if running in LINE app
+        if (liff.isInClient()) {
+          try {
+            const profile = await liff.getProfile();
+            if (profile.userId) {
+              console.log("Got LINE userId from LIFF:", profile.userId);
+              setLineUserId(profile.userId);
+            }
+          } catch (profileError) {
+            console.warn("Failed to get LINE profile:", profileError);
+          }
+        } else if (liff.isLoggedIn()) {
+          // Running in browser but logged in
+          try {
+            const profile = await liff.getProfile();
+            if (profile.userId) {
+              console.log(
+                "Got LINE userId from LIFF (browser):",
+                profile.userId,
+              );
+              setLineUserId(profile.userId);
+            }
+          } catch (profileError) {
+            console.warn(
+              "Failed to get LINE profile in browser:",
+              profileError,
+            );
+          }
+        }
+      } catch (error) {
+        console.warn("LIFF initialization failed, using guest mode:", error);
+        setLiffInitialized(true);
+      }
+    };
+
+    // Only init if we don't already have a lineUserId from URL
+    if (!lineUserIdFromUrl) {
+      initLiff();
+    } else {
+      setLiffInitialized(true);
+    }
+  }, [lineUserIdFromUrl]);
 
   const handleChange = useCallback(
     (
@@ -157,11 +220,11 @@ function RepairFormContent() {
 
     setIsLoading(true);
     try {
-      // Include lineUserId if user comes from LINE OA
+      // Include lineUserId if user comes from LINE OA (either via URL or LIFF SDK)
       const dataPayload = {
         reporterName: formData.name.trim(),
-        reporterLineId: lineUserIdFromUrl || "Guest",
-        lineUserId: lineUserIdFromUrl || undefined, // For direct LINE notification
+        reporterLineId: lineUserId || "Guest",
+        lineUserId: lineUserId || undefined, // For direct LINE notification
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
@@ -180,8 +243,8 @@ function RepairFormContent() {
       // Show success state - if user came from LINE, no linking code needed
       setSuccessData({
         ticketCode: response.ticketCode,
-        linkingCode: lineUserIdFromUrl ? undefined : response.linkingCode, // No linking code if already linked via LINE
-        hasLineUserId: !!lineUserIdFromUrl,
+        linkingCode: lineUserId ? undefined : response.linkingCode, // No linking code if already linked via LINE
+        hasLineUserId: !!lineUserId,
       });
     } catch (error: unknown) {
       const errorMessage =
