@@ -234,8 +234,12 @@ function RepairFormContent() {
         problemCategory: "OTHER",
       };
 
+      // Call backend directly to avoid proxy issues with FormData
+      const backendUrl =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://rp-trr-ku-csc-server-smoky.vercel.app";
       const response = await uploadData(
-        "/api/repairs/liff/create",
+        `${backendUrl}/api/repairs/liff/create`,
         dataPayload,
         file || undefined,
       );
