@@ -192,6 +192,7 @@ function RepairPageContent() {
         reporterPhone: formData.reporterPhone || "-",
         reporterLineId:
           formData.reporterLineId || (lineUserId ? lineUserId : undefined),
+        lineUserId: lineUserId || undefined, // สำหรับส่ง LINE notification กลับไปหาผู้แจ้ง
         problemCategory: formData.problemCategory,
         problemTitle: formData.problemTitle,
         problemDescription: formData.problemDescription,
