@@ -19,10 +19,10 @@ const nextConfig: NextConfig = {
   },
 
   // ✅ API proxy configuration
-  // Forward /api/* requests to backend
+  // Forward /api/* requests to backend (afterFiles allows local API routes to take priority)
   async rewrites() {
     return {
-      beforeFiles: [
+      afterFiles: [
         {
           source: "/api/:path*",
           destination: `${process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? "http://127.0.0.1:3000" : "https://rp-trr-ku-csc-server-smoky.vercel.app")}/api/:path*`,
