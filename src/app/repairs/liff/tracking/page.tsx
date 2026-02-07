@@ -249,9 +249,11 @@ function TrackingContent() {
                   {ticket.problemTitle}
                 </h3>
                 {ticket.problemDescription && (
-                  <p className="text-slate-600 text-sm">
-                    {ticket.problemDescription}
-                  </p>
+                  <div className="mt-2 bg-[#E5E5E5] rounded-xl p-4">
+                    <p className="text-[#666666] text-sm">
+                      {ticket.problemDescription}
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -325,8 +327,11 @@ function TrackingContent() {
                   <p className="text-sm text-slate-500 mb-2">
                     ข้อความจากทีมซ่อม
                   </p>
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                    <p className="text-blue-800 text-sm">
+                  <div className="bg-[#E5E5E5] rounded-xl p-4">
+                    <p className="text-xs text-[#666666] mb-1 font-bold">
+                      รายละเอียดการดำเนินการ...
+                    </p>
+                    <p className="text-[#666666] text-sm">
                       {ticket.messageToReporter}
                     </p>
                   </div>
