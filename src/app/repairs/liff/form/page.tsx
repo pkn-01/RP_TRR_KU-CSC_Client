@@ -235,9 +235,12 @@ function RepairFormContent() {
       };
 
       // Call backend directly to avoid proxy issues with FormData
+      // Use production URL always since NEXT_PUBLIC_* env vars are baked at build time
       const backendUrl =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://rp-trr-ku-csc-server-smoky.vercel.app";
+        typeof window !== "undefined" &&
+        window.location.hostname === "localhost"
+          ? "http://localhost:3001"
+          : "https://rp-trr-ku-csc-server-smoky.vercel.app";
       const response = await uploadData(
         `${backendUrl}/api/repairs/liff/create`,
         dataPayload,
