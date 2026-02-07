@@ -13,7 +13,7 @@ const getBaseUrl = () => {
   }
   
   // Fallback to production
-  return 'https://rp-trr-server-internship.vercel.app';
+  return 'https://rp-trr-ku-csc-server-smoky.vercel.app';
 };
 
 const API_URL = getBaseUrl();
@@ -66,12 +66,18 @@ export async function apiFetch(url: string, options?: string | FetchOptions | "G
 
   try {
     // Determine the full URL
-    let fullUrl = API_URL + url;
-
-    // Fix for 405 Error: If using relative path (API_URL is empty) and URL doesn't start with /api, 
-    // prepend /api so it matches the Next.js rewrite rule.
-    if (API_URL === "" && !url.startsWith("/api")) {
-       fullUrl = `/api${url.startsWith("/") ? "" : "/"}${url}`;
+    // Ensure path starts with /api if not already, as backend controllers use /api prefix
+    const path = url.startsWith("/") ? url : `/${url}`;
+    const apiPath = path.startsWith("/api") ? path : `/api${path}`;
+    
+    let fullUrl;
+    if (API_URL === "") {
+        // Local relative path (proxy)
+        fullUrl = apiPath;
+    } else {
+        // Absolute URL
+        const baseUrl = API_URL.endsWith("/") ? API_URL.slice(0, -1) : API_URL;
+        fullUrl = `${baseUrl}${apiPath}`;
     }
 
     const res = await fetch(fullUrl, {
