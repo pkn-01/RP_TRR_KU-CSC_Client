@@ -49,6 +49,10 @@ const URGENCY_OPTIONS = [
 
 function RepairFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Read lineUserId from URL (when user comes from LINE OA)
+  const lineUserIdFromUrl = searchParams.get("lineUserId") || "";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -65,6 +69,7 @@ function RepairFormContent() {
   const [successData, setSuccessData] = useState<{
     ticketCode: string;
     linkingCode?: string;
+    hasLineUserId?: boolean;
   } | null>(null);
 
   const handleChange = useCallback(
@@ -152,10 +157,11 @@ function RepairFormContent() {
 
     setIsLoading(true);
     try {
-      // Always use Guest - no LINE login required
+      // Include lineUserId if user comes from LINE OA
       const dataPayload = {
         reporterName: formData.name.trim(),
-        reporterLineId: "Guest",
+        reporterLineId: lineUserIdFromUrl || "Guest",
+        lineUserId: lineUserIdFromUrl || undefined, // For direct LINE notification
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
@@ -171,10 +177,11 @@ function RepairFormContent() {
         file || undefined,
       );
 
-      // Show success state instead of SweetAlert
+      // Show success state - if user came from LINE, no linking code needed
       setSuccessData({
         ticketCode: response.ticketCode,
-        linkingCode: response.linkingCode,
+        linkingCode: lineUserIdFromUrl ? undefined : response.linkingCode, // No linking code if already linked via LINE
+        hasLineUserId: !!lineUserIdFromUrl,
       });
     } catch (error: unknown) {
       const errorMessage =
@@ -245,7 +252,26 @@ function RepairFormContent() {
           </div>
 
           {/* LINE Notification Registration */}
-          {successData.linkingCode ? (
+          {successData.hasLineUserId ? (
+            /* Auto-notification enabled (user came from LINE) */
+            <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6 text-left">
+              <div className="flex items-start gap-3">
+                <div className="mt-1 bg-green-100 p-1.5 rounded-full">
+                  <Bell className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-green-800 text-sm mb-1">
+                    ✅ เชื่อมต่อ LINE เรียบร้อย
+                  </h3>
+                  <p className="text-xs text-green-600 leading-relaxed">
+                    คุณจะได้รับแจ้งเตือนสถานะการซ่อมผ่าน LINE โดยอัตโนมัติ
+                    <br />
+                    ไม่ต้องลงทะเบียนเพิ่มเติม
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : successData.linkingCode ? (
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left">
               <div className="flex items-start gap-3">
                 <div className="mt-1 bg-blue-100 p-1.5 rounded-full">
