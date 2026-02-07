@@ -15,6 +15,7 @@ import {
   CirclePlus,
   Pencil,
   ChevronDown,
+  Bell,
 } from "lucide-react";
 import { DEPARTMENT_OPTIONS } from "@/constants/departments";
 
@@ -61,9 +62,10 @@ function RepairFormContent() {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [successData, setSuccessData] = useState<{ ticketCode: string } | null>(
-    null,
-  );
+  const [successData, setSuccessData] = useState<{
+    ticketCode: string;
+    linkingCode?: string;
+  } | null>(null);
 
   const handleChange = useCallback(
     (
@@ -170,7 +172,10 @@ function RepairFormContent() {
       );
 
       // Show success state instead of SweetAlert
-      setSuccessData({ ticketCode: response.ticketCode });
+      setSuccessData({
+        ticketCode: response.ticketCode,
+        linkingCode: response.linkingCode,
+      });
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง";
@@ -239,15 +244,51 @@ function RepairFormContent() {
             </p>
           </div>
 
-          {/* Important Note */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
-            <p className="text-sm text-amber-800 font-medium mb-1">
-              กรุณาจดรหัสนี้ไว้
-            </p>
-            <p className="text-xs text-amber-700">
-              ใช้รหัสนี้เพื่อติดตามสถานะการแจ้งซ่อมของคุณ
-            </p>
-          </div>
+          {/* LINE Notification Registration */}
+          {successData.linkingCode ? (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left">
+              <div className="flex items-start gap-3">
+                <div className="mt-1 bg-blue-100 p-1.5 rounded-full">
+                  <Bell className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-800 text-sm mb-1">
+                    รับแจ้งเตือนผ่าน LINE
+                  </h3>
+                  <p className="text-xs text-blue-600 mb-3 leading-relaxed">
+                    1. เพิ่มเพื่อน LINE Official Account
+                    <br />
+                    2. ส่งรหัสนี้ไปที่แชทเพื่อลงทะเบียน
+                  </p>
+
+                  <div className="bg-white rounded-lg border border-blue-200 p-2 text-center mb-3">
+                    <span className="font-mono font-bold text-blue-700 text-lg tracking-wider">
+                      {successData.linkingCode}
+                    </span>
+                  </div>
+
+                  <a
+                    href="https://line.me/R/ti/p/@YOUR_LINE_OA_ID" // TODO: Replace with actual LINE OA ID
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-2 bg-[#06C755] hover:bg-[#05b34c] text-white text-xs font-semibold rounded-lg text-center transition-colors shadow-sm"
+                  >
+                    เพิ่มเพื่อน LINE OA
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Important Note (Fallback if no linking code) */
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+              <p className="text-sm text-amber-800 font-medium mb-1">
+                กรุณาจดรหัสนี้ไว้
+              </p>
+              <p className="text-xs text-amber-700">
+                ใช้รหัสนี้เพื่อติดตามสถานะการแจ้งซ่อมของคุณ
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="space-y-3">
@@ -283,8 +324,9 @@ function RepairFormContent() {
               แจ้งซ่อมออนไลน์
             </h1>
             <div className="flex items-center gap-1.5 text-gray-500">
-              <span className="text-sm">กรุณากรอกรายละเอียดปัญหาพี่แจ้งเจ้าหน้าที่</span>
-              
+              <span className="text-sm">
+                กรุณากรอกรายละเอียดปัญหาพี่แจ้งเจ้าหน้าที่
+              </span>
             </div>
           </div>
         </div>
@@ -419,7 +461,6 @@ function RepairFormContent() {
                   ปัญหา<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                      
                   <textarea
                     id="details"
                     rows={4}
