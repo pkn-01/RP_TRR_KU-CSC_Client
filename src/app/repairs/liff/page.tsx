@@ -129,6 +129,55 @@ function RepairLiffContent() {
 
     const initLiff = async () => {
       try {
+        // Check if lineUserId is already provided in URL (from Rich Menu or external link)
+        const urlLineUserId = searchParams.get("lineUserId");
+
+        if (urlLineUserId) {
+          // Skip LIFF login - use the provided userId directly
+          console.log("Using lineUserId from URL:", urlLineUserId);
+
+          if (isMounted) {
+            setLineUserId(urlLineUserId);
+            setIsInitializing(false);
+
+            // Fetch data based on action
+            if (action === "create") {
+              window.location.href = `/repairs/liff/form?lineUserId=${urlLineUserId}`;
+              return;
+            } else if (action === "status") {
+              setLoading(true);
+              try {
+                const data = await apiFetch(
+                  `/api/repairs/liff/my-tickets?lineUserId=${urlLineUserId}`,
+                );
+                setTickets(data || []);
+                if (!data || data.length === 0) {
+                  window.location.href = `/repairs/liff/form?lineUserId=${urlLineUserId}`;
+                  return;
+                }
+              } catch (error) {
+                console.error(error);
+              } finally {
+                setLoading(false);
+              }
+            } else if (action === "history" && ticketIdFromParam) {
+              setLoading(true);
+              try {
+                const data = await apiFetch(
+                  `/api/repairs/liff/ticket/${ticketIdFromParam}?lineUserId=${urlLineUserId}`,
+                );
+                setTicketDetail(data);
+              } catch (error) {
+                console.error(error);
+              } finally {
+                setLoading(false);
+              }
+            }
+          }
+          return; // Exit early - no need for LIFF init
+        }
+
+        // Normal LIFF flow when no lineUserId in URL
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
         if (!liffId) {
           console.error("LIFF ID not found");
