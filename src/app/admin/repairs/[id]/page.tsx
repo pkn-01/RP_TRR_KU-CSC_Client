@@ -14,6 +14,7 @@ type Status =
   | "PENDING"
   | "ASSIGNED"
   | "IN_PROGRESS"
+  | "WAITING_PARTS"
   | "COMPLETED"
   | "CANCELLED";
 
@@ -225,7 +226,7 @@ export default function RepairDetailPage() {
         finalStatus =
           adminIsAssigned && assigneeIds.length === 1
             ? "IN_PROGRESS"
-            : "ASSIGNED";
+            : "IN_PROGRESS"; // Always set to IN_PROGRESS when assigned
       }
 
       await apiFetch(`/api/repairs/${data.id}`, {
@@ -251,6 +252,51 @@ export default function RepairDetailPage() {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
         text: err.message || "บันทึกข้อมูลไม่สำเร็จ",
+        icon: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!data) return;
+
+    const result = await Swal.fire({
+      title: "ยืนยันการปิดงาน?",
+      text: "เปลี่ยนสถานะเป็น 'เสร็จสิ้น' และบันทึกเวลาจบงาน",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981", // Green
+      cancelButtonColor: "#a1a1aa",
+      confirmButtonText: "ยืนยันปิดงาน",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setSaving(true);
+      await apiFetch(`/api/repairs/${data.id}`, {
+        method: "PUT",
+        body: {
+          status: "COMPLETED",
+          completedAt: new Date().toISOString(),
+        },
+      });
+
+      await Swal.fire({
+        title: "ปิดงานสำเร็จ!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      window.location.reload();
+    } catch (err: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err.message || "ปิดงานไม่สำเร็จ",
         icon: "error",
       });
     } finally {
@@ -522,6 +568,29 @@ export default function RepairDetailPage() {
                 >
                   {saving ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
+
+                {(data.status === "IN_PROGRESS" ||
+                  data.status === "WAITING_PARTS") && (
+                  <button
+                    onClick={handleComplete}
+                    disabled={saving}
+                    className="w-full py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    ปิดงาน (เสร็จสิ้น)
+                  </button>
+                )}
               </div>
             )}
           </div>
