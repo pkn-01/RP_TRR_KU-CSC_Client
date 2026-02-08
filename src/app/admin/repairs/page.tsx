@@ -274,14 +274,17 @@ function AdminRepairsContent() {
         {/* Stats Row */}
         <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-3">
           {/* Left Column - 2 stacked cards */}
-          <div className="flex flex-row lg:flex-col gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
             <StatCard label="รายการวันนี้" value={stats.today} />
             <StatCard label="รายการทั้งหมด" value={stats.total} />
           </div>
           {/* Right Column - 4 cards in grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
             <StatCard label="รอการดำเนินการ" value={stats.pending} />
             <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
+          </div>
+          {/* Left Column - 2 stacked cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
             <StatCard label="เสร็จสิ้น" value={stats.completed} />
             <StatCard label="ยกเลิก" value={stats.cancelled} />
           </div>
