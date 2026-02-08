@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Wrench,
@@ -48,7 +48,6 @@ export default function AdminSidebar() {
   // const [isClearDataOpen, setIsClearDataOpen] = useState(false); // Removed
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -65,32 +64,44 @@ export default function AdminSidebar() {
     fetchAdminProfile();
   }, []);
 
-  // Menu items based on new design
+  // Menu items with dropdowns based on design
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
-    { icon: Wrench, label: "มอบหมายงาน", href: "/admin/repairs" },
-    { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
-    { icon: Package, label: "การยืม", href: "/admin/loans" },
-    { icon: User, label: "จัดการสมาชิก", href: "/admin/users" },
     {
-      icon: Database,
-      label: "จัดการข้อมูลระบบ",
-      href: "/admin/data-management",
+      icon: Wrench,
+      label: "การแจ้งซ่อม",
+      subItems: [
+        { label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
+        { label: "ตารางซ่อมทั้งหมด", href: "/admin/repairs/schedule" },
+      ],
     },
+    {
+      icon: Package,
+      label: "การยืม",
+      subItems: [
+        { label: "รายการยืมทั้งหมด", href: "/admin/loans" },
+        { label: "เช็คสต็อก", href: "/admin/stock" },
+      ],
+    },
+    { icon: Users, label: "จัดการสมาชิก", href: "/admin/users" },
   ];
 
   const isActive = useCallback(
-    (href: string) => {
-      if (href.includes("?")) {
-        // Handle query params for "My Tasks"
-        const [path, query] = href.split("?");
-        const paramName = query.split("=")[0];
-        const paramValue = query.split("=")[1];
-        return pathname === path && searchParams.get(paramName) === paramValue;
+    (href: string) => pathname === href || pathname.startsWith(href + "/"),
+    [pathname],
+  );
+
+  const isMenuActive = useCallback(
+    (item: MenuItem) => {
+      if (item.href) {
+        return isActive(item.href);
       }
-      return pathname === href || pathname.startsWith(href + "/");
+      if (item.subItems) {
+        return item.subItems.some((sub) => isActive(sub.href));
+      }
+      return false;
     },
-    [pathname, searchParams],
+    [isActive],
   );
 
   const toggleMenu = useCallback((label: string) => {
@@ -98,6 +109,18 @@ export default function AdminSidebar() {
       prev.includes(label) ? prev.filter((m) => m !== label) : [...prev, label],
     );
   }, []);
+
+  // Auto-expand menu if a submenu is active
+  useEffect(() => {
+    menuItems.forEach((item) => {
+      if (item.subItems) {
+        const hasActiveChild = item.subItems.some((sub) => isActive(sub.href));
+        if (hasActiveChild && !expandedMenus.includes(item.label)) {
+          setExpandedMenus((prev) => [...prev, item.label]);
+        }
+      }
+    });
+  }, [pathname]);
 
   useEffect(() => setIsOpen(false), [pathname]);
 
@@ -114,7 +137,7 @@ export default function AdminSidebar() {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#6D4C41] z-50 px-4 flex items-center justify-between shadow-sm">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#795548] z-50 px-4 flex items-center justify-between shadow-sm">
         <Link href="/admin/dashboard" className="flex items-center gap-2">
           <span className="font-bold text-white text-lg tracking-wide">
             TRR-RP
@@ -138,92 +161,144 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-white transition-transform duration-300 z-[60] flex flex-col shadow-xl ${
+        className={`fixed left-0 top-0 h-screen w-56 bg-white transition-transform duration-300 z-[60] flex flex-col ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Logo Header */}
-        <div className="h-32 flex items-center justify-center bg-[#6D4C41]">
+        <div className="h-20 flex items-center justify-center bg-[#795548]">
           <Link href="/admin/dashboard" className="flex items-center">
-            <span className="text-3xl font-medium text-white tracking-wider">
+            <span className="text-xl font-bold text-white tracking-wider">
               TRR-RP
             </span>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-6 py-8 space-y-4 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.href!);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isExpanded = expandedMenus.includes(item.label);
+            const active = isMenuActive(item);
 
+            if (hasSubItems) {
+              return (
+                <div key={item.label}>
+                  {/* Parent Menu with Dropdown */}
+                  <button
+                    onClick={() => toggleMenu(item.label)}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+                      active
+                        ? "text-gray-900"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        size={20}
+                        strokeWidth={1.5}
+                        className="text-gray-500"
+                      />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp size={18} className="text-gray-400" />
+                    ) : (
+                      <ChevronDown size={18} className="text-gray-400" />
+                    )}
+                  </button>
+
+                  {/* Submenu Items */}
+                  {isExpanded && (
+                    <div className="mt-1 ml-8 space-y-1">
+                      {item.subItems!.map((subItem) => {
+                        const subActive = isActive(subItem.href);
+                        return (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                              subActive
+                                ? "text-gray-900 font-medium"
+                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Regular Menu Item (no submenu)
             return (
               <Link
-                key={item.label}
+                key={item.href}
                 href={item.href!}
-                className={`flex items-center gap-4 px-2 py-1 transition-colors group`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                  active
+                    ? "text-gray-900 font-medium"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
               >
-                <Icon
-                  size={24}
-                  strokeWidth={1.5}
-                  className={`${
-                    active
-                      ? "text-gray-900"
-                      : "text-gray-900 group-hover:text-gray-600"
-                  }`}
-                />
-                <span
-                  className={`text-lg font-normal ${
-                    active
-                      ? "text-gray-900"
-                      : "text-gray-900 group-hover:text-gray-600"
-                  }`}
-                >
-                  {item.label}
-                </span>
+                <Icon size={20} strokeWidth={1.5} className="text-gray-500" />
+                <span className="text-sm">{item.label}</span>
               </Link>
             );
           })}
+
+          <Link
+            href="/admin/data-management"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mt-2 ${
+              isActive("/admin/data-management")
+                ? "bg-red-50 text-red-700 font-medium"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            }`}
+          >
+            <Database size={20} strokeWidth={1.5} />
+            <span className="text-sm">จัดการข้อมูลระบบ</span>
+          </Link>
         </nav>
 
         {/* User Profile Section */}
-        <div className="p-6">
-          <div className="border-t border-gray-300 mb-6" />
-
-          <div className="flex flex-col items-start gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-[#6D4C41] flex items-center justify-center overflow-hidden">
-              {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
-                <Image
-                  src={
-                    adminProfile?.profilePicture ||
-                    adminProfile?.pictureUrl ||
-                    ""
-                  }
-                  alt={adminProfile?.name || "Admin"}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-white text-xl font-bold">
-                  {(adminProfile?.name || "AD").substring(0, 2).toUpperCase()}
-                </span>
-              )}
-            </div>
-            <div>
-              <p className="text-xl font-medium text-gray-900">
+        <div className="p-4 bg-white">
+          <Link
+            href="/admin/profile"
+            className="flex items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group"
+          >
+            {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
+              <Image
+                src={
+                  adminProfile?.profilePicture || adminProfile?.pictureUrl || ""
+                }
+                alt={adminProfile?.name || "Admin"}
+                width={44}
+                height={44}
+                className="w-11 h-11 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-amber-700 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
+                <User size={20} className="text-white" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-blue-700 transition-colors">
                 {adminProfile?.name || "admin"}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs text-gray-500 truncate">
                 {adminProfile?.email || "admin@trr.com"}
               </p>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="w-full py-3 rounded-2xl bg-gray-300 text-black hover:bg-gray-400 transition-colors text-lg font-medium"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium"
           >
             ออกจากระบบ
           </button>

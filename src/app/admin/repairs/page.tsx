@@ -79,9 +79,6 @@ function AdminRepairsContent() {
   useEffect(() => {
     const status = searchParams.get("status");
     if (status) setFilterStatus(status);
-
-    const filter = searchParams.get("filter");
-    if (filter === "mine") setShowMyTasksOnly(true);
   }, [searchParams]);
 
   useEffect(() => {
