@@ -68,7 +68,7 @@ export default function AdminSidebar() {
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
-    { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
+  // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
     {
       icon: Package,
       label: "การยืม",

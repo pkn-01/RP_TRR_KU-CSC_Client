@@ -37,7 +37,6 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอรับงาน",
-  ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
@@ -150,7 +149,12 @@ function AdminRepairsContent() {
       item.problemTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.reporterName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
-      filterStatus === "all" || item.status === filterStatus;
+      filterStatus === "all"
+        ? true
+        : filterStatus === "TODAY"
+          ? new Date(item.createdAt).toDateString() ===
+            new Date().toDateString()
+          : item.status === filterStatus;
 
     // Filter by assignee if "My Tasks" is checked
     const matchesAssignee = showMyTasksOnly
@@ -355,8 +359,8 @@ function AdminRepairsContent() {
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
             >
               <option value="all">ทุกสถานะ</option>
+              <option value="TODAY">งานวันนี้</option>
               <option value="PENDING">รอรับงาน</option>
-              <option value="ASSIGNED">มอบหมายงาน</option>
               <option value="IN_PROGRESS">กำลังดำเนินการ</option>
               <option value="COMPLETED">เสร็จสิ้น</option>
               <option value="CANCELLED">ยกเลิก</option>
