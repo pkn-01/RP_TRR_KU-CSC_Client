@@ -55,6 +55,7 @@ function AdminRepairsContent() {
   const [countdown, setCountdown] = useState(15); // 15 seconds refresh
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -156,12 +157,15 @@ function AdminRepairsContent() {
             new Date().toDateString()
           : item.status === filterStatus;
 
+    const matchesPriority =
+      filterPriority === "all" || item.urgency === filterPriority;
+
     // Filter by assignee if "My Tasks" is checked
     const matchesAssignee = showMyTasksOnly
       ? currentUser && item.assignees?.some((a) => a.user.id === currentUser.id)
       : true;
 
-    return matchesSearch && matchesStatus && matchesAssignee;
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
   });
 
   const totalPages = Math.ceil(filteredRepairs.length / itemsPerPage);
@@ -367,7 +371,14 @@ function AdminRepairsContent() {
             </select>
 
             {/* Priority Filter */}
-            <select className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none">
+            <select
+              value={filterPriority}
+              onChange={(e) => {
+                setFilterPriority(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
+            >
               <option value="all">ทุกความสำคัญ</option>
               <option value="NORMAL">ปกติ</option>
               <option value="URGENT">ด่วน</option>
