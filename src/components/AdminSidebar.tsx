@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Wrench,
@@ -48,6 +48,7 @@ export default function AdminSidebar() {
   // const [isClearDataOpen, setIsClearDataOpen] = useState(false); // Removed
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -82,14 +83,14 @@ export default function AdminSidebar() {
     (href: string) => {
       if (href.includes("?")) {
         // Handle query params for "My Tasks"
-        return (
-          pathname === href.split("?")[0] &&
-          window.location.search.includes(href.split("?")[1])
-        );
+        const [path, query] = href.split("?");
+        const paramName = query.split("=")[0];
+        const paramValue = query.split("=")[1];
+        return pathname === path && searchParams.get(paramName) === paramValue;
       }
       return pathname === href || pathname.startsWith(href + "/");
     },
-    [pathname],
+    [pathname, searchParams],
   );
 
   const toggleMenu = useCallback((label: string) => {
