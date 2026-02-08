@@ -67,14 +67,8 @@ export default function AdminSidebar() {
   // Menu items with dropdowns based on design
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
-    {
-      icon: Wrench,
-      label: "การแจ้งซ่อม",
-      subItems: [
-        { label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
-        { label: "ตารางซ่อมทั้งหมด", href: "/admin/repairs/schedule" },
-      ],
-    },
+    { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
+    { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
     {
       icon: Package,
       label: "การยืม",
