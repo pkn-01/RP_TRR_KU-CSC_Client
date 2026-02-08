@@ -272,17 +272,17 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="flex flex-wrap gap-3">
-          {/* First Row */}
-          <div className="flex gap-3 flex-wrap">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-3">
+          {/* Left Column - 2 stacked cards */}
+          <div className="flex flex-row lg:flex-col gap-3">
             <StatCard label="รายการวันนี้" value={stats.today} />
+            <StatCard label="รายการทั้งหมด" value={stats.total} />
+          </div>
+          {/* Right Column - 4 cards in grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatCard label="รอการดำเนินการ" value={stats.pending} />
             <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
             <StatCard label="เสร็จสิ้น" value={stats.completed} />
-          </div>
-          {/* Second Row */}
-          <div className="flex gap-3">
-            <StatCard label="รายการทั้งหมด" value={stats.total} />
             <StatCard label="ยกเลิก" value={stats.cancelled} />
           </div>
         </div>
@@ -610,10 +610,10 @@ function AdminRepairsContent() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-gray-200 p-4 rounded-lg">
+    <div className="bg-white border border-gray-300 px-6 py-4 rounded-lg min-w-[120px]">
       <span className="text-sm text-gray-600">{label}</span>
-      <div className="mt-2">
-        <span className="text-3xl font-bold text-gray-900">{value}</span>
+      <div className="mt-1">
+        <span className="text-2xl font-semibold text-gray-900">{value}</span>
       </div>
     </div>
   );
