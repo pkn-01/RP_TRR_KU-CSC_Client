@@ -9,11 +9,13 @@ import {
   Trash2,
   Edit2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AdminUserModal from "@/components/modals/AdminUserModal";
 import Swal from "sweetalert2";
 import { userService, User } from "@/services/userService";
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -233,10 +235,7 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setIsModalOpen(true);
-                        }}
+                        onClick={() => router.push(`/admin/users/${user.id}`)}
                         className="p-1 text-gray-400 hover:text-gray-600"
                       >
                         <ChevronRight size={18} />
@@ -291,10 +290,7 @@ export default function AdminUsersPage() {
                   <Trash2 size={16} />
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedUser(user);
-                    setIsModalOpen(true);
-                  }}
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
                   className="p-2 text-gray-400 hover:text-gray-600"
                 >
                   <ChevronRight size={16} />
