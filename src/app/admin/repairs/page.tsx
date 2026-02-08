@@ -272,19 +272,22 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-3">
-          {/* Left Column - 2 stacked cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="flex flex-col gap-4">
             <StatCard label="รายการวันนี้" value={stats.today} />
             <StatCard label="รายการทั้งหมด" value={stats.total} />
           </div>
-          {/* Right Column - 4 cards in grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
-            <StatCard label="รอการดำเนินการ" value={stats.pending} />
-            <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
-          </div>
-          {/* Left Column - 2 stacked cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3">
+          <StatCard
+            label="รอการดำเนินการ"
+            value={stats.pending}
+            className="h-full min-h-[160px]"
+          />
+          <StatCard
+            label="กำลังดำเนินการ"
+            value={stats.inProgress}
+            className="h-full min-h-[160px]"
+          />
+          <div className="flex flex-col gap-4">
             <StatCard label="เสร็จสิ้น" value={stats.completed} />
             <StatCard label="ยกเลิก" value={stats.cancelled} />
           </div>
@@ -611,13 +614,21 @@ function AdminRepairsContent() {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  className = "",
+}: {
+  label: string;
+  value: number;
+  className?: string;
+}) {
   return (
-    <div className="bg-white border border-gray-300 px-6 py-4 rounded-lg min-w-[120px]">
-      <span className="text-sm text-gray-600">{label}</span>
-      <div className="mt-1">
-        <span className="text-2xl font-semibold text-gray-900">{value}</span>
-      </div>
+    <div
+      className={`bg-white rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-md transition-shadow ${className}`}
+    >
+      <span className="text-gray-600 text-lg font-medium mb-2">{label}</span>
+      <span className="text-3xl font-bold text-gray-900">{value}</span>
     </div>
   );
 }
