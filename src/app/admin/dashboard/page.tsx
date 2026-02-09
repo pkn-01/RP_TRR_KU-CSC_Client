@@ -54,32 +54,35 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const loadDashboardData = async (showLoading = false) => {
       try {
-        setLoading(true);
+        if (showLoading) setLoading(true);
 
-        // Fetch dashboard statistics with filter
-        const dashboardStats = await apiFetch(
-          `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
-          "GET",
-        );
-
-        // Fetch department statistics
-        const deptStats = await apiFetch(
-          "/api/repairs/statistics/by-department",
-          "GET",
-        );
+        // Fetch dashboard statistics with filter and department statistics in parallel
+        const [dashboardStats, deptStats] = await Promise.all([
+          apiFetch(
+            `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
+            "GET",
+          ),
+          apiFetch("/api/repairs/statistics/by-department", "GET"),
+        ]);
 
         setStats(dashboardStats);
         setDepartmentStats(Array.isArray(deptStats) ? deptStats : []);
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
       } finally {
-        setLoading(false);
+        if (showLoading) setLoading(false);
       }
     };
 
-    loadDashboardData();
+    // Initial load with spinner
+    loadDashboardData(true);
+
+    // Set interval for real-time updates (every 30 seconds) without spinner
+    const interval = setInterval(() => loadDashboardData(false), 30000);
+
+    return () => clearInterval(interval);
   }, [filter, selectedDate]);
 
   const getUrgencyLabel = (urgency: string) => {
