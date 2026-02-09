@@ -134,15 +134,15 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-3">
             {/* Filter Tabs */}
-            <div className="flex bg-white border border-gray-200 rounded-full overflow-hidden">
+            <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
               {(["day", "week", "month"] as FilterType[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
                     filter === f
-                      ? "bg-[#5D1F1F] text-white rounded-full shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-[#5D2E1F] text-white shadow-sm"
+                      : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
                   {f === "day"
