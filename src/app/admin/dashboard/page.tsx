@@ -146,6 +146,7 @@ export default function AdminDashboard() {
                   }`}
                   style={{
                     backgroundColor: filter === f ? "#5D2E1E" : undefined,
+                    color: filter === f ? "#ffffff" : undefined,
                   }}
                 >
                   {f === "day"
