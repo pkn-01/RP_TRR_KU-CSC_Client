@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../../../services/api";
-import { ChevronRight, Calendar } from "lucide-react";
+import { ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
 
 interface RepairItem {
   id: number;
@@ -175,11 +175,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="รายการซ่อมทั้งหมด" value={stats?.all.total || 0} />
-          <StatCard label="กำลังดำเนินการ" value={stats?.all.inProgress || 0} />
-          <StatCard label="ปิดงาน" value={stats?.all.completed || 0} />
-          <StatCard label="ยกเลิก" value={stats?.all.cancelled || 0} />
+        {/* Main Stats Cards */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x-0 md:divide-x divide-gray-100">
+            <MainStatItem
+              label="รายการซ่อมทั้งหมด"
+              value={stats?.all.total || 0}
+            />
+            <MainStatItem
+              label="กำลังดำเนินการ"
+              value={stats?.all.inProgress || 0}
+            />
+            <MainStatItem label="ปิดงาน" value={stats?.all.completed || 0} />
+            <MainStatItem label="ยกเลิก" value={stats?.all.cancelled || 0} />
+          </div>
         </div>
 
         {/* Today Stats Cards */}
@@ -307,6 +316,16 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
+// Main Stat Item Component (Internal use for the main card)
+function MainStatItem({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-col items-center justify-center p-4">
+      <span className="text-sm text-gray-600 mb-2">{label}</span>
+      <span className="text-4xl font-medium text-gray-900">{value}</span>
+    </div>
+  );
+}
+
 // Today Stat Card with link
 function TodayStatCard({
   label,
@@ -320,18 +339,13 @@ function TodayStatCard({
   return (
     <Link
       href={link}
-      className="bg-white border border-gray-200 p-4 rounded-lg hover:border-[#5D1F1F] transition-colors group"
+      className="relative bg-white border border-gray-200 p-6 rounded-lg hover:shadow-md transition-shadow group flex flex-col items-center justify-center min-h-[140px]"
     >
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-600">{label}</span>
-        <ChevronRight
-          size={16}
-          className="text-gray-300 group-hover:text-[#5D1F1F] transition-colors"
-        />
+      <div className="absolute top-3 right-3 p-1.5 rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors">
+        <ArrowUpRight size={18} className="text-gray-500" />
       </div>
-      <div className="mt-2">
-        <span className="text-4xl font-bold text-gray-900">{value}</span>
-      </div>
+      <span className="text-base text-gray-600 mb-2 font-medium">{label}</span>
+      <span className="text-5xl font-medium text-gray-900">{value}</span>
     </Link>
   );
 }
