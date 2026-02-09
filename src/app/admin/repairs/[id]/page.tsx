@@ -472,40 +472,44 @@ export default function RepairDetailPage() {
           {/* RIGHT Column - Management */}
           <div className="space-y-4">
             {/* Assignment Card */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-gray-900 mb-4">
-                มอบหมายงานผู้รับผิดชอบ
-              </h3>
-              <div className="space-y-2">
-                {technicians.length === 0 ? (
-                  <p className="text-sm text-gray-400">ไม่พบรายชื่อ IT</p>
-                ) : (
-                  technicians.map((tech) => (
-                    <label
-                      key={tech.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-                        assigneeIds.includes(tech.id)
-                          ? "bg-blue-50 border-blue-200"
-                          : "bg-gray-50 border-gray-200"
-                      } ${
-                        canEdit() || data.status === "PENDING"
-                          ? "hover:bg-blue-50 cursor-pointer"
-                          : "cursor-default opacity-60"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={assigneeIds.includes(tech.id)}
-                        onChange={() => toggleAssignee(tech.id)}
-                        disabled={!canEdit() && data.status !== "PENDING"}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{tech.name}</span>
-                    </label>
-                  ))
-                )}
+            {data.assignees.length === 0 && (
+              <div className="bg-white rounded-3xl p-5 shadow-sm">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">
+                  มอบหมายงานผู้รับผิดชอบ
+                </h3>
+                <div className="space-y-2">
+                  {technicians.length === 0 ? (
+                    <p className="text-sm text-gray-400">ไม่พบรายชื่อ IT</p>
+                  ) : (
+                    technicians.map((tech) => (
+                      <label
+                        key={tech.id}
+                        className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                          assigneeIds.includes(tech.id)
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-gray-50 border-gray-200"
+                        } ${
+                          canEdit() || data.status === "PENDING"
+                            ? "hover:bg-blue-50 cursor-pointer"
+                            : "cursor-default opacity-60"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={assigneeIds.includes(tech.id)}
+                          onChange={() => toggleAssignee(tech.id)}
+                          disabled={!canEdit() && data.status !== "PENDING"}
+                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {tech.name}
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Urgency Dropdown */}
             <div className="bg-white rounded-3xl p-5 shadow-sm">
