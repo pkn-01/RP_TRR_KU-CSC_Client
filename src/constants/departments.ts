@@ -1,5 +1,5 @@
 export const DEPARTMENT_OPTIONS = [
-  "IT",
+  "ไอที",
   "ลูกหีบ",
   "ฝ่ายอ้อย",
   "กฏหมาย",
