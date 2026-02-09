@@ -3,102 +3,75 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../../../services/api";
-import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { ChevronRight, Calendar } from "lucide-react";
 
 interface RepairItem {
   id: number;
   ticketCode: string;
   problemTitle: string;
   status: string;
+  urgency: string;
+  location: string;
   createdAt: string;
 }
 
-interface LoanItem {
-  id: number;
-  itemName: string;
-  borrowerName?: string;
-  expectedReturnDate: string;
-  borrowedBy?: { name: string };
-}
-
-interface Stats {
-  repairs: {
+interface DashboardStats {
+  all: {
+    total: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+  };
+  filtered: {
     total: number;
     pending: number;
     inProgress: number;
     completed: number;
     cancelled: number;
   };
-  loans: {
-    total: number;
-    active: number;
-    overdue: number;
-    returned: number;
-  };
+  recentRepairs: RepairItem[];
 }
 
+interface DepartmentStat {
+  department: string;
+  total: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+}
+
+type FilterType = "day" | "week" | "month";
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({
-    repairs: {
-      total: 0,
-      pending: 0,
-      inProgress: 0,
-      completed: 0,
-      cancelled: 0,
-    },
-    loans: { total: 0, active: 0, overdue: 0, returned: 0 },
-  });
-  const [recentRepairs, setRecentRepairs] = useState<RepairItem[]>([]);
-  const [recentLoans, setRecentLoans] = useState<LoanItem[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterType>("day");
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        // Fetch repair statistics
-        const repairStats = await apiFetch(
-          "/repairs/statistics/overview",
+        setLoading(true);
+
+        // Fetch dashboard statistics with filter
+        const dashboardStats = await apiFetch(
+          `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
           "GET",
         );
 
-        // Fetch loans
-        const loansData = await apiFetch("/api/loans/admin/all");
-        const loansArray = Array.isArray(loansData) ? loansData : [];
+        // Fetch department statistics
+        const deptStats = await apiFetch(
+          "/api/repairs/statistics/by-department",
+          "GET",
+        );
 
-        // Calculate loan stats
-        const loanStats = {
-          total: loansArray.length,
-          active: loansArray.filter(
-            (l: { status: string }) => l.status === "BORROWED",
-          ).length,
-          overdue: loansArray.filter(
-            (l: { status: string }) => l.status === "OVERDUE",
-          ).length,
-          returned: loansArray.filter(
-            (l: { status: string }) => l.status === "RETURNED",
-          ).length,
-        };
-
-        setStats({
-          repairs: {
-            total: repairStats?.total || 0,
-            pending: repairStats?.pending || 0,
-            inProgress: repairStats?.inProgress || 0,
-            completed: repairStats?.completed || 0,
-            cancelled: repairStats?.cancelled || 0,
-          },
-          loans: loanStats,
-        });
-
-        // Fetch recent repairs
-        const repairsData = await apiFetch("/api/repairs");
-        const repairsArray = Array.isArray(repairsData)
-          ? repairsData
-          : repairsData?.data || [];
-        setRecentRepairs(repairsArray.slice(0, 4));
-
-        // Recent loans
-        setRecentLoans(loansArray.slice(0, 3));
+        setStats(dashboardStats);
+        setDepartmentStats(Array.isArray(deptStats) ? deptStats : []);
       } catch (error) {
         console.error("Failed to load dashboard data:", error);
       } finally {
@@ -107,156 +80,210 @@ export default function AdminDashboard() {
     };
 
     loadDashboardData();
-  }, []);
+  }, [filter, selectedDate]);
 
-  const getStatusLabel = (status: string) => {
+  const getUrgencyLabel = (urgency: string) => {
     const labels: Record<string, string> = {
-      PENDING: "รอรับงาน",
-      IN_PROGRESS: "กำลังดำเนินการ",
-      COMPLETED: "เสร็จสิ้น",
-      BORROWED: "กำลังยืม",
-      RETURNED: "คืนสำเร็จ",
+      CRITICAL: "ด่วน",
+      URGENT: "ด่วน",
+      NORMAL: "ปกติ",
     };
-    return labels[status] || status;
+    return labels[urgency] || urgency;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "short",
+      year: "2-digit",
+    });
+  };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDisplayDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-500">กำลังโหลด...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
-      <div className="max-w-[1400px] mx-auto space-y-4 md:space-y-6">
-        {/* Repair Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard
-            label="รายการซ่อมทั้งหมด"
-            value={stats.repairs.total}
-            href="/admin/repairs"
-          />
-          <StatCard
-            label="รอรับงาน"
-            value={stats.repairs.pending}
-            href="/admin/repairs?status=PENDING"
-          />
-          <StatCard
-            label="กำลังดำเนินการ"
-            value={stats.repairs.inProgress}
-            href="/admin/repairs?status=IN_PROGRESS"
-          />
-          <StatCard
-            label="เสร็จสิ้น"
-            value={stats.repairs.completed}
-            href="/admin/repairs?status=COMPLETED"
-          />
-          <StatCard
-            label="ยกเลิก"
-            value={stats.repairs.cancelled}
-            href="/admin/repairs?status=CANCELLED"
-          />
-        </div>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-[1400px] mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-gray-900">แดชบอร์ด</h1>
 
-        {/* Loan Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard
-            label="รายการยืมทั้งหมด"
-            value={stats.loans.total}
-            href="/admin/loans"
-          />
-          <StatCard
-            label="กำลังยืม"
-            value={stats.loans.active}
-            href="/admin/loans?status=BORROWED"
-          />
-          <StatCard
-            label="ส่งคืนแล้ว"
-            value={stats.loans.returned}
-            href="/admin/loans?status=RETURNED"
-          />
-        </div>
-
-        {/* Recent Items Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Repairs */}
-          <div className="bg-white rounded-lg">
-            <div className="p-4">
-              <h2 className="font-semibold text-gray-900">งานแจ้งซ่อมวันนี้</h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {recentRepairs.map((repair) => (
-                <Link
-                  key={repair.id}
-                  href={`/admin/repairs/${repair.id}`}
-                  className="block p-4 hover:bg-gray-50 transition-colors"
+          <div className="flex items-center gap-3">
+            {/* Filter Tabs */}
+            <div className="flex bg-white border border-gray-200 rounded-lg overflow-hidden">
+              {(["day", "week", "month"] as FilterType[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    filter === f
+                      ? "bg-[#5D1F1F] text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {repair.problemTitle}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(repair.createdAt).toLocaleDateString("th-TH")}{" "}
-                        • {repair.ticketCode}
-                        <span className="ml-2 text-gray-400">
-                          สถานะ: {getStatusLabel(repair.status)}
-                        </span>
-                      </p>
-                    </div>
-                    <ChevronRight size={18} className="text-gray-400 ml-2" />
-                  </div>
-                </Link>
+                  {f === "day"
+                    ? "รายวัน"
+                    : f === "week"
+                      ? "รายสัปดาห์"
+                      : "รายเดือน"}
+                </button>
               ))}
-              {recentRepairs.length === 0 && (
-                <div className="p-6 text-center text-gray-500 text-sm">
-                  ไม่มีรายการ
-                </div>
-              )}
+            </div>
+
+            {/* Date Picker */}
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+              <span className="text-sm text-gray-600">
+                {formatDisplayDate(selectedDate)}
+              </span>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-5 h-5 opacity-0 absolute"
+              />
+              <Calendar size={18} className="text-gray-400" />
             </div>
           </div>
+        </div>
 
-          {/* Recent Loans */}
-          <div className="bg-white rounded-lg">
-            <div className="p-4">
-              <h2 className="font-semibold text-gray-900">การยืม</h2>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {recentLoans.map((loan) => (
-                <Link
-                  key={loan.id}
-                  href="/admin/loans"
-                  className="block p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {loan.itemName}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(loan.expectedReturnDate).toLocaleDateString(
-                          "th-TH",
-                        )}
-                        <span className="ml-2">
-                          กำหนดคืน:{" "}
-                          {new Date(loan.expectedReturnDate).toLocaleDateString(
-                            "th-TH",
-                          )}
-                        </span>
-                      </p>
-                    </div>
-                    <ChevronRight size={18} className="text-gray-400 ml-2" />
-                  </div>
-                </Link>
-              ))}
-              {recentLoans.length === 0 && (
-                <div className="p-6 text-center text-gray-500 text-sm">
-                  ไม่มีรายการ
-                </div>
-              )}
-            </div>
+        {/* Main Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="รายการซ่อมทั้งหมด" value={stats?.all.total || 0} />
+          <StatCard label="กำลังดำเนินการ" value={stats?.all.inProgress || 0} />
+          <StatCard label="ปิดงาน" value={stats?.all.completed || 0} />
+          <StatCard label="ยกเลิก" value={stats?.all.cancelled || 0} />
+        </div>
+
+        {/* Today Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <TodayStatCard
+            label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            value={stats?.filtered.total || 0}
+            link="/admin/repairs"
+          />
+          <TodayStatCard
+            label={`กำลังดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            value={stats?.filtered.inProgress || 0}
+            link="/admin/repairs?status=IN_PROGRESS"
+          />
+          <TodayStatCard
+            label={`ปิดงาน(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            value={stats?.filtered.completed || 0}
+            link="/admin/repairs?status=COMPLETED"
+          />
+          <TodayStatCard
+            label={`ยกเลิก(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            value={stats?.filtered.cancelled || 0}
+            link="/admin/repairs?status=CANCELLED"
+          />
+        </div>
+
+        {/* Repairs Table */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    รหัส
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    เวลา
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    ปัญหา
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    สถานที่
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    ความเร่งด่วน
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    จัดการ
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {stats?.recentRepairs.map((repair) => (
+                  <tr key={repair.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                      {repair.ticketCode}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {formatDate(repair.createdAt)}{" "}
+                      {formatTime(repair.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {repair.problemTitle.length > 30
+                        ? repair.problemTitle.substring(0, 30) + "..."
+                        : repair.problemTitle}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {repair.location}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {getUrgencyLabel(repair.urgency)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/repairs/${repair.id}`}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <ChevronRight size={20} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {(!stats?.recentRepairs ||
+                  stats.recentRepairs.length === 0) && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-gray-500 text-sm"
+                    >
+                      ไม่มีรายการ
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Department Statistics */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            จำนวนรายการแจ้งซ่อมของแต่ละแผนก
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {departmentStats.map((dept) => (
+              <DepartmentCard key={dept.department} stat={dept} />
+            ))}
           </div>
         </div>
       </div>
@@ -264,31 +291,77 @@ export default function AdminDashboard() {
   );
 }
 
-// Stat Card Component
-function StatCard({
+// Main Stat Card Component
+function StatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-white border border-gray-200 p-4 rounded-lg">
+      <span className="text-sm text-gray-600">{label}</span>
+      <div className="mt-2">
+        <span className="text-4xl font-bold text-gray-900">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+// Today Stat Card with link
+function TodayStatCard({
   label,
   value,
-  href,
+  link,
 }: {
   label: string;
   value: number;
-  href: string;
+  link: string;
 }) {
   return (
     <Link
-      href={href}
-      className="bg-gray-200 hover:bg-gray-300 transition-colors p-4 rounded-lg group"
+      href={link}
+      className="bg-white border border-gray-200 p-4 rounded-lg hover:border-[#5D1F1F] transition-colors group"
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <span className="text-sm text-gray-600">{label}</span>
-        <ArrowUpRight
+        <ChevronRight
           size={16}
-          className="text-gray-400 group-hover:text-gray-600 transition-colors"
+          className="text-gray-300 group-hover:text-[#5D1F1F] transition-colors"
         />
       </div>
       <div className="mt-2">
-        <span className="text-3xl font-bold text-gray-900">{value}</span>
+        <span className="text-4xl font-bold text-gray-900">{value}</span>
       </div>
     </Link>
+  );
+}
+
+// Department Card Component
+function DepartmentCard({ stat }: { stat: DepartmentStat }) {
+  return (
+    <div className="bg-white border border-gray-200 p-4 rounded-lg">
+      <div className="text-center mb-3">
+        <span className="text-sm font-medium text-gray-700">
+          {stat.department}
+        </span>
+      </div>
+      <div className="text-center mb-4">
+        <span className="text-4xl font-bold text-gray-900">{stat.total}</span>
+      </div>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between text-gray-600 border-r-4 border-yellow-400 pr-2">
+          <span>รอดำเนินการ :</span>
+          <span>{stat.pending}</span>
+        </div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-blue-400 pr-2">
+          <span>กำลังดำเนินการ :</span>
+          <span>{stat.inProgress}</span>
+        </div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-green-400 pr-2">
+          <span>ปิดงาน :</span>
+          <span>{stat.completed}</span>
+        </div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-red-400 pr-2">
+          <span>ยกเลิก :</span>
+          <span>{stat.cancelled}</span>
+        </div>
+      </div>
+    </div>
   );
 }
