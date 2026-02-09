@@ -203,7 +203,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Repairs Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -229,44 +229,30 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {stats?.recentRepairs.slice(0, 7).map((repair, index) => (
-                  <tr
-                    key={repair.id}
-                    className={`hover:bg-blue-50 transition-colors ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                    }`}
-                  >
-                    <td className="px-4 py-3 text-sm font-mono text-blue-600">
+                {stats?.recentRepairs.map((repair) => (
+                  <tr key={repair.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900">
                       {repair.ticketCode}
                     </td>
-                    <td className="px-4 py-3 text-sm text-blue-400">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {formatDate(repair.createdAt)}{" "}
                       {formatTime(repair.createdAt)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-blue-400">
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       {repair.problemTitle.length > 30
                         ? repair.problemTitle.substring(0, 30) + "..."
                         : repair.problemTitle}
                     </td>
-                    <td className="px-4 py-3 text-sm text-blue-400">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {repair.location}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`${
-                          repair.urgency === "CRITICAL" ||
-                          repair.urgency === "URGENT"
-                            ? "text-red-500"
-                            : "text-blue-400"
-                        }`}
-                      >
-                        {getUrgencyLabel(repair.urgency)}
-                      </span>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {getUrgencyLabel(repair.urgency)}
                     </td>
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/repairs/${repair.id}`}
-                        className="text-gray-400 hover:text-blue-600 transition-colors"
+                        className="text-gray-400 hover:text-gray-600"
                       >
                         <ChevronRight size={20} />
                       </Link>
