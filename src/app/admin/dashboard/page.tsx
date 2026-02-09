@@ -141,9 +141,12 @@ export default function AdminDashboard() {
                   onClick={() => setFilter(f)}
                   className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
                     filter === f
-                      ? "bg-[#5D2E1F] text-white shadow-sm"
+                      ? "text-white shadow-sm"
                       : "text-gray-600 hover:bg-gray-50"
                   }`}
+                  style={{
+                    backgroundColor: filter === f ? "#5D2E1E" : undefined,
+                  }}
                 >
                   {f === "day"
                     ? "รายวัน"
