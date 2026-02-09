@@ -14,6 +14,7 @@ import {
 import { apiFetch } from "@/services/api";
 import { userService, User as UserType } from "@/services/userService";
 import * as XLSX from "xlsx";
+import Swal from "sweetalert2";
 
 interface Repair {
   id: string;
@@ -142,13 +143,36 @@ function AdminRepairsContent() {
   }, [autoRefreshEnabled, fetchRepairs]);
 
   const handleDelete = async (id: string, ticketCode: string) => {
-    if (!window.confirm(`ลบงานซ่อม #${ticketCode}?`)) return;
+    const result = await Swal.fire({
+      title: "ยืนยันการลบข้อมูล?",
+      text: `คุณกำลังจะลบรายการแจ้งซ่อม #${ticketCode} ออกจากระบบถาวร (ไม่สามารถย้อนกลับได้)`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#a1a1aa",
+      confirmButtonText: "ลบข้อมูล",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await apiFetch(`/api/repairs/${id}`, { method: "DELETE" });
       setRepairs(repairs.filter((r) => r.id !== id));
+      Swal.fire({
+        title: "ลบสำเร็จ!",
+        text: `ลบรายการ #${ticketCode} เรียบร้อยแล้ว`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (err) {
       console.error("Error deleting repair:", err);
-      alert("เกิดข้อผิดพลาด");
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+      });
     }
   };
 
