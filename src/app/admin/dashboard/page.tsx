@@ -196,27 +196,26 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Today Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <TodayStatCard
             label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.total || 0}
-            link="/admin/repairs"
+            link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
             label={`กำลังดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.inProgress || 0}
-            link="/admin/repairs?status=IN_PROGRESS"
+            link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
             label={`ปิดงาน(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.completed || 0}
-            link="/admin/repairs?status=COMPLETED"
+            link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
             label={`ยกเลิก(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.cancelled || 0}
-            link="/admin/repairs?status=CANCELLED"
+            link={`/admin/repairs?status=CANCELLED&filter=${filter}&date=${selectedDate}`}
           />
         </div>
 

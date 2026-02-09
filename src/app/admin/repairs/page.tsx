@@ -76,9 +76,17 @@ function AdminRepairsContent() {
     cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
   };
 
+  const [filterDate, setFilterDate] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<string>("all");
+
   useEffect(() => {
     const status = searchParams.get("status");
+    const date = searchParams.get("date");
+    const filter = searchParams.get("filter");
+
     if (status) setFilterStatus(status);
+    if (date) setFilterDate(date);
+    if (filter) setFilterType(filter);
   }, [searchParams]);
 
   useEffect(() => {
@@ -107,7 +115,7 @@ function AdminRepairsContent() {
     } catch (err) {
       console.error("Error fetching repairs:", err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
       setIsRefreshing(false);
     }
   }, []);
@@ -144,11 +152,38 @@ function AdminRepairsContent() {
     }
   };
 
+  const isSameWeek = (date1: Date, date2: Date) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+
+    const firstDay = new Date(d2);
+    const day = d2.getDay();
+    const diff = d2.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
+    firstDay.setDate(diff);
+
+    const lastDay = new Date(firstDay);
+    lastDay.setDate(firstDay.getDate() + 6);
+
+    return d1 >= firstDay && d1 <= lastDay;
+  };
+
+  const formatDisplayDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const filteredRepairs = repairs.filter((item) => {
     const matchesSearch =
       item.ticketCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.problemTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.reporterName?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus =
       filterStatus === "all"
         ? true
@@ -156,6 +191,23 @@ function AdminRepairsContent() {
           ? new Date(item.createdAt).toDateString() ===
             new Date().toDateString()
           : item.status === filterStatus;
+
+    // Date filtering from dashboard
+    let matchesDate = true;
+    if (filterDate && filterType !== "all") {
+      const createdAt = new Date(item.createdAt);
+      const targetDate = new Date(filterDate);
+
+      if (filterType === "day") {
+        matchesDate = createdAt.toDateString() === targetDate.toDateString();
+      } else if (filterType === "week") {
+        matchesDate = isSameWeek(createdAt, targetDate);
+      } else if (filterType === "month") {
+        matchesDate =
+          createdAt.getMonth() === targetDate.getMonth() &&
+          createdAt.getFullYear() === targetDate.getFullYear();
+      }
+    }
 
     const matchesPriority =
       filterPriority === "all" || item.urgency === filterPriority;
@@ -165,7 +217,13 @@ function AdminRepairsContent() {
       ? currentUser && item.assignees?.some((a) => a.user.id === currentUser.id)
       : true;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesPriority &&
+      matchesAssignee &&
+      matchesDate
+    );
   });
 
   const totalPages = Math.ceil(filteredRepairs.length / itemsPerPage);
@@ -300,6 +358,36 @@ function AdminRepairsContent() {
             <StatCard label="ยกเลิก" value={stats.cancelled} />
           </div>
         </div>
+
+        {/* Filter Row Indicator */}
+        {filterDate && filterType !== "all" && (
+          <div className="bg-[#5D2E1F]/5 border border-[#5D2E1F]/10 px-4 py-2 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#5D2E1F]">
+              <Clock size={16} />
+              <span className="text-sm">
+                กำลังแสดงข้อมูล:{" "}
+                <strong>
+                  {filterType === "day"
+                    ? "รายวัน"
+                    : filterType === "week"
+                      ? "รายสัปดาห์"
+                      : "รายเดือน"}
+                </strong>
+                ประจำวันที่ <strong>{formatDisplayDate(filterDate)}</strong>
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setFilterDate(null);
+                setFilterType("all");
+                router.push("/admin/repairs");
+              }}
+              className="text-sm text-[#5D2E1F] font-medium hover:underline"
+            >
+              ล้างตัวกรอง
+            </button>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
