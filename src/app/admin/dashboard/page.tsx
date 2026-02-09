@@ -155,18 +155,18 @@ export default function AdminDashboard() {
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
+            <label className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:border-gray-300 transition-colors">
               <span className="text-sm text-gray-600">
                 {formatDisplayDate(selectedDate)}
               </span>
+              <Calendar size={18} className="text-gray-400" />
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-5 h-5 opacity-0 absolute"
+                className="absolute inset-0 opacity-0 cursor-pointer"
               />
-              <Calendar size={18} className="text-gray-400" />
-            </div>
+            </label>
           </div>
         </div>
 
