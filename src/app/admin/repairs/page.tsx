@@ -551,6 +551,9 @@ function AdminRepairsContent() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   ความเร่งด่วน
                 </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  สถานะ
+                </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
                   จัดการ
                 </th>
@@ -608,6 +611,21 @@ function AdminRepairsContent() {
                           : "ปกติ"}
                     </span>
                   </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
+                        repair.status === "COMPLETED"
+                          ? "bg-green-100 text-green-700"
+                          : repair.status === "IN_PROGRESS"
+                            ? "bg-blue-100 text-blue-700"
+                            : repair.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {statusLabels[repair.status] || repair.status}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div
                       className="flex items-center justify-end gap-2"
@@ -636,7 +654,7 @@ function AdminRepairsContent() {
               {paginatedRepairs.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     ไม่พบรายการ
