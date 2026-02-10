@@ -416,12 +416,6 @@ function RepairFormContent() {
               </span>
             </div>
           </div>
-          {lineUserId && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-100">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span>เชื่อมต่อ LINE แล้ว</span>
-            </div>
-          )}
         </div>
       </header>
 
