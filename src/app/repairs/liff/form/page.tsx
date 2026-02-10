@@ -117,6 +117,22 @@ function RepairFormContent() {
     }
   }, [lineUserIdFromUrl]);
 
+  const handleLineLogin = async () => {
+    try {
+      const liff = (await import("@line/liff")).default;
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      await showAlert({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถเข้าสู่ระบบ LINE ได้ กรุณาลองใหม่อีกครั้ง",
+      });
+    }
+  };
+
   const handleChange = useCallback(
     (
       e: React.ChangeEvent<
@@ -386,8 +402,8 @@ function RepairFormContent() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="flex-1">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div>
             <h1 className="text-xl font-semibold text-[#518EE5]">
               แจ้งซ่อมออนไลน์
             </h1>
@@ -397,6 +413,21 @@ function RepairFormContent() {
               </span>
             </div>
           </div>
+          {!lineUserId && liffInitialized && (
+            <button
+              onClick={handleLineLogin}
+              className="flex items-center gap-2 px-3 py-1.5 bg-[#06C755] hover:bg-[#05b34c] text-white text-xs font-medium rounded-full transition-colors shadow-sm"
+            >
+              <span className="hidden sm:inline">เข้าสู่ระบบ LINE</span>
+              <span className="sm:hidden">LINE Login</span>
+            </button>
+          )}
+          {lineUserId && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-100">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span>เชื่อมต่อ LINE แล้ว</span>
+            </div>
+          )}
         </div>
       </header>
 
