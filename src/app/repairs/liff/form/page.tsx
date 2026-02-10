@@ -89,8 +89,9 @@ function RepairFormContent() {
           return;
         }
 
-        // Automatically redirects to LINE Login if not logged in (even in external browser)
-        await liff.init({ liffId, withLoginOnExternalBrowser: true });
+        // Initialize LIFF without forcing login on external browser
+        // This allows users without LINE or on desktop to access the form as GUEST
+        await liff.init({ liffId, withLoginOnExternalBrowser: false });
         setLiffInitialized(true);
 
         if (liff.isLoggedIn()) {
@@ -102,10 +103,8 @@ function RepairFormContent() {
           } catch (profileError) {
             console.warn("Failed to get LINE profile:", profileError);
           }
-        } else {
-          // Should not happen if withLoginOnExternalBrowser is true
-          liff.login();
         }
+        // If not logged in, user stays as Guest (lineUserId is empty or from URL)
       } catch (error) {
         console.warn("LIFF initialization failed, using guest mode:", error);
         setLiffInitialized(true);
@@ -235,8 +234,7 @@ function RepairFormContent() {
         problemCategory: "OTHER",
       };
 
-      // Call backend directly to avoid proxy issues with FormData
-      // Use production URL always since NEXT_PUBLIC_* env vars are baked at build time
+      
       const backendUrl =
         typeof window !== "undefined" &&
         window.location.hostname === "localhost"
@@ -248,14 +246,14 @@ function RepairFormContent() {
         file || undefined,
       );
 
-      // Show success state - if user came from LINE, no linking code needed
+      
       setSuccessData({
         ticketCode: response.ticketCode,
-        linkingCode: lineUserId ? undefined : response.linkingCode, // No linking code if already linked via LINE
+        linkingCode: lineUserId ? undefined : response.linkingCode, 
         hasLineUserId: !!lineUserId,
       });
     } catch (error: unknown) {
-      setIsLoading(false); // Hide loading overlay first
+      setIsLoading(false); 
       const errorMessage =
         error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง";
       await showAlert({
@@ -268,7 +266,7 @@ function RepairFormContent() {
     }
   };
 
-  // Handle reset form for new request
+  
   const handleNewRequest = () => {
     setSuccessData(null);
     setFormData({
