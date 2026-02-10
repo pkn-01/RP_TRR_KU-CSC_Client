@@ -247,6 +247,11 @@ export default function RepairDetailPage() {
         showConfirmButton: false,
       });
 
+      // Clear operational fields for next entry
+      setNotes("");
+      setMessageToReporter("");
+
+      // Refresh data instead of full reload for better UX
       window.location.reload();
     } catch (err: any) {
       Swal.fire({
@@ -453,19 +458,68 @@ export default function RepairDetailPage() {
               </div>
             </div>
 
-            {/* Assignment History Card */}
+            {/* Operational History Card */}
             <div className="bg-white rounded-3xl p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-gray-900 mb-3">
-                ประวัติดำเนินการมอบให้
+              <h3 className="text-base font-semibold text-gray-900 mb-4">
+                ประวัติดำเนินการ
               </h3>
-              {assignedNames ? (
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-700">{assignedNames}</p>
-                  <p className="text-xs text-gray-500">โดย {lastAssigner}</p>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400">ยังไม่มีการมอบหมาย</p>
-              )}
+
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
+                  data.assignmentHistory.map((log) => (
+                    <div
+                      key={log.id}
+                      className="relative pl-4 border-l-2 border-blue-100 pb-2"
+                    >
+                      <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-bold text-blue-600">
+                          {log.action === "ASSIGN"
+                            ? "มอบหมายงาน"
+                            : log.action === "UNASSIGN"
+                              ? "ยกเลิกการมอบหมาย"
+                              : log.action === "ACCEPT"
+                                ? "รับงาน"
+                                : log.action === "REJECT"
+                                  ? "ปฏิเสธงาน"
+                                  : log.action === "NOTE"
+                                    ? "หมายเหตุ"
+                                    : log.action === "MESSAGE_TO_REPORTER"
+                                      ? "แจ้งผู้ซ่อม"
+                                      : log.action === "STATUS_CHANGE"
+                                        ? "เปลี่ยนสถานะ"
+                                        : log.action}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(log.createdAt).toLocaleString("th-TH", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                        </span>
+                      </div>
+
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {log.note}
+                      </p>
+
+                      {log.assignee && log.action.includes("ASSIGN") && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          ถึง: {log.assignee.name}
+                        </p>
+                      )}
+
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        โดย {log.assigner?.name || "ระบบ"}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">
+                    ยังไม่มีประวัติดำเนินการ
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
