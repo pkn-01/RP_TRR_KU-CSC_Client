@@ -221,6 +221,17 @@ export default function AdminDashboard() {
 
         {/* Repairs Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              รายการแจ้งซ่อมล่าสุด
+            </h2>
+            <Link
+              href="/admin/repairs"
+              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              ดูทั้งหมด
+            </Link>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -246,7 +257,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {stats?.recentRepairs.map((repair) => (
+                {stats?.recentRepairs.slice(0, 7).map((repair) => (
                   <tr key={repair.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm font-mono text-gray-900">
                       {repair.ticketCode}
