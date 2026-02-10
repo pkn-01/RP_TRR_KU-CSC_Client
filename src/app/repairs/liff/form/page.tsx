@@ -255,6 +255,7 @@ function RepairFormContent() {
         hasLineUserId: !!lineUserId,
       });
     } catch (error: unknown) {
+      setIsLoading(false); // Hide loading overlay first
       const errorMessage =
         error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง";
       await showAlert({
@@ -402,6 +403,24 @@ function RepairFormContent() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Full Page Loading Overlay - Moved outside header/main to ensure it covers everything */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-200">
+            <div className="relative mb-6">
+              <div className="w-16 h-16 border-[5px] border-gray-100 border-t-[#5D3A29] rounded-full animate-spin"></div>
+              {/* Optional: Add logo or icon in center if desired, but simple spinner is fine */}
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              กำลังดำเนินการ
+            </h3>
+            <p className="text-gray-500 text-center">
+              กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลการแจ้งซ่อมของคุณ...
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
@@ -411,7 +430,7 @@ function RepairFormContent() {
             </h1>
             <div className="flex items-center gap-1.5 text-gray-500">
               <span className="text-sm">
-                กรุณากรอกรายละเอียดปัญหาพี่แจ้งเจ้าหน้าที่
+                กรุณากรอกรายละเอียดปัญหาเพื่อแจ้งเจ้าหน้าที่
               </span>
             </div>
           </div>
@@ -627,11 +646,7 @@ function RepairFormContent() {
               disabled={isLoading}
               className="w-full py-4 !bg-[#5D3A29] hover:!bg-[#4A2E21] disabled:bg-gray-300 disabled:cursor-not-allowed !text-white rounded-full font-semibold shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin text-white" />
-              ) : (
-                "ส่งแบบฟอร์มแจ้งซ่อม"
-              )}
+              {isLoading ? "กำลังส่งข้อมูล..." : "ส่งแบบฟอร์มแจ้งซ่อม"}
             </button>
           </div>
         </form>
