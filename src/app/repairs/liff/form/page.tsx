@@ -89,11 +89,11 @@ function RepairFormContent() {
           return;
         }
 
-        await liff.init({ liffId, withLoginOnExternalBrowser: false });
+        // Automatically redirects to LINE Login if not logged in (even in external browser)
+        await liff.init({ liffId, withLoginOnExternalBrowser: true });
         setLiffInitialized(true);
 
-        // Try to get profile only if already logged in (don't force login)
-        if (liff.isInClient() || liff.isLoggedIn()) {
+        if (liff.isLoggedIn()) {
           try {
             const profile = await liff.getProfile();
             if (profile.userId) {
@@ -102,6 +102,9 @@ function RepairFormContent() {
           } catch (profileError) {
             console.warn("Failed to get LINE profile:", profileError);
           }
+        } else {
+          // Should not happen if withLoginOnExternalBrowser is true
+          liff.login();
         }
       } catch (error) {
         console.warn("LIFF initialization failed, using guest mode:", error);
@@ -413,15 +416,6 @@ function RepairFormContent() {
               </span>
             </div>
           </div>
-          {!lineUserId && liffInitialized && (
-            <button
-              onClick={handleLineLogin}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[#06C755] hover:bg-[#05b34c] text-white text-xs font-medium rounded-full transition-colors shadow-sm"
-            >
-              <span className="hidden sm:inline">เข้าสู่ระบบ LINE</span>
-              <span className="sm:hidden">LINE Login</span>
-            </button>
-          )}
           {lineUserId && (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-100">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
