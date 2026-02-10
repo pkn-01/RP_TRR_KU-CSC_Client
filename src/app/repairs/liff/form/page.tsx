@@ -323,8 +323,7 @@ function RepairFormContent() {
           </div>
 
           {/* LINE Notification Registration */}
-          {successData.hasLineUserId ? (
-            /* Auto-notification enabled (user came from LINE) */
+          {/* {successData.hasLineUserId ? (
             <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6 text-left">
               <div className="flex items-start gap-3">
                 <div className="mt-1 bg-green-100 p-1.5 rounded-full">
@@ -376,7 +375,7 @@ function RepairFormContent() {
               </div>
             </div>
           ) : (
-            /* Important Note (Fallback if no linking code) */
+            
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
               <p className="text-sm text-amber-800 font-medium mb-1">
                 กรุณาจดรหัสนี้ไว้
@@ -385,7 +384,7 @@ function RepairFormContent() {
                 ใช้รหัสนี้เพื่อติดตามสถานะการแจ้งซ่อมของคุณ
               </p>
             </div>
-          )}
+          )} */}
 
           {/* Action Buttons */}
           <div className="space-y-3">
@@ -407,7 +406,7 @@ function RepairFormContent() {
       <header className="sticky top-0 z-30 bg-white border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-[#518EE5]">
+            <h1 className="text-xl font-semibold text-[#5E2C23]">
               แจ้งซ่อมออนไลน์
             </h1>
             <div className="flex items-center gap-1.5 text-gray-500">
