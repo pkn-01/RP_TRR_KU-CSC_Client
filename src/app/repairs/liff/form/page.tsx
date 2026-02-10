@@ -76,7 +76,7 @@ function RepairFormContent() {
     hasLineUserId?: boolean;
   } | null>(null);
 
-  // Initialize LIFF SDK and get user profile
+  // Initialize LIFF SDK to get user profile (optional - no login required)
   useEffect(() => {
     const initLiff = async () => {
       try {
@@ -89,36 +89,18 @@ function RepairFormContent() {
           return;
         }
 
-        await liff.init({ liffId });
+        await liff.init({ liffId, withLoginOnExternalBrowser: false });
         setLiffInitialized(true);
 
-        // Check if running in LINE app
-        if (liff.isInClient()) {
+        // Try to get profile only if already logged in (don't force login)
+        if (liff.isInClient() || liff.isLoggedIn()) {
           try {
             const profile = await liff.getProfile();
             if (profile.userId) {
-              console.log("Got LINE userId from LIFF:", profile.userId);
               setLineUserId(profile.userId);
             }
           } catch (profileError) {
             console.warn("Failed to get LINE profile:", profileError);
-          }
-        } else if (liff.isLoggedIn()) {
-          // Running in browser but logged in
-          try {
-            const profile = await liff.getProfile();
-            if (profile.userId) {
-              console.log(
-                "Got LINE userId from LIFF (browser):",
-                profile.userId,
-              );
-              setLineUserId(profile.userId);
-            }
-          } catch (profileError) {
-            console.warn(
-              "Failed to get LINE profile in browser:",
-              profileError,
-            );
           }
         }
       } catch (error) {
@@ -389,18 +371,8 @@ function RepairFormContent() {
           {/* Action Buttons */}
           <div className="space-y-3">
             <button
-              onClick={() =>
-                router.push(
-                  `/repairs/liff/tracking?ticketCode=${successData.ticketCode}`,
-                )
-              }
-              className="w-full py-3 bg-[#5D3A29] hover:bg-[#4A2E21] text-white rounded-xl font-medium transition-all duration-200"
-            >
-              ติดตามสถานะ
-            </button>
-            <button
               onClick={handleNewRequest}
-              className="w-full py-3 bg-white hover:bg-slate-50 text-slate-600 rounded-xl font-medium border border-slate-200 transition-all duration-200"
+              className="w-full py-3 bg-[#5D3A29] hover:bg-[#4A2E21] text-white rounded-xl font-medium transition-all duration-200"
             >
               แจ้งซ่อมรายการใหม่
             </button>
