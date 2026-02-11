@@ -106,6 +106,12 @@ export default function RepairDetailPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
+  // Complete Modal state
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completionReport, setCompletionReport] = useState("");
+  const [completionFiles, setCompletionFiles] = useState<File[]>([]);
+  const [completionPreviews, setCompletionPreviews] = useState<string[]>([]);
+
   /* -------------------- Computed -------------------- */
 
   const isAssignedToMe = currentUserId
@@ -264,30 +270,48 @@ export default function RepairDetailPage() {
     }
   };
 
-  const handleComplete = async () => {
+  const handleCompleteClick = () => {
+    setShowCompleteModal(true);
+  };
+
+  const handleCompletionFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setCompletionFiles((prev) => [...prev, ...files]);
+
+    // Create preview URLs
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setCompletionPreviews((prev) => [...prev, ...newPreviews]);
+  };
+
+  const removeCompletionFile = (index: number) => {
+    URL.revokeObjectURL(completionPreviews[index]);
+    setCompletionFiles((prev) => prev.filter((_, i) => i !== index));
+    setCompletionPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCompleteConfirm = async () => {
     if (!data) return;
-
-    const result = await Swal.fire({
-      title: "ยืนยันการปิดงาน?",
-      text: "เปลี่ยนสถานะเป็น 'เสร็จสิ้น' และบันทึกเวลาจบงาน",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#10b981", // Green
-      cancelButtonColor: "#a1a1aa",
-      confirmButtonText: "ยืนยันปิดงาน",
-      cancelButtonText: "ยกเลิก",
-    });
-
-    if (!result.isConfirmed) return;
 
     try {
       setSaving(true);
+
+      const formData = new FormData();
+      formData.append("status", "COMPLETED");
+      formData.append("completedAt", new Date().toISOString());
+      if (completionReport.trim()) {
+        formData.append("completionReport", completionReport.trim());
+      }
+      completionFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
-        body: {
-          status: "COMPLETED",
-          completedAt: new Date().toISOString(),
-        },
+        body: formData,
       });
 
       await Swal.fire({
@@ -297,6 +321,7 @@ export default function RepairDetailPage() {
         showConfirmButton: false,
       });
 
+      setShowCompleteModal(false);
       window.location.reload();
     } catch (err: any) {
       Swal.fire({
@@ -630,7 +655,7 @@ export default function RepairDetailPage() {
                 {(data.status === "IN_PROGRESS" ||
                   data.status === "WAITING_PARTS") && (
                   <button
-                    onClick={handleComplete}
+                    onClick={handleCompleteClick}
                     disabled={saving}
                     className="w-full py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   >
@@ -684,6 +709,105 @@ export default function RepairDetailPage() {
                 }}
                 disabled={saving}
                 className="flex-1 py-3 text-white text-base font-medium rounded-xl bg-red-400 hover:bg-red-500 transition-colors disabled:opacity-50"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Modal */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              รายงานปิดงาน
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">ID: {data.ticketCode}</p>
+
+            {/* Report Textarea */}
+            <label className="text-xs font-medium text-gray-500 mb-1 block">
+              รายงานปิดงาน
+            </label>
+            <textarea
+              value={completionReport}
+              onChange={(e) => setCompletionReport(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none mb-4"
+              placeholder="สรุปผลการดำเนินการซ่อม..."
+            />
+
+            {/* File Upload */}
+            <label className="text-xs font-medium text-gray-500 mb-2 block">
+              แนบรูปภาพ
+            </label>
+            <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-green-400 hover:text-green-600 cursor-pointer transition-colors mb-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              เลือกรูปภาพ
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleCompletionFileChange}
+                className="hidden"
+              />
+            </label>
+
+            {/* Image Previews */}
+            {completionPreviews.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {completionPreviews.map((src, i) => (
+                  <div key={i} className="relative group">
+                    <img
+                      src={src}
+                      alt={`preview-${i}`}
+                      className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCompletionFile(i)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCompleteConfirm}
+                disabled={saving}
+                className="flex-1 py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? "กำลังบันทึก..." : "ยืนยันปิดงาน"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCompleteModal(false);
+                  setCompletionReport("");
+                  completionPreviews.forEach((url) => URL.revokeObjectURL(url));
+                  setCompletionFiles([]);
+                  setCompletionPreviews([]);
+                }}
+                disabled={saving}
+                className="flex-1 py-3 text-gray-600 text-base font-medium rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 ยกเลิก
               </button>
