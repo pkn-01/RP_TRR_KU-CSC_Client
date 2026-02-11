@@ -227,7 +227,7 @@ export default function AdminDashboard() {
             </h2>
             <Link
               href="/admin/repairs"
-              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+              className="text-sm font-medium text-blue-600 hover:text-brown-800 transition-colors"
             >
               ดูทั้งหมด
             </Link>
