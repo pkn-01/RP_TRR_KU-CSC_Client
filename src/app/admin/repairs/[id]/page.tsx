@@ -524,9 +524,35 @@ export default function RepairDetailPage() {
                         </span>
                       </div>
 
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {log.note}
-                      </p>
+                      <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {(() => {
+                          const { text, images } = parseHistoryNote(log.note);
+                          return (
+                            <>
+                              <p>{text}</p>
+                              {images.length > 0 && (
+                                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {images.map((imgUrl, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={imgUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
+                                    >
+                                      <img
+                                        src={imgUrl}
+                                        alt={`evidence-${idx}`}
+                                        className="w-full h-24 object-cover"
+                                      />
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
 
                       {log.assignee && log.action.includes("ASSIGN") && (
                         <p className="text-xs text-gray-500 mt-1">
@@ -841,4 +867,19 @@ function InfoField({ label, value }: { label: string; value: string }) {
       <p className="text-sm text-gray-700">{value || "-"}</p>
     </div>
   );
+}
+
+function parseHistoryNote(note: string) {
+  if (!note) return { text: "", images: [] };
+
+  const imagePattern = /\[IMAGES:(.*?)\]/;
+  const match = note.match(imagePattern);
+
+  if (match) {
+    const text = note.replace(match[0], "").trim();
+    const images = match[1].split(",").filter((url) => url.trim() !== "");
+    return { text, images };
+  }
+
+  return { text: note, images: [] };
 }
