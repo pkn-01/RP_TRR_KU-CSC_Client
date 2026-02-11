@@ -158,8 +158,7 @@ export default function RepairDetailPage() {
         });
 
         setUrgency(res.urgency);
-        setNotes(res.notes || "");
-        setMessageToReporter(res.messageToReporter || "");
+        // Don't pre-populate notes/messageToReporter – these are per-action inputs
         setAssigneeIds(assignees.map((a: Assignee) => a.userId));
       } catch {
         setError("ไม่สามารถโหลดข้อมูลงานซ่อมได้");
@@ -257,8 +256,31 @@ export default function RepairDetailPage() {
       setNotes("");
       setMessageToReporter("");
 
-      // Refresh data instead of full reload for better UX
-      window.location.reload();
+      // Re-fetch data to update history without full page reload
+      const res = await apiFetch(`/api/repairs/${data.id}`);
+      const assignees = res.assignees || [];
+      setData({
+        id: res.id,
+        ticketCode: res.ticketCode,
+        title: res.problemTitle,
+        description: res.problemDescription,
+        category: res.problemCategory,
+        location: res.location,
+        status: res.status,
+        urgency: res.urgency,
+        assignees: assignees,
+        reporterName: res.reporterName,
+        reporterDepartment: res.reporterDepartment,
+        reporterPhone: res.reporterPhone,
+        createdAt: res.createdAt,
+        notes: res.notes || "",
+        messageToReporter: res.messageToReporter || "",
+        estimatedCompletionDate: res.estimatedCompletionDate || "",
+        attachments: res.attachments || [],
+        assignmentHistory: res.assignmentHistory || [],
+      });
+      setUrgency(res.urgency);
+      setAssigneeIds(assignees.map((a: Assignee) => a.userId));
     } catch (err: any) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
@@ -489,82 +511,107 @@ export default function RepairDetailPage() {
                 ประวัติดำเนินการ
               </h3>
 
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
                 {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
-                  data.assignmentHistory.map((log) => (
-                    <div
-                      key={log.id}
-                      className="relative pl-4 border-l-2 border-blue-100 pb-2"
-                    >
-                      <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+                  data.assignmentHistory.map((log) => {
+                    const { text, images } = parseHistoryNote(log.note);
+                    const actionLabel =
+                      log.action === "ASSIGN"
+                        ? "มอบหมายงานให้"
+                        : log.action === "UNASSIGN"
+                          ? "ยกเลิกการมอบหมาย"
+                          : log.action === "ACCEPT"
+                            ? "รับงาน"
+                            : log.action === "REJECT"
+                              ? "ปฏิเสธงาน"
+                              : log.action === "NOTE"
+                                ? "หมายเหตุ"
+                                : log.action === "MESSAGE_TO_REPORTER"
+                                  ? "แจ้งผู้ซ่อม"
+                                  : log.action === "STATUS_CHANGE"
+                                    ? text.includes("เสร็จสิ้น")
+                                      ? "ปิดงาน"
+                                      : "เปลี่ยนสถานะ"
+                                    : log.action;
 
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-bold text-blue-600">
-                          {log.action === "ASSIGN"
-                            ? "มอบหมายงาน"
-                            : log.action === "UNASSIGN"
-                              ? "ยกเลิกการมอบหมาย"
-                              : log.action === "ACCEPT"
-                                ? "รับงาน"
-                                : log.action === "REJECT"
-                                  ? "ปฏิเสธงาน"
-                                  : log.action === "NOTE"
-                                    ? "หมายเหตุ"
-                                    : log.action === "MESSAGE_TO_REPORTER"
-                                      ? "แจ้งผู้ซ่อม"
-                                      : log.action === "STATUS_CHANGE"
-                                        ? "เปลี่ยนสถานะ"
-                                        : log.action}
-                        </span>
-                        <span className="text-[10px] text-gray-400">
-                          {new Date(log.createdAt).toLocaleString("th-TH", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </span>
+                    const isAssignAction =
+                      log.action === "ASSIGN" || log.action === "UNASSIGN";
+                    const isCompleted =
+                      log.action === "STATUS_CHANGE" &&
+                      text.includes("เสร็จสิ้น");
+
+                    // Assignment action – simple text, no card border
+                    if (isAssignAction) {
+                      return (
+                        <div key={log.id} className="py-2">
+                          <p className="text-sm font-bold text-gray-800">
+                            {actionLabel}
+                          </p>
+                          {log.assignee && (
+                            <p className="text-sm text-gray-600">
+                              {log.assignee.name}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Card-based layout for other action types
+                    return (
+                      <div
+                        key={log.id}
+                        className="rounded-2xl border border-gray-200 overflow-hidden"
+                      >
+                        {/* Card Header */}
+                        <div className="border-l-4 border-green-500 px-4 pt-3 pb-2">
+                          <p className="text-sm font-bold text-gray-900">
+                            {actionLabel}
+                          </p>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="px-4 pb-3">
+                          {/* Images (for completion) */}
+                          {images.length > 0 && (
+                            <div className="mb-2 grid grid-cols-2 gap-2">
+                              {images.map((imgUrl, idx) => (
+                                <a
+                                  key={idx}
+                                  href={imgUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block rounded-xl overflow-hidden border border-gray-100 hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    alt={`evidence-${idx}`}
+                                    className="w-full h-28 object-cover"
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Timestamp + Note */}
+                          <p className="text-xs text-gray-500">
+                            <span>
+                              {new Date(log.createdAt).toLocaleString("th-TH", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {text && (
+                              <span className="ml-2 text-gray-600">{text}</span>
+                            )}
+                          </p>
+                        </div>
                       </div>
-
-                      <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {(() => {
-                          const { text, images } = parseHistoryNote(log.note);
-                          return (
-                            <>
-                              <p>{text}</p>
-                              {images.length > 0 && (
-                                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                  {images.map((imgUrl, idx) => (
-                                    <a
-                                      key={idx}
-                                      href={imgUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block rounded-lg overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
-                                    >
-                                      <img
-                                        src={imgUrl}
-                                        alt={`evidence-${idx}`}
-                                        className="w-full h-24 object-cover"
-                                      />
-                                    </a>
-                                  ))}
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-
-                      {log.assignee && log.action.includes("ASSIGN") && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          ถึง: {log.assignee.name}
-                        </p>
-                      )}
-
-                      <p className="text-[10px] text-gray-400 mt-1">
-                        โดย {log.assigner?.name || "ระบบ"}
-                      </p>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-sm text-gray-400 text-center py-4">
                     ยังไม่มีประวัติดำเนินการ
