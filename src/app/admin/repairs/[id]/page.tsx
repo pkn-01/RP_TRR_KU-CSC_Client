@@ -68,19 +68,13 @@ interface RepairDetail {
   assignmentHistory: HistoryLog[];
 }
 
-const STATUS_CONFIG: Record<Status, { label: string; color: string }> = {
-  PENDING: { label: "รอดำเนินการ", color: "text-slate-600" },
-  ASSIGNED: { label: "มอบหมายแล้ว", color: "text-blue-600" },
-  IN_PROGRESS: { label: "กำลังดำเนินการ", color: "text-amber-600" },
-  WAITING_PARTS: { label: "รออะไหล่", color: "text-purple-600" },
-  COMPLETED: { label: "เสร็จสิ้น", color: "text-green-600" },
-  CANCELLED: { label: "ยกเลิก", color: "text-red-600" },
-};
-
-const URGENCY_CONFIG: Record<Urgency, { label: string; color: string }> = {
-  NORMAL: { label: "ปกติ", color: "text-slate-600" },
-  URGENT: { label: "ด่วน", color: "text-orange-600" },
-  CRITICAL: { label: "ด่วนมาก", color: "text-red-600" },
+const URGENCY_CONFIG: Record<
+  Urgency,
+  { bg: string; text: string; label: string }
+> = {
+  NORMAL: { bg: "bg-green-100", text: "text-green-700", label: "ปกติ" },
+  URGENT: { bg: "bg-orange-100", text: "text-orange-700", label: "ด่วน" },
+  CRITICAL: { bg: "bg-red-500", text: "text-white", label: "ด่วนมาก" },
 };
 
 /* =====================================================
@@ -212,8 +206,8 @@ export default function RepairDetailPage() {
       text: "บันทึกการเปลี่ยนแปลงทั้งหมด",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#0f172a",
-      cancelButtonColor: "#e2e8f0",
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#a1a1aa",
       confirmButtonText: "บันทึก",
       cancelButtonText: "ยกเลิก",
     });
@@ -223,9 +217,16 @@ export default function RepairDetailPage() {
     try {
       setSaving(true);
 
+      // Determine status based on assignees
       let finalStatus = data.status;
       if (data.status === "PENDING" && assigneeIds.length > 0) {
-        finalStatus = "IN_PROGRESS";
+        const adminIsAssigned = currentUserId
+          ? assigneeIds.includes(currentUserId)
+          : false;
+        finalStatus =
+          adminIsAssigned && assigneeIds.length === 1
+            ? "IN_PROGRESS"
+            : "IN_PROGRESS"; // Always set to IN_PROGRESS when assigned
       }
 
       await apiFetch(`/api/repairs/${data.id}`, {
@@ -240,14 +241,17 @@ export default function RepairDetailPage() {
       });
 
       await Swal.fire({
-        title: "บันทึกสำเร็จ",
+        title: "บันทึกสำเร็จ!",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
       });
 
+      // Clear operational fields for next entry
       setNotes("");
       setMessageToReporter("");
+
+      // Refresh data instead of full reload for better UX
       window.location.reload();
     } catch (err: any) {
       Swal.fire({
@@ -265,12 +269,12 @@ export default function RepairDetailPage() {
 
     const result = await Swal.fire({
       title: "ยืนยันการปิดงาน?",
-      text: "เปลี่ยนสถานะเป็น 'เสร็จสิ้น'",
+      text: "เปลี่ยนสถานะเป็น 'เสร็จสิ้น' และบันทึกเวลาจบงาน",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#0f172a",
-      cancelButtonColor: "#e2e8f0",
-      confirmButtonText: "ยืนยัน",
+      confirmButtonColor: "#10b981", // Green
+      cancelButtonColor: "#a1a1aa",
+      confirmButtonText: "ยืนยันปิดงาน",
       cancelButtonText: "ยกเลิก",
     });
 
@@ -287,7 +291,7 @@ export default function RepairDetailPage() {
       });
 
       await Swal.fire({
-        title: "ปิดงานสำเร็จ",
+        title: "ปิดงานสำเร็จ!",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
@@ -327,7 +331,7 @@ export default function RepairDetailPage() {
       });
 
       await Swal.fire({
-        title: "ยกเลิกสำเร็จ",
+        title: "ยกเลิกสำเร็จ!",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
@@ -350,10 +354,10 @@ export default function RepairDetailPage() {
 
   if (!data && loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-900 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm text-slate-500">กำลังโหลด</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-3"></div>
+          <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
     );
@@ -363,285 +367,289 @@ export default function RepairDetailPage() {
 
   const isLocked = ["COMPLETED", "CANCELLED"].includes(data.status);
 
+  // Get assignees with their names for history display
+  const assignedNames =
+    data.assignees?.map((a) => a.user.name).join(", ") || "";
+  const lastAssigner =
+    data.assignmentHistory?.length > 0
+      ? data.assignmentHistory[data.assignmentHistory.length - 1]?.assigner
+          ?.name
+      : "Admin";
+
   /* -------------------- UI -------------------- */
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Bar */}
-      <div className="border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              ย้อนกลับ
-            </button>
-
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-500">สถานะ</span>
-                <span className={`text-sm font-medium ${STATUS_CONFIG[data.status].color}`}>
-                  {STATUS_CONFIG[data.status].label}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-500">ความเร่งด่วน</span>
-                <span className={`text-sm font-medium ${URGENCY_CONFIG[data.urgency].color}`}>
-                  {URGENCY_CONFIG[data.urgency].label}
-                </span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              ID: {data.ticketCode}
+            </h1>
+            <UrgencyBadge urgency={data.urgency} />
           </div>
-        </div>
-      </div>
+          <button
+            onClick={() => router.back()}
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          >
+            ← ย้อนกลับ
+          </button>
+        </header>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-2xl">
             {error}
           </div>
         )}
 
-        {/* Ticket Header */}
-        <div className="mb-8">
-          <div className="flex items-baseline gap-4 mb-2">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {data.ticketCode}
-            </h1>
-            <span className="text-sm text-slate-500">
-              {new Date(data.createdAt).toLocaleDateString("th-TH", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <p className="text-slate-600">{data.title}</p>
-        </div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Problem Description */}
-            <section>
-              <h2 className="text-sm font-medium text-slate-900 mb-4">รายละเอียดปัญหา</h2>
-              <div className="bg-slate-50 rounded-lg p-6">
-                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
-                  {data.description}
-                </p>
-              </div>
-            </section>
-
-            {/* Attachments */}
-            {data.attachments && data.attachments.length > 0 && (
-              <section>
-                <h2 className="text-sm font-medium text-slate-900 mb-4">ไฟล์แนบ</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  {data.attachments.map((att) => (
-                    <div key={att.id} className="relative aspect-video rounded-lg overflow-hidden bg-slate-100">
-                      <img
-                        src={att.fileUrl}
-                        alt={att.filename}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+        {/* Main Content - Two Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT Column - Reporter Info */}
+          <div className="space-y-4">
+            {/* Reporter Info Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
                 </div>
-              </section>
-            )}
+                <h2 className="text-base font-semibold text-gray-900">
+                  ข้อมูลผู้แจ้ง
+                </h2>
+              </div>
 
-            {/* Activity Log */}
-            <section>
-              <h2 className="text-sm font-medium text-slate-900 mb-4">ประวัติดำเนินการ</h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
+                <InfoField label="ชื่อ" value={data.reporterName} />
+                <InfoField label="แผนก" value={data.reporterDepartment} />
+                <InfoField label="ติดต่อ" value={data.reporterPhone} />
+              </div>
+
+              {/* Attachments - Images */}
+              {data.attachments && data.attachments.length > 0 && (
+                <div className="mt-4">
+                  <div className="rounded-2xl overflow-hidden border border-gray-200">
+                    <img
+                      src={data.attachments[0].fileUrl}
+                      alt="รูปภาพประกอบ"
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="mt-4">
+                <InfoField
+                  label="รายละเอียด"
+                  value={data.description || data.title}
+                />
+              </div>
+            </div>
+
+            {/* Operational History Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-gray-900 mb-4">
+                ประวัติดำเนินการ
+              </h3>
+
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
-                  data.assignmentHistory.map((log, index) => (
-                    <div key={log.id} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-2 h-2 rounded-full bg-slate-900" />
-                        {index < data.assignmentHistory.length - 1 && (
-                          <div className="w-px h-full bg-slate-200 mt-2" />
-                        )}
+                  data.assignmentHistory.map((log) => (
+                    <div
+                      key={log.id}
+                      className="relative pl-4 border-l-2 border-blue-100 pb-2"
+                    >
+                      <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-bold text-blue-600">
+                          {log.action === "ASSIGN"
+                            ? "มอบหมายงาน"
+                            : log.action === "UNASSIGN"
+                              ? "ยกเลิกการมอบหมาย"
+                              : log.action === "ACCEPT"
+                                ? "รับงาน"
+                                : log.action === "REJECT"
+                                  ? "ปฏิเสธงาน"
+                                  : log.action === "NOTE"
+                                    ? "หมายเหตุ"
+                                    : log.action === "MESSAGE_TO_REPORTER"
+                                      ? "แจ้งผู้ซ่อม"
+                                      : log.action === "STATUS_CHANGE"
+                                        ? "เปลี่ยนสถานะ"
+                                        : log.action}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {new Date(log.createdAt).toLocaleString("th-TH", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                        </span>
                       </div>
-                      <div className="flex-1 pb-6">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="text-sm font-medium text-slate-900">
-                            {log.action === "ASSIGN"
-                              ? "มอบหมายงาน"
-                              : log.action === "NOTE"
-                                ? "เพิ่มหมายเหตุ"
-                                : log.action === "MESSAGE_TO_REPORTER"
-                                  ? "แจ้งผู้แจ้ง"
-                                  : log.action}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {new Date(log.createdAt).toLocaleString("th-TH", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-600 mb-1">{log.note}</p>
-                        <p className="text-xs text-slate-500">
-                          โดย {log.assigner?.name || "ระบบ"}
+
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {log.note}
+                      </p>
+
+                      {log.assignee && log.action.includes("ASSIGN") && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          ถึง: {log.assignee.name}
                         </p>
-                      </div>
+                      )}
+
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        โดย {log.assigner?.name || "ระบบ"}
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-500 py-8 text-center">
+                  <p className="text-sm text-gray-400 text-center py-4">
                     ยังไม่มีประวัติดำเนินการ
                   </p>
                 )}
               </div>
-            </section>
+            </div>
           </div>
 
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Reporter Info */}
-            <section>
-              <h2 className="text-sm font-medium text-slate-900 mb-4">ผู้แจ้ง</h2>
-              <div className="space-y-3">
-                <InfoRow label="ชื่อ" value={data.reporterName} />
-                <InfoRow label="แผนก" value={data.reporterDepartment} />
-                <InfoRow label="ติดต่อ" value={data.reporterPhone} />
-                <InfoRow label="สถานที่" value={data.location} />
-              </div>
-            </section>
-
-            <div className="border-t border-slate-100 pt-6" />
-
-            {/* Assignment Section */}
-            {data.assignees.length === 0 && (isAdmin || data.status === "PENDING") && (
-              <section>
-                <h2 className="text-sm font-medium text-slate-900 mb-4">มอบหมายงาน</h2>
+          {/* RIGHT Column - Management */}
+          <div className="space-y-4">
+            {/* Assignment Card */}
+            {data.assignees.length === 0 && (
+              <div className="bg-white rounded-3xl p-5 shadow-sm">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">
+                  มอบหมายงานผู้รับผิดชอบ
+                </h3>
                 <div className="space-y-2">
-                  {technicians.map((tech) => (
-                    <label
-                      key={tech.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
-                        assigneeIds.includes(tech.id)
-                          ? "bg-slate-900 border-slate-900 text-white"
-                          : "bg-white border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={assigneeIds.includes(tech.id)}
-                        onChange={() => toggleAssignee(tech.id)}
-                        className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                      />
-                      <span className="text-sm">{tech.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Current Assignees */}
-            {data.assignees.length > 0 && (
-              <section>
-                <h2 className="text-sm font-medium text-slate-900 mb-4">ผู้รับผิดชอบ</h2>
-                <div className="space-y-2">
-                  {data.assignees.map((assignee) => (
-                    <div
-                      key={assignee.id}
-                      className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white text-sm font-medium">
-                        {assignee.user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm text-slate-900">{assignee.user.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {canEdit() && !isLocked && (
-              <>
-                <div className="border-t border-slate-100 pt-6" />
-
-                {/* Urgency Selector */}
-                <section>
-                  <label className="text-sm font-medium text-slate-900 block mb-3">
-                    ความเร่งด่วน
-                  </label>
-                  <select
-                    value={urgency}
-                    onChange={(e) => setUrgency(e.target.value as Urgency)}
-                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-                  >
-                    <option value="NORMAL">ปกติ</option>
-                    <option value="URGENT">ด่วน</option>
-                    <option value="CRITICAL">ด่วนมาก</option>
-                  </select>
-                </section>
-
-                {/* Notes */}
-                <section>
-                  <label className="text-sm font-medium text-slate-900 block mb-3">
-                    หมายเหตุ
-                  </label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none"
-                    placeholder="เพิ่มหมายเหตุ..."
-                  />
-                </section>
-
-                {/* Message to Reporter */}
-                <section>
-                  <label className="text-sm font-medium text-slate-900 block mb-3">
-                    ข้อความถึงผู้แจ้ง
-                  </label>
-                  <textarea
-                    value={messageToReporter}
-                    onChange={(e) => setMessageToReporter(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none"
-                    placeholder="ส่งข้อความถึงผู้แจ้ง..."
-                  />
-                </section>
-
-                {/* Action Buttons */}
-                <div className="space-y-3 pt-2">
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="w-full py-3 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
-                  </button>
-
-                  {(data.status === "IN_PROGRESS" || data.status === "WAITING_PARTS") && (
-                    <button
-                      onClick={handleComplete}
-                      disabled={saving}
-                      className="w-full py-3 bg-white text-slate-900 text-sm font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
-                    >
-                      ปิดงาน (เสร็จสิ้น)
-                    </button>
+                  {technicians.length === 0 ? (
+                    <p className="text-sm text-gray-400">ไม่พบรายชื่อ IT</p>
+                  ) : (
+                    technicians.map((tech) => (
+                      <label
+                        key={tech.id}
+                        className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                          assigneeIds.includes(tech.id)
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-gray-50 border-gray-200"
+                        } ${
+                          canEdit() || data.status === "PENDING"
+                            ? "hover:bg-blue-50 cursor-pointer"
+                            : "cursor-default opacity-60"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={assigneeIds.includes(tech.id)}
+                          onChange={() => toggleAssignee(tech.id)}
+                          disabled={!canEdit() && data.status !== "PENDING"}
+                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {tech.name}
+                        </span>
+                      </label>
+                    ))
                   )}
-
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    disabled={saving}
-                    className="w-full py-3 bg-white text-red-600 text-sm font-medium rounded-lg border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-50"
-                  >
-                    ยกเลิกงาน
-                  </button>
                 </div>
-              </>
+              </div>
+            )}
+
+            {/* Urgency Dropdown */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <select
+                value={urgency}
+                onChange={(e) => setUrgency(e.target.value as Urgency)}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+              >
+                <option value="NORMAL">ความเร่งด่วน - ปกติ</option>
+                <option value="URGENT">ความเร่งด่วน - ด่วน</option>
+                <option value="CRITICAL">ความเร่งด่วน - ด่วนมาก</option>
+              </select>
+            </div>
+
+            {/* Notes */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <label className="text-xs font-medium text-gray-500 mb-2 block">
+                หมายเหตุ
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
+                placeholder="หมายเหตุ..."
+              />
+            </div>
+
+            {/* Message to Reporter */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <label className="text-xs font-medium text-gray-500 mb-2 block">
+                แจ้งผู้ซ่อม
+              </label>
+              <textarea
+                value={messageToReporter}
+                onChange={(e) => setMessageToReporter(e.target.value)}
+                rows={3}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
+                placeholder="ข้อความแจ้งผู้ซ่อม..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            {!isLocked && canEdit() && (
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={saving}
+                  className="w-full py-3 text-red-500 text-base font-medium rounded-xl border-2 border-red-400 bg-white hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="w-full py-3 bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {saving ? "กำลังบันทึก..." : "บันทึก"}
+                </button>
+
+                {(data.status === "IN_PROGRESS" ||
+                  data.status === "WAITING_PARTS") && (
+                  <button
+                    onClick={handleComplete}
+                    disabled={saving}
+                    className="w-full py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    ปิดงาน (เสร็จสิ้น)
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -649,35 +657,35 @@ export default function RepairDetailPage() {
 
       {/* Cancel Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">
-              ยกเลิกงาน {data.ticketCode}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              ID : {data.ticketCode}
             </h2>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent resize-none mb-6"
-              placeholder="ระบุเหตุผลในการยกเลิก..."
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4"
+              placeholder="รายละเอียดเหตุผลที่ต้องยกเลิก"
             />
             <div className="flex gap-3">
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="flex-1 py-3 bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                ตกลง
+              </button>
               <button
                 onClick={() => {
                   setShowCancelModal(false);
                   setCancelReason("");
                 }}
                 disabled={saving}
-                className="flex-1 py-2.5 bg-white text-slate-700 text-sm font-medium rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                className="flex-1 py-3 text-white text-base font-medium rounded-xl bg-red-400 hover:bg-red-500 transition-colors disabled:opacity-50"
               >
                 ยกเลิก
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={saving}
-                className="flex-1 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
-              >
-                {saving ? "กำลังบันทึก..." : "ยืนยัน"}
               </button>
             </div>
           </div>
@@ -691,11 +699,22 @@ export default function RepairDetailPage() {
     UI Components
 ===================================================== */
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function UrgencyBadge({ urgency }: { urgency: Urgency }) {
+  const config = URGENCY_CONFIG[urgency];
   return (
-    <div className="flex justify-between items-start py-2">
-      <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-sm text-slate-900 font-medium text-right">{value || "-"}</span>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      {config.label}
+    </span>
+  );
+}
+
+function InfoField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-gray-100 pb-2">
+      <p className="text-xs text-gray-400 mb-1">{label}</p>
+      <p className="text-sm text-gray-700">{value || "-"}</p>
     </div>
   );
 }
