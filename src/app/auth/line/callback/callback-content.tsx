@@ -204,7 +204,7 @@ export default function CallbackContent() {
 
             const userRole = (data.role || "USER").toUpperCase();
             if (userRole === "ADMIN") router.replace("/admin");
-            else if (userRole === "IT") router.replace("/it/dashboard");
+            else if (userRole === "IT") router.replace("/it/repairs");
             else router.replace("/repairs/liff");
           } else {
             throw new Error("ไม่ได้รับ Token จากระบบ");

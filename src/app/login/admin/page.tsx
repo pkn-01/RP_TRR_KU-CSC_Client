@@ -62,7 +62,7 @@ export default function AdminLogin() {
         if (userRole === "ADMIN") {
           router.push("/admin");
         } else if (userRole === "IT") {
-          router.push("/it/dashboard");
+          router.push("/it/repairs");
         } else {
           router.push("/tickets");
         }

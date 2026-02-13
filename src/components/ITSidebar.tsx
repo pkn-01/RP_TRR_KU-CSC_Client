@@ -114,7 +114,7 @@ export default function ITSidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white z-50 px-4 flex items-center justify-between shadow-sm">
-        <Link href="/it/dashboard" className="flex items-center gap-2">
+        <Link href="/it/repairs" className="flex items-center gap-2">
           <span className="font-bold text-gray-800 text-lg tracking-wide">
             IT SUPPORT
           </span>
@@ -143,7 +143,7 @@ export default function ITSidebar() {
       >
         {/* Logo Header */}
         <div className="h-20 flex items-center justify-center">
-          <Link href="/it/dashboard" className="flex flex-col items-center">
+          <Link href="/it/repairs" className="flex flex-col items-center">
             <span className="text-xl font-bold text-gray-800 tracking-wider">
               IT
             </span>
