@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertCircle, ArrowLeft, CheckCircle } from "lucide-react";
 import Button from "@/components/Button";
+import { API_BASE_URL } from "@/services/api";
 
 export default function CallbackContent() {
   const router = useRouter();
@@ -48,19 +49,22 @@ export default function CallbackContent() {
       if (!userId || !token)
         throw new Error("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
 
-      const linkRes = await fetch("/api/line-oa/linking/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const linkRes = await fetch(
+        `${API_BASE_URL}/api/line-oa/linking/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId: parseInt(userId),
+            lineUserId: cachedLineUserId,
+            verificationToken: cachedVerificationToken,
+            force: true, // Force Link!
+          }),
         },
-        body: JSON.stringify({
-          userId: parseInt(userId),
-          lineUserId: cachedLineUserId,
-          verificationToken: cachedVerificationToken,
-          force: true, // Force Link!
-        }),
-      });
+      );
 
       if (!linkRes.ok) {
         const errData = await linkRes.json();
@@ -95,7 +99,7 @@ export default function CallbackContent() {
       if (token && !code) {
         setStatusMessage("กำลังเชื่อมต่อกับ LINE...");
         try {
-          const res = await fetch("/api/auth/line-auth-url");
+          const res = await fetch(`${API_BASE_URL}/api/auth/line-auth-url`);
           if (!res.ok) {
             const errData = await res.json();
             throw new Error(
@@ -123,11 +127,14 @@ export default function CallbackContent() {
 
           try {
             // 1. Get LINE User ID from Code
-            const verifyRes = await fetch("/api/auth/verify-line-code", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code }),
-            });
+            const verifyRes = await fetch(
+              `${API_BASE_URL}/api/auth/verify-line-code`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
+              },
+            );
 
             if (!verifyRes.ok) throw new Error("การแจ้งยืนยันตัวตนล้มเหลว");
             const { lineUserId } = await verifyRes.json();
@@ -143,18 +150,21 @@ export default function CallbackContent() {
             if (!userId || !userToken)
               throw new Error("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
 
-            const linkRes = await fetch("/api/line-oa/linking/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${userToken}`,
+            const linkRes = await fetch(
+              `${API_BASE_URL}/api/line-oa/linking/verify`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${userToken}`,
+                },
+                body: JSON.stringify({
+                  userId: parseInt(userId),
+                  lineUserId,
+                  verificationToken,
+                }),
               },
-              body: JSON.stringify({
-                userId: parseInt(userId),
-                lineUserId,
-                verificationToken,
-              }),
-            });
+            );
 
             if (!linkRes.ok) {
               const errData = await linkRes.json();
@@ -189,11 +199,14 @@ export default function CallbackContent() {
         // Sub-case 2b: Normal Login
         setStatusMessage("กำลังเข้าสู่ระบบ...");
         try {
-          const response = await fetch("/api/auth/line-callback", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, state }),
-          });
+          const response = await fetch(
+            `${API_BASE_URL}/api/auth/line-callback`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code, state }),
+            },
+          );
 
           if (!response.ok) {
             const errorData = await response.json();
