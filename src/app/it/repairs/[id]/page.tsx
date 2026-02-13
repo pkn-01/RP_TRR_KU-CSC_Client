@@ -106,7 +106,6 @@ export default function ITRepairDetailPage() {
   const [completionReport, setCompletionReport] = useState("");
   const [completionFiles, setCompletionFiles] = useState<File[]>([]);
   const [completionPreviews, setCompletionPreviews] = useState<string[]>([]);
-  const [completionMessage, setCompletionMessage] = useState("");
 
   /* -------------------- Computed -------------------- */
 
@@ -390,9 +389,6 @@ export default function ITRepairDetailPage() {
       formData.append("completedAt", new Date().toISOString());
       if (completionReport.trim()) {
         formData.append("completionReport", completionReport.trim());
-      }
-      if (completionMessage.trim()) {
-        formData.append("messageToReporter", completionMessage.trim());
       }
       completionFiles.forEach((file) => {
         formData.append("files", file);
@@ -897,18 +893,6 @@ export default function ITRepairDetailPage() {
               placeholder="สรุปผลการดำเนินการซ่อม..."
             />
 
-            {/* Message to Reporter */}
-            <label className="text-xs font-medium text-gray-500 mb-1 block">
-              ข้อความแจ้งผู้แจ้ง
-            </label>
-            <textarea
-              value={completionMessage}
-              onChange={(e) => setCompletionMessage(e.target.value)}
-              rows={3}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none mb-4"
-              placeholder="ข้อความแจ้งผู้แจ้ง เช่น ซ่อมเสร็จแล้ว สามารถใช้งานได้ปกติ..."
-            />
-
             {/* File Upload */}
             <label className="text-xs font-medium text-gray-500 mb-2 block">
               แนบรูปภาพ
@@ -973,7 +957,6 @@ export default function ITRepairDetailPage() {
                 onClick={() => {
                   setShowCompleteModal(false);
                   setCompletionReport("");
-                  setCompletionMessage("");
                   completionPreviews.forEach((url) => URL.revokeObjectURL(url));
                   setCompletionFiles([]);
                   setCompletionPreviews([]);
