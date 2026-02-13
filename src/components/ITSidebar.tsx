@@ -5,9 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard,
   Wrench,
-  Users,
   LogOut,
   Menu,
   X,
@@ -60,10 +58,8 @@ export default function ITSidebar() {
 
   // Menu items for IT role
   const menuItems: MenuItem[] = [
-    { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/it/dashboard" },
-    { icon: Package, label: "ระบบยืมของ", href: "/it/loans" },
-    { icon: Wrench, label: "งานซ่อมแซม", href: "/it/repairs" },
-    { icon: Users, label: "จัดการผู้ใช้", href: "/it/users" },
+    { icon: Wrench, label: "รายการแจ้งซ่อม", href: "/it/repairs" },
+    { icon: Package, label: "บันทึกการยืม", href: "/it/loans" },
   ];
 
   const isActive = useCallback(
