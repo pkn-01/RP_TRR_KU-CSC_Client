@@ -43,10 +43,19 @@ export function RepairsDashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const itemsPerPage = 10;
+
+  // Get current user ID on mount
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (userId) setCurrentUserId(parseInt(userId));
+  }, []);
 
   /* ---------------- Fetching ---------------- */
   const fetchRepairs = useCallback(async () => {
+    if (currentUserId === null) return;
+
     try {
       setLoading(true);
       const rawData = await apiFetch("/api/repairs");
@@ -58,13 +67,19 @@ export function RepairsDashboard() {
             name: a.user?.name || "Unknown",
           })) || [],
       }));
-      setRepairs(mappedData);
+
+      // Only show repairs assigned to the current IT user
+      const myRepairs = mappedData.filter((r) =>
+        r.assignees?.some((a: any) => a.id === currentUserId),
+      );
+
+      setRepairs(myRepairs);
     } catch (err) {
       console.error("Error fetching repairs:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUserId]);
 
   useEffect(() => {
     fetchRepairs();
