@@ -96,13 +96,18 @@ export default function CallbackContent() {
         setStatusMessage("กำลังเชื่อมต่อกับ LINE...");
         try {
           const res = await fetch("/api/auth/line-auth-url");
-          if (!res.ok) throw new Error("ไม่สามารถดึงข้อมูลการล็อกอิน LINE ได้");
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(
+              errData.message || "ไม่สามารถดึงข้อมูลการล็อกอิน LINE ได้",
+            );
+          }
           const data = await res.json();
           const authUrl = new URL(data.auth_url);
           authUrl.searchParams.set("state", `linking:${token}`);
           window.location.href = authUrl.toString();
-        } catch (err) {
-          setError("เกิดข้อผิดพลาดในการเชื่อมต่อ LINE");
+        } catch (err: any) {
+          setError(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อ LINE");
           setIsLoading(false);
         }
         return;
