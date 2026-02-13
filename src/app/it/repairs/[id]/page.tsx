@@ -60,45 +60,19 @@ interface RepairDetail {
   reporterPhone: string;
   createdAt: string;
   notes: string;
+  messageToReporter: string;
+  estimatedCompletionDate: string;
   attachments: Attachment[];
   assignmentHistory: HistoryLog[];
 }
-
-const STATUS_CONFIG: Record<
-  Status,
-  { bg: string; text: string; label: string }
-> = {
-  PENDING: { bg: "bg-yellow-100", text: "text-yellow-800", label: "รอรับงาน" },
-  ASSIGNED: { bg: "bg-blue-100", text: "text-blue-800", label: "มอบหมายแล้ว" },
-  IN_PROGRESS: {
-    bg: "bg-purple-100",
-    text: "text-purple-800",
-    label: "กำลังดำเนินการ",
-  },
-  WAITING_PARTS: {
-    bg: "bg-orange-100",
-    text: "text-orange-800",
-    label: "รออะไหล่",
-  },
-  COMPLETED: { bg: "bg-green-100", text: "text-green-800", label: "เสร็จสิ้น" },
-  CANCELLED: { bg: "bg-red-100", text: "text-red-800", label: "ยกเลิก" },
-};
 
 const URGENCY_CONFIG: Record<
   Urgency,
   { bg: string; text: string; label: string }
 > = {
-  NORMAL: { bg: "bg-gray-100", text: "text-gray-700", label: "ปกติ" },
-  URGENT: { bg: "bg-amber-100", text: "text-amber-700", label: "ด่วน" },
-  CRITICAL: { bg: "bg-red-100", text: "text-red-700", label: "ด่วนมาก" },
-};
-
-const ACTION_LABELS: Record<string, string> = {
-  ASSIGN: "มอบหมายงาน",
-  UNASSIGN: "ยกเลิกการมอบหมาย",
-  ACCEPT: "รับงาน",
-  REJECT: "ปฏิเสธงาน",
-  STATUS_CHANGE: "เปลี่ยนสถานะ",
+  NORMAL: { bg: "bg-green-100", text: "text-green-700", label: "ปกติ" },
+  URGENT: { bg: "bg-orange-100", text: "text-orange-700", label: "ด่วน" },
+  CRITICAL: { bg: "bg-red-500", text: "text-white", label: "ด่วนมาก" },
 };
 
 /* =====================================================
@@ -119,16 +93,22 @@ export default function ITRepairDetailPage() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   // Editable fields
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [status, setStatus] = useState<Status>("PENDING");
+  const [messageToReporter, setMessageToReporter] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("NORMAL");
+
+  // Cancel Modal state
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  // Complete Modal state
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completionReport, setCompletionReport] = useState("");
+  const [completionFiles, setCompletionFiles] = useState<File[]>([]);
+  const [completionPreviews, setCompletionPreviews] = useState<string[]>([]);
 
   /* -------------------- Computed -------------------- */
 
-  // Check if current user is assigned to this ticket
   const isAssignedToMe = useCallback(() => {
     if (!data || !currentUserId) return false;
     return data.assignees?.some(
@@ -136,7 +116,6 @@ export default function ITRepairDetailPage() {
     );
   }, [data, currentUserId]);
 
-  // Check if user can edit (assigned to them and IN_PROGRESS or later)
   const canEdit = useCallback(() => {
     if (!data) return false;
     if (["COMPLETED", "CANCELLED"].includes(data.status)) return false;
@@ -144,13 +123,11 @@ export default function ITRepairDetailPage() {
     return !["PENDING", "ASSIGNED"].includes(data.status);
   }, [data, isAssignedToMe]);
 
-  // Check if user can accept this job (ASSIGNED status)
   const canAcceptJob = useCallback(() => {
     if (!data) return false;
     return data.status === "ASSIGNED" && isAssignedToMe();
   }, [data, isAssignedToMe]);
 
-  // Check if this is an unassigned job they can pick up
   const canPickupJob = useCallback(() => {
     if (!data) return false;
     return data.status === "PENDING" && (data.assignees?.length || 0) === 0;
@@ -189,16 +166,14 @@ export default function ITRepairDetailPage() {
           reporterPhone: res.reporterPhone,
           createdAt: res.createdAt,
           notes: res.notes || "",
+          messageToReporter: res.messageToReporter || "",
+          estimatedCompletionDate: res.estimatedCompletionDate || "",
           attachments: res.attachments || [],
           assignmentHistory: res.assignmentHistory || [],
         });
 
-        setTitle(res.problemTitle);
-        setDescription(res.problemDescription || "");
-        setLocation(res.location);
-        setStatus(res.status);
         setUrgency(res.urgency);
-        setNotes(res.notes || "");
+        // Don't pre-populate notes/messageToReporter – these are per-action inputs
       } catch {
         setError("ไม่สามารถโหลดข้อมูลงานซ่อมได้");
       } finally {
@@ -214,7 +189,7 @@ export default function ITRepairDetailPage() {
   const handleAcceptJob = async () => {
     if (!data) return;
 
-    const { value: messageToReporter } = await Swal.fire({
+    const { value: msg } = await Swal.fire({
       title: "รับงานนี้?",
       text: "คุณสามารถส่งข้อความถึงผู้แจ้งได้ (ถ้ามี)",
       icon: "question",
@@ -227,7 +202,7 @@ export default function ITRepairDetailPage() {
       cancelButtonText: "ยกเลิก",
     });
 
-    if (messageToReporter === undefined) return; // User clicked "Cancel"
+    if (msg === undefined) return;
 
     try {
       setSaving(true);
@@ -235,7 +210,7 @@ export default function ITRepairDetailPage() {
         method: "PUT",
         body: {
           status: "IN_PROGRESS",
-          messageToReporter: messageToReporter || "",
+          messageToReporter: msg || "",
         },
       });
 
@@ -262,7 +237,7 @@ export default function ITRepairDetailPage() {
   const handlePickupJob = async () => {
     if (!data || !currentUserId) return;
 
-    const { value: messageToReporter } = await Swal.fire({
+    const { value: msg } = await Swal.fire({
       title: "รับงานซ่อมนี้?",
       text: "คุณจะถูกมอบหมายเป็นผู้รับผิดชอบ และสามารถส่งข้อความถึงผู้แจ้งได้",
       icon: "question",
@@ -275,7 +250,7 @@ export default function ITRepairDetailPage() {
       cancelButtonText: "ยกเลิก",
     });
 
-    if (messageToReporter === undefined) return;
+    if (msg === undefined) return;
 
     try {
       setSaving(true);
@@ -284,7 +259,7 @@ export default function ITRepairDetailPage() {
         body: {
           assigneeIds: [currentUserId],
           status: "IN_PROGRESS",
-          messageToReporter: messageToReporter || "",
+          messageToReporter: msg || "",
         },
       });
 
@@ -307,66 +282,15 @@ export default function ITRepairDetailPage() {
     }
   };
 
-  const handleRejectJob = async () => {
-    if (!data) return;
-
-    const { value: reason } = await Swal.fire({
-      title: "ปฏิเสธงาน",
-      input: "textarea",
-      inputLabel: "กรุณาระบุเหตุผล",
-      inputPlaceholder: "เหตุผลที่ปฏิเสธ...",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#a1a1aa",
-      confirmButtonText: "ปฏิเสธงาน",
-      cancelButtonText: "ยกเลิก",
-      inputValidator: (value) => {
-        if (!value) {
-          return "กรุณาระบุเหตุผล";
-        }
-        return null;
-      },
-    });
-
-    if (!reason) return;
-
-    try {
-      setSaving(true);
-      await apiFetch(`/api/repairs/${data.id}`, {
-        method: "PUT",
-        body: {
-          status: "PENDING",
-          notes: data.notes + `\n[ปฏิเสธงานโดย IT]: ${reason}`,
-        },
-      });
-
-      await Swal.fire({
-        title: "ปฏิเสธงานแล้ว",
-        icon: "info",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      router.push("/it/repairs");
-    } catch (err: any) {
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: err.message || "ปฏิเสธงานไม่สำเร็จ",
-        icon: "error",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleSave = async () => {
     if (!data) return;
 
     const result = await Swal.fire({
-      title: "บันทึกการเปลี่ยนแปลง?",
+      title: "ยืนยันการบันทึก?",
+      text: "บันทึกการเปลี่ยนแปลงทั้งหมด",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#18181b",
+      confirmButtonColor: "#3b82f6",
       cancelButtonColor: "#a1a1aa",
       confirmButtonText: "บันทึก",
       cancelButtonText: "ยกเลิก",
@@ -376,15 +300,13 @@ export default function ITRepairDetailPage() {
 
     try {
       setSaving(true);
+
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
         body: {
-          problemTitle: title,
-          problemDescription: description,
-          location: location,
-          status,
           urgency,
           notes,
+          messageToReporter,
         },
       });
 
@@ -395,7 +317,34 @@ export default function ITRepairDetailPage() {
         showConfirmButton: false,
       });
 
-      router.push("/it/repairs");
+      // Clear operational fields for next entry
+      setNotes("");
+      setMessageToReporter("");
+
+      // Re-fetch data to update history
+      const res = await apiFetch(`/api/repairs/${data.id}`);
+      const assignees = res.assignees || [];
+      setData({
+        id: res.id,
+        ticketCode: res.ticketCode,
+        title: res.problemTitle,
+        description: res.problemDescription,
+        category: res.problemCategory,
+        location: res.location,
+        status: res.status,
+        urgency: res.urgency,
+        assignees: assignees,
+        reporterName: res.reporterName,
+        reporterDepartment: res.reporterDepartment,
+        reporterPhone: res.reporterPhone,
+        createdAt: res.createdAt,
+        notes: res.notes || "",
+        messageToReporter: res.messageToReporter || "",
+        estimatedCompletionDate: res.estimatedCompletionDate || "",
+        attachments: res.attachments || [],
+        assignmentHistory: res.assignmentHistory || [],
+      });
+      setUrgency(res.urgency);
     } catch (err: any) {
       Swal.fire({
         title: "เกิดข้อผิดพลาด",
@@ -407,48 +356,118 @@ export default function ITRepairDetailPage() {
     }
   };
 
-  /* -------------------- Available Statuses -------------------- */
+  const handleCompleteClick = () => {
+    setShowCompleteModal(true);
+  };
 
-  const getAvailableStatuses = (): {
-    value: Status;
-    label: string;
-    disabled: boolean;
-  }[] => {
-    if (!data) return [];
+  const handleCompletionFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    const allStatuses: { value: Status; label: string }[] = [
-      { value: "IN_PROGRESS", label: "กำลังดำเนินการ" },
-      { value: "WAITING_PARTS", label: "รออะไหล่" },
-      { value: "COMPLETED", label: "เสร็จสิ้น" },
-      { value: "CANCELLED", label: "ยกเลิก" },
-    ];
+    setCompletionFiles((prev) => [...prev, ...files]);
 
-    // IT staff can only change to these statuses
-    const transitions: Record<Status, Status[]> = {
-      PENDING: [],
-      ASSIGNED: ["IN_PROGRESS"],
-      IN_PROGRESS: ["WAITING_PARTS", "COMPLETED", "CANCELLED"],
-      WAITING_PARTS: ["IN_PROGRESS", "COMPLETED", "CANCELLED"],
-      COMPLETED: [],
-      CANCELLED: [],
-    };
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setCompletionPreviews((prev) => [...prev, ...newPreviews]);
+  };
 
-    const allowed = transitions[data.status] || [];
+  const removeCompletionFile = (index: number) => {
+    URL.revokeObjectURL(completionPreviews[index]);
+    setCompletionFiles((prev) => prev.filter((_, i) => i !== index));
+    setCompletionPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    return allStatuses.map((s) => ({
-      ...s,
-      disabled: s.value !== data.status && !allowed.includes(s.value),
-    }));
+  const handleCompleteConfirm = async () => {
+    if (!data) return;
+
+    try {
+      setSaving(true);
+
+      const formData = new FormData();
+      formData.append("status", "COMPLETED");
+      formData.append("completedAt", new Date().toISOString());
+      if (completionReport.trim()) {
+        formData.append("completionReport", completionReport.trim());
+      }
+      completionFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await apiFetch(`/api/repairs/${data.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+
+      await Swal.fire({
+        title: "ปิดงานสำเร็จ!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setShowCompleteModal(false);
+      window.location.reload();
+    } catch (err: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err.message || "ปิดงานไม่สำเร็จ",
+        icon: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!data) return;
+    if (!cancelReason.trim()) {
+      Swal.fire({
+        title: "กรุณาระบุเหตุผล",
+        text: "ต้องระบุเหตุผลการยกเลิก",
+        icon: "warning",
+      });
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await apiFetch(`/api/repairs/${data.id}`, {
+        method: "PUT",
+        body: {
+          status: "CANCELLED",
+          notes: cancelReason,
+        },
+      });
+
+      await Swal.fire({
+        title: "ยกเลิกสำเร็จ!",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      setShowCancelModal(false);
+      window.location.reload();
+    } catch (err: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err.message || "ยกเลิกไม่สำเร็จ",
+        icon: "error",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* -------------------- Loading State -------------------- */
 
   if (!data && loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 mx-auto mb-3"></div>
-          <p className="text-sm text-zinc-500">กำลังโหลดข้อมูล...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-3"></div>
+          <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
         </div>
       </div>
     );
@@ -461,41 +480,33 @@ export default function ITRepairDetailPage() {
   /* -------------------- UI -------------------- */
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <header className="bg-white rounded-lg border border-zinc-200 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-xl font-bold text-zinc-900">
-                  #{data.ticketCode}
-                </h1>
-                <StatusBadge status={data.status} />
-                <UrgencyBadge urgency={data.urgency} />
-              </div>
-              <p className="text-sm text-zinc-500">
-                แจ้งเมื่อ {new Date(data.createdAt).toLocaleString("th-TH")}
-              </p>
-            </div>
-            <button
-              onClick={() => router.back()}
-              className="text-sm text-zinc-600 hover:text-zinc-900 flex items-center gap-1"
-            >
-              ← ย้อนกลับ
-            </button>
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              ID: {data.ticketCode}
+            </h1>
+            <UrgencyBadge urgency={data.urgency} />
           </div>
+          <button
+            onClick={() => router.back()}
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          >
+            ← ย้อนกลับ
+          </button>
         </header>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-lg">
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-2xl">
             {error}
           </div>
         )}
 
         {/* Accept Job Banner */}
         {canAcceptJob() && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="font-medium text-purple-900">
                 งานนี้ถูกมอบหมายให้คุณ
@@ -504,28 +515,19 @@ export default function ITRepairDetailPage() {
                 กดรับงานเพื่อเริ่มดำเนินการ
               </p>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleRejectJob}
-                disabled={saving}
-                className="bg-white text-red-600 border border-red-200 px-4 py-2 rounded-lg font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
-              >
-                ปฏิเสธ
-              </button>
-              <button
-                onClick={handleAcceptJob}
-                disabled={saving}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
-              >
-                รับงาน
-              </button>
-            </div>
+            <button
+              onClick={handleAcceptJob}
+              disabled={saving}
+              className="bg-purple-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+            >
+              รับงาน
+            </button>
           </div>
         )}
 
         {/* Pickup Job Banner */}
         {canPickupJob() && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="font-medium text-blue-900">
                 งานนี้ยังไม่มีผู้รับผิดชอบ
@@ -535,253 +537,439 @@ export default function ITRepairDetailPage() {
             <button
               onClick={handlePickupJob}
               disabled={saving}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               รับงาน
             </button>
           </div>
         )}
 
-        {/* Locked Banner */}
-        {isLocked && (
-          <div className="bg-zinc-100 border border-zinc-300 rounded-lg p-4">
-            <p className="text-sm text-zinc-600">
-              🔒 งานนี้ถูกปิดแล้ว ไม่สามารถแก้ไขได้
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT: Details */}
-          <section className="lg:col-span-2 space-y-6">
-            {/* Problem Details */}
-            <Card title="รายละเอียดปัญหา">
-              <div className="space-y-4">
-                <Field label="หัวข้อปัญหา">
-                  {canEdit() ? (
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="input-field"
+        {/* Main Content - Two Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT Column - Reporter Info */}
+          <div className="space-y-4">
+            {/* Reporter Info Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
-                  ) : (
-                    <p className="text-sm text-zinc-900 font-medium">
-                      {data.title}
-                    </p>
-                  )}
-                </Field>
-                <Field label="สถานที่">
-                  {canEdit() ? (
-                    <input
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="input-field"
-                    />
-                  ) : (
-                    <p className="text-sm text-zinc-900">{data.location}</p>
-                  )}
-                </Field>
-                <Field label="รายละเอียดเพิ่มเติม">
-                  {canEdit() ? (
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={4}
-                      className="input-field"
-                    />
-                  ) : (
-                    <p className="text-sm text-zinc-900 whitespace-pre-wrap">
-                      {data.description || "-"}
-                    </p>
-                  )}
-                </Field>
-              </div>
-            </Card>
-
-            {/* Reporter Info */}
-            <Card title="ข้อมูลผู้แจ้ง">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <ReadOnlyField label="ชื่อ" value={data.reporterName} />
-                <ReadOnlyField label="แผนก" value={data.reporterDepartment} />
-                <ReadOnlyField label="โทรศัพท์" value={data.reporterPhone} />
-              </div>
-            </Card>
-
-            {/* Attachments */}
-            {data.attachments && data.attachments.length > 0 && (
-              <Card title="รูปภาพประกอบ">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {data.attachments.map((file) => (
-                    <a
-                      key={file.id}
-                      href={file.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-square rounded-lg overflow-hidden border border-zinc-200 hover:border-zinc-400 transition-colors"
-                    >
-                      <img
-                        src={file.fileUrl}
-                        alt={file.filename}
-                        className="w-full h-full object-cover"
-                      />
-                    </a>
-                  ))}
+                  </svg>
                 </div>
-              </Card>
-            )}
+                <h2 className="text-base font-semibold text-gray-900">
+                  ข้อมูลผู้แจ้ง
+                </h2>
+              </div>
 
-            {/* History */}
-            {data.assignmentHistory && data.assignmentHistory.length > 0 && (
-              <Card title="ประวัติการดำเนินการ">
-                <div className="divide-y divide-zinc-100">
-                  {data.assignmentHistory.map((log) => (
-                    <div
-                      key={log.id}
-                      className="py-3 flex justify-between items-start"
-                    >
-                      <div>
-                        <p className="font-medium text-zinc-900 text-sm">
-                          {ACTION_LABELS[log.action] || log.action}
-                        </p>
-                        <p className="text-xs text-zinc-500">
-                          {log.assignee?.name && `${log.assignee.name} `}
-                          {log.assigner?.name && `(โดย ${log.assigner.name})`}
-                        </p>
-                        {log.note && (
-                          <p className="text-xs text-zinc-600 mt-1">
-                            {log.note}
-                          </p>
-                        )}
-                      </div>
-                      <p className="text-xs text-zinc-400">
-                        {new Date(log.createdAt).toLocaleString("th-TH")}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </section>
+              <div className="space-y-3">
+                <InfoField label="ชื่อ" value={data.reporterName} />
+                <InfoField label="แผนก" value={data.reporterDepartment} />
+                <InfoField label="ติดต่อ" value={data.reporterPhone} />
+              </div>
 
-          {/* RIGHT: Actions */}
-          <aside className="space-y-6">
-            {/* Management Section */}
-            <Card title="การจัดการงาน">
-              <div className="space-y-4">
-                {/* Status */}
-                <Field label="สถานะ">
-                  {canEdit() ? (
-                    <select
-                      value={status}
-                      onChange={(e) => setStatus(e.target.value as Status)}
-                      className="input-field"
-                    >
-                      {getAvailableStatuses().map((s) => (
-                        <option
-                          key={s.value}
-                          value={s.value}
-                          disabled={s.disabled}
+              {/* Attachments - Images */}
+              {data.attachments && data.attachments.length > 0 && (
+                <div className="mt-4">
+                  <div className="rounded-2xl overflow-hidden border border-gray-200">
+                    <img
+                      src={data.attachments[0].fileUrl}
+                      alt="รูปภาพประกอบ"
+                      className="w-full h-48 object-cover"
+                    />
+                  </div>
+                  {data.attachments.length > 1 && (
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {data.attachments.slice(1).map((file) => (
+                        <a
+                          key={file.id}
+                          href={file.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl overflow-hidden border border-gray-200 hover:opacity-90 transition-opacity"
                         >
-                          {s.label} {s.disabled ? "(ไม่สามารถเลือก)" : ""}
-                        </option>
+                          <img
+                            src={file.fileUrl}
+                            alt={file.filename}
+                            className="w-full h-20 object-cover"
+                          />
+                        </a>
                       ))}
-                    </select>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={data.status} />
                     </div>
                   )}
-                </Field>
+                </div>
+              )}
 
-                {/* Urgency */}
-                <Field label="ความเร่งด่วน">
-                  {canEdit() ? (
-                    <select
-                      value={urgency}
-                      onChange={(e) => setUrgency(e.target.value as Urgency)}
-                      className="input-field"
-                    >
-                      <option value="NORMAL">ปกติ</option>
-                      <option value="URGENT">ด่วน</option>
-                      <option value="CRITICAL">ด่วนมาก</option>
-                    </select>
-                  ) : (
-                    <p className="text-sm text-zinc-900">
-                      {URGENCY_CONFIG[data.urgency].label}
-                    </p>
-                  )}
-                </Field>
+              {/* Description */}
+              <div className="mt-4">
+                <InfoField
+                  label="รายละเอียด"
+                  value={data.description || data.title}
+                />
+              </div>
 
-                {/* Assignees (Read Only) */}
-                <Field label="ผู้รับผิดชอบ">
-                  <p className="text-sm text-zinc-900">
-                    {data.assignees && data.assignees.length > 0
+              {/* Assignees (Read Only) */}
+              <div className="mt-4">
+                <InfoField
+                  label="ผู้รับผิดชอบ"
+                  value={
+                    data.assignees && data.assignees.length > 0
                       ? data.assignees
                           .map((a) => a.user?.name || "Unknown")
                           .join(", ")
-                      : "ยังไม่มีผู้รับงาน"}
-                  </p>
-                </Field>
-              </div>
-            </Card>
-
-            {/* Notes Section */}
-            <Card title="บันทึกการซ่อม">
-              {canEdit() ? (
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={5}
-                  className="input-field"
-                  placeholder="บันทึกขั้นตอนหรือผลการซ่อม..."
+                      : "ยังไม่มีผู้รับงาน"
+                  }
                 />
-              ) : (
-                <p className="text-sm text-zinc-900 whitespace-pre-wrap">
-                  {data.notes || "-"}
-                </p>
-              )}
-            </Card>
+              </div>
+            </div>
+
+            {/* Operational History Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-gray-900 mb-4">
+                ประวัติดำเนินการ
+              </h3>
+
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
+                  data.assignmentHistory.map((log) => {
+                    const { text, images } = parseHistoryNote(log.note);
+                    const actionLabel =
+                      log.action === "ASSIGN"
+                        ? "มอบหมายงานให้"
+                        : log.action === "UNASSIGN"
+                          ? "ยกเลิกการมอบหมาย"
+                          : log.action === "ACCEPT"
+                            ? "รับงาน"
+                            : log.action === "REJECT"
+                              ? "ปฏิเสธงาน"
+                              : log.action === "NOTE"
+                                ? "หมายเหตุ"
+                                : log.action === "MESSAGE_TO_REPORTER"
+                                  ? "แจ้งผู้ซ่อม"
+                                  : log.action === "STATUS_CHANGE"
+                                    ? text.includes("เสร็จสิ้น")
+                                      ? "ปิดงาน"
+                                      : "เปลี่ยนสถานะ"
+                                    : log.action;
+
+                    const isAssignAction =
+                      log.action === "ASSIGN" || log.action === "UNASSIGN";
+
+                    if (isAssignAction) {
+                      return (
+                        <div key={log.id} className="py-2">
+                          <p className="text-sm font-bold text-gray-800">
+                            {actionLabel}
+                          </p>
+                          {log.assignee && (
+                            <p className="text-sm text-gray-600">
+                              {log.assignee.name}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div
+                        key={log.id}
+                        className="rounded-2xl border border-gray-200 overflow-hidden"
+                      >
+                        {/* Card Header */}
+                        <div className="border-l-4 border-green-500 px-4 pt-3 pb-2">
+                          <p className="text-sm font-bold text-gray-900">
+                            {actionLabel}
+                          </p>
+                        </div>
+
+                        {/* Card Body */}
+                        <div className="px-4 pb-3">
+                          {/* Images (for completion) */}
+                          {images.length > 0 && (
+                            <div className="mb-2 grid grid-cols-2 gap-2">
+                              {images.map((imgUrl, idx) => (
+                                <a
+                                  key={idx}
+                                  href={imgUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block rounded-xl overflow-hidden border border-gray-100 hover:opacity-90 transition-opacity"
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    alt={`evidence-${idx}`}
+                                    className="w-full h-28 object-cover"
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Timestamp + Note */}
+                          <p className="text-xs text-gray-500">
+                            <span>
+                              {new Date(log.createdAt).toLocaleString("th-TH", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {text && (
+                              <span className="ml-2 text-gray-600">{text}</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">
+                    ยังไม่มีประวัติดำเนินการ
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT Column - Management */}
+          <div className="space-y-4">
+            {/* Urgency Dropdown */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <select
+                value={urgency}
+                onChange={(e) => setUrgency(e.target.value as Urgency)}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+              >
+                <option value="NORMAL">ความเร่งด่วน - ปกติ</option>
+                <option value="URGENT">ความเร่งด่วน - ด่วน</option>
+                <option value="CRITICAL">ความเร่งด่วน - ด่วนมาก</option>
+              </select>
+            </div>
+
+            {/* Notes */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <label className="text-xs font-medium text-gray-500 mb-2 block">
+                หมายเหตุ
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
+                placeholder="หมายเหตุ..."
+              />
+            </div>
+
+            {/* Message to Reporter */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <label className="text-xs font-medium text-gray-500 mb-2 block">
+                แจ้งผู้ซ่อม
+              </label>
+              <textarea
+                value={messageToReporter}
+                onChange={(e) => setMessageToReporter(e.target.value)}
+                rows={3}
+                disabled={!canEdit()}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-60"
+                placeholder="ข้อความแจ้งผู้ซ่อม..."
+              />
+            </div>
 
             {/* Action Buttons */}
-            {canEdit() && !isLocked && (
-              <div className="space-y-2">
+            {!isLocked && canEdit() && (
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={saving}
+                  className="w-full py-3 text-red-500 text-base font-medium rounded-xl border-2 border-red-400 bg-white hover:bg-red-50 transition-colors disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full bg-zinc-900 text-white py-2.5 rounded-lg font-medium hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
                 >
-                  {saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
+                  {saving ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
+
+                {(data.status === "IN_PROGRESS" ||
+                  data.status === "WAITING_PARTS") && (
+                  <button
+                    onClick={handleCompleteClick}
+                    disabled={saving}
+                    className="w-full py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    ปิดงาน (เสร็จสิ้น)
+                  </button>
+                )}
               </div>
             )}
-          </aside>
+          </div>
         </div>
       </div>
 
-      {/* Global Styles */}
-      <style jsx global>{`
-        .input-field {
-          width: 100%;
-          border: 1px solid #e4e4e7;
-          border-radius: 0.5rem;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          background: white;
-          transition: all 0.15s;
-        }
-        .input-field:focus {
-          outline: none;
-          border-color: #18181b;
-          box-shadow: 0 0 0 1px #18181b;
-        }
-        .input-field:disabled {
-          background: #f4f4f5;
-          color: #71717a;
-          cursor: not-allowed;
-        }
-      `}</style>
+      {/* Cancel Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              ID : {data.ticketCode}
+            </h2>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4"
+              placeholder="รายละเอียดเหตุผลที่ต้องยกเลิก"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="flex-1 py-3 bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                ตกลง
+              </button>
+              <button
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancelReason("");
+                }}
+                disabled={saving}
+                className="flex-1 py-3 text-white text-base font-medium rounded-xl bg-red-400 hover:bg-red-500 transition-colors disabled:opacity-50"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Modal */}
+      {showCompleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              รายงานปิดงาน
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">ID: {data.ticketCode}</p>
+
+            {/* Report Textarea */}
+            <label className="text-xs font-medium text-gray-500 mb-1 block">
+              รายงานปิดงาน
+            </label>
+            <textarea
+              value={completionReport}
+              onChange={(e) => setCompletionReport(e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none mb-4"
+              placeholder="สรุปผลการดำเนินการซ่อม..."
+            />
+
+            {/* File Upload */}
+            <label className="text-xs font-medium text-gray-500 mb-2 block">
+              แนบรูปภาพ
+            </label>
+            <label className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-green-400 hover:text-green-600 cursor-pointer transition-colors mb-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              เลือกรูปภาพ
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleCompletionFileChange}
+                className="hidden"
+              />
+            </label>
+
+            {/* Image Previews */}
+            {completionPreviews.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {completionPreviews.map((src, i) => (
+                  <div key={i} className="relative group">
+                    <img
+                      src={src}
+                      alt={`preview-${i}`}
+                      className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeCompletionFile(i)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCompleteConfirm}
+                disabled={saving}
+                className="flex-1 py-3 bg-green-600 text-white text-base font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? "กำลังบันทึก..." : "ยืนยันปิดงาน"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCompleteModal(false);
+                  setCompletionReport("");
+                  completionPreviews.forEach((url) => URL.revokeObjectURL(url));
+                  setCompletionFiles([]);
+                  setCompletionPreviews([]);
+                }}
+                disabled={saving}
+                className="flex-1 py-3 text-gray-600 text-base font-medium rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -790,64 +978,37 @@ export default function ITRepairDetailPage() {
     UI Components
 ===================================================== */
 
-function StatusBadge({ status }: { status: Status }) {
-  const config = STATUS_CONFIG[status];
-  return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-    >
-      {config.label}
-    </span>
-  );
-}
-
 function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   const config = URGENCY_CONFIG[urgency];
-  if (urgency === "NORMAL") return null;
   return (
     <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+      className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
     >
       {config.label}
     </span>
   );
 }
 
-function Card({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function InfoField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white border border-zinc-200 rounded-lg p-5">
-      <h2 className="text-sm font-semibold text-zinc-900 mb-4">{title}</h2>
-      {children}
+    <div className="border-b border-gray-100 pb-2">
+      <p className="text-xs text-gray-400 mb-1">{label}</p>
+      <p className="text-sm text-gray-700">{value || "-"}</p>
     </div>
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-medium text-zinc-500">{label}</label>
-      {children}
-    </div>
-  );
-}
+function parseHistoryNote(note: string) {
+  if (!note) return { text: "", images: [] };
 
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
-      <p className="text-sm text-zinc-900">{value || "-"}</p>
-    </div>
-  );
+  const imagePattern = /\[IMAGES:(.*?)\]/;
+  const match = note.match(imagePattern);
+
+  if (match) {
+    const text = note.replace(match[0], "").trim();
+    const images = match[1].split(",").filter((url) => url.trim() !== "");
+    return { text, images };
+  }
+
+  return { text: note, images: [] };
 }
