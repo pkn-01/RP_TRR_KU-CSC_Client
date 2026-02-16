@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Alert from "@/components/Alert";
@@ -14,6 +14,8 @@ interface FormErrors {
 
 export default function AdminLogin() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -52,19 +54,22 @@ export default function AdminLogin() {
 
     try {
       const response = await AuthService.login({ email, password });
-      // console.log("Login response:", response);
       const userRole = response.role || localStorage.getItem("role") || "USER";
-      // console.log("User role:", userRole);
 
       setSuccessMessage("เข้าสู่ระบบสำเร็จ...");
       setTimeout(() => {
-        // Redirect based on role
-        if (userRole === "ADMIN") {
-          router.push("/admin");
-        } else if (userRole === "IT") {
-          router.push("/it/repairs");
+        // If redirect URL is provided (e.g., from LINE notification), go there
+        if (redirectUrl) {
+          router.push(redirectUrl);
         } else {
-          router.push("/tickets");
+          // Default: redirect based on role
+          if (userRole === "ADMIN") {
+            router.push("/admin");
+          } else if (userRole === "IT") {
+            router.push("/it/repairs");
+          } else {
+            router.push("/tickets");
+          }
         }
       }, 1500);
     } catch (error: any) {
