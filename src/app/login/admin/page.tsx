@@ -16,6 +16,7 @@ function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
+  const ticketId = searchParams.get("ticketId");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -58,8 +59,18 @@ function AdminLoginForm() {
 
       setSuccessMessage("เข้าสู่ระบบสำเร็จ...");
       setTimeout(() => {
-        // If redirect URL is provided (e.g., from LINE notification), go there
-        if (redirectUrl) {
+        // Priority 1: Smart redirect via ticketId (Role specific)
+        if (ticketId) {
+          if (userRole === "ADMIN") {
+            router.push(`/admin/repairs/${ticketId}`);
+          } else if (userRole === "IT") {
+            router.push(`/it/repairs/${ticketId}`);
+          } else {
+            router.push("/tickets"); // Fallback for normal users (if any)
+          }
+        }
+        // Priority 2: Direct redirect via URL (useful for other flows)
+        else if (redirectUrl) {
           router.push(redirectUrl);
         } else {
           // Default: redirect based on role
