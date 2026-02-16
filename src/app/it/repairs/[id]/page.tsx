@@ -75,6 +75,46 @@ const URGENCY_CONFIG: Record<
   CRITICAL: { bg: "bg-red-500", text: "text-white", label: "ด่วนมาก" },
 };
 
+const STATUS_CONFIG: Record<
+  Status,
+  { bg: string; text: string; label: string }
+> = {
+  PENDING: { bg: "bg-gray-100", text: "text-gray-800", label: "รอดำเนินการ" },
+  ASSIGNED: {
+    bg: "bg-purple-100",
+    text: "text-purple-800",
+    label: "ถูกมอบหมาย",
+  },
+  IN_PROGRESS: {
+    bg: "bg-blue-100",
+    text: "text-blue-800",
+    label: "กำลังดำเนินการ",
+  },
+  WAITING_PARTS: {
+    bg: "bg-yellow-100",
+    text: "text-yellow-800",
+    label: "รออะไหล่",
+  },
+  COMPLETED: { bg: "bg-green-600", text: "text-white", label: "ปิดงาน" },
+  CANCELLED: { bg: "bg-red-100", text: "text-red-800", label: "ยกเลิก" },
+};
+
+function formatThaiDate(input?: string) {
+  if (!input) return "-";
+  try {
+    return new Date(input).toLocaleString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return input;
+  }
+}
+
 /* =====================================================
     Main Component
 ===================================================== */
@@ -483,19 +523,30 @@ export default function ITRepairDetailPage() {
     <div className="min-h-screen bg-gray-100 p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-              ID: {data.ticketCode}
-            </h1>
-            <UrgencyBadge urgency={data.urgency} />
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                {data.title || data.ticketCode}
+              </h1>
+              <p className="text-sm text-gray-500">
+                รหัสงาน: {data.ticketCode}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <StatusBadge status={data.status} />
+              <UrgencyBadge urgency={data.urgency} />
+            </div>
           </div>
-          <button
-            onClick={() => router.back()}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-          >
-            ← ย้อนกลับ
-          </button>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-200 text-gray-700 hover:shadow"
+            >
+              ← ย้อนกลับ
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -716,16 +767,7 @@ export default function ITRepairDetailPage() {
 
                           {/* Timestamp + Note */}
                           <p className="text-xs text-gray-500">
-                            <span>
-                              {new Date(log.createdAt).toLocaleString("th-TH", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                second: "2-digit",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
-                            </span>
+                            <span>{formatThaiDate(log.createdAt)}</span>
                             {text && (
                               <span className="ml-2 text-gray-600">{text}</span>
                             )}
@@ -980,6 +1022,17 @@ export default function ITRepairDetailPage() {
 
 function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   const config = URGENCY_CONFIG[urgency];
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      {config.label}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: Status }) {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
   return (
     <span
       className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
