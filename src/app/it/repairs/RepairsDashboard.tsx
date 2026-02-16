@@ -279,6 +279,9 @@ export function RepairsDashboard() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   สถานะ
                 </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  ความเร่งด่วน
+                </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
                   จัดการ
                 </th>
@@ -288,7 +291,7 @@ export function RepairsDashboard() {
               {loading && repairs.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-12 text-center text-gray-400"
                   >
                     กำลังโหลด...
@@ -297,7 +300,7 @@ export function RepairsDashboard() {
               ) : paginatedRepairs.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-12 text-center text-gray-400"
                   >
                     ไม่พบรายการ
@@ -356,6 +359,23 @@ export function RepairsDashboard() {
                         }`}
                       >
                         {statusLabels[repair.status] || repair.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full ${
+                          repair.urgency === "CRITICAL"
+                            ? "bg-red-100 text-red-700"
+                            : repair.urgency === "URGENT"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {repair.urgency === "CRITICAL"
+                          ? "ด่วนมาก"
+                          : repair.urgency === "URGENT"
+                            ? "ด่วน"
+                            : "ปกติ"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
