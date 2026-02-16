@@ -75,46 +75,6 @@ const URGENCY_CONFIG: Record<
   CRITICAL: { bg: "bg-red-500", text: "text-white", label: "ด่วนมาก" },
 };
 
-const STATUS_CONFIG: Record<
-  Status,
-  { bg: string; text: string; label: string }
-> = {
-  PENDING: { bg: "bg-gray-100", text: "text-gray-800", label: "รอดำเนินการ" },
-  ASSIGNED: {
-    bg: "bg-purple-100",
-    text: "text-purple-800",
-    label: "ถูกมอบหมาย",
-  },
-  IN_PROGRESS: {
-    bg: "bg-blue-100",
-    text: "text-blue-800",
-    label: "กำลังดำเนินการ",
-  },
-  WAITING_PARTS: {
-    bg: "bg-yellow-100",
-    text: "text-yellow-800",
-    label: "รออะไหล่",
-  },
-  COMPLETED: { bg: "bg-green-600", text: "text-white", label: "ปิดงาน" },
-  CANCELLED: { bg: "bg-red-100", text: "text-red-800", label: "ยกเลิก" },
-};
-
-function formatThaiDate(input?: string) {
-  if (!input) return "-";
-  try {
-    return new Date(input).toLocaleString("th-TH", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return input;
-  }
-}
-
 /* =====================================================
     Main Component
 ===================================================== */
@@ -503,14 +463,7 @@ export default function ITRepairDetailPage() {
   /* -------------------- Loading State -------------------- */
 
   if (!data && loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-3"></div>
-          <p className="text-sm text-gray-500">กำลังโหลดข้อมูล...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
 
   if (!data) return null;
@@ -523,30 +476,19 @@ export default function ITRepairDetailPage() {
     <div className="min-h-screen bg-gray-100 p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-                {data.title || data.ticketCode}
-              </h1>
-              <p className="text-sm text-gray-500">
-                รหัสงาน: {data.ticketCode}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusBadge status={data.status} />
-              <UrgencyBadge urgency={data.urgency} />
-            </div>
-          </div>
-
+        <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="px-3 py-2 rounded-lg text-sm bg-white border border-gray-200 text-gray-700 hover:shadow"
-            >
-              ← ย้อนกลับ
-            </button>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              ID: {data.ticketCode}
+            </h1>
+            <UrgencyBadge urgency={data.urgency} />
           </div>
+          <button
+            onClick={() => router.back()}
+            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          >
+            ← ย้อนกลับ
+          </button>
         </header>
 
         {error && (
@@ -767,7 +709,16 @@ export default function ITRepairDetailPage() {
 
                           {/* Timestamp + Note */}
                           <p className="text-xs text-gray-500">
-                            <span>{formatThaiDate(log.createdAt)}</span>
+                            <span>
+                              {new Date(log.createdAt).toLocaleString("th-TH", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </span>
                             {text && (
                               <span className="ml-2 text-gray-600">{text}</span>
                             )}
@@ -1031,17 +982,6 @@ function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   );
 }
 
-function StatusBadge({ status }: { status: Status }) {
-  const config = STATUS_CONFIG[status] || STATUS_CONFIG.PENDING;
-  return (
-    <span
-      className={`px-3 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
-    >
-      {config.label}
-    </span>
-  );
-}
-
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div className="border-b border-gray-100 pb-2">
@@ -1064,4 +1004,86 @@ function parseHistoryNote(note: string) {
   }
 
   return { text: note, images: [] };
+}
+
+function SkeletonLoader() {
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 md:p-6 animate-pulse">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-48 bg-gray-300 rounded-lg"></div>
+            <div className="h-6 w-24 bg-gray-300 rounded-full"></div>
+          </div>
+          <div className="h-4 w-24 bg-gray-300 rounded"></div>
+        </div>
+
+        {/* Action Banner Skeleton (Optional) */}
+        <div className="h-20 bg-gray-200 rounded-2xl w-full opacity-50"></div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-4">
+            {/* Reporter Info Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div className="h-5 w-32 bg-gray-200 rounded"></div>
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-3 w-16 bg-gray-100 rounded"></div>
+                    <div className="h-4 w-full bg-gray-100 rounded"></div>
+                  </div>
+                ))}
+              </div>
+              {/* Image placeholder */}
+              <div className="h-48 bg-gray-100 rounded-2xl w-full mt-4"></div>
+            </div>
+
+            {/* History Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <div className="h-5 w-32 bg-gray-200 rounded mb-4"></div>
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-24 bg-gray-50 rounded-2xl w-full border border-gray-100"
+                  ></div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-4">
+            {/* Status/Urgency Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm">
+              <div className="h-12 bg-gray-100 rounded-xl w-full"></div>
+            </div>
+
+            {/* Notes Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm space-y-2">
+              <div className="h-3 w-20 bg-gray-200 rounded"></div>
+              <div className="h-28 bg-gray-100 rounded-xl w-full"></div>
+            </div>
+
+            {/* Message Card */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm space-y-2">
+              <div className="h-3 w-20 bg-gray-200 rounded"></div>
+              <div className="h-28 bg-gray-100 rounded-xl w-full"></div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3 pt-2">
+              <div className="h-14 bg-gray-300 rounded-xl w-full"></div>
+              <div className="h-14 bg-blue-200 rounded-xl w-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
