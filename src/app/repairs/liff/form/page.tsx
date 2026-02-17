@@ -57,6 +57,7 @@ function RepairFormContent() {
   // State for LINE user ID (from LIFF SDK or URL)
   const [lineUserId, setLineUserId] = useState<string>(lineUserIdFromUrl);
   const [liffInitialized, setLiffInitialized] = useState(false);
+  const [liffError, setLiffError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -121,8 +122,9 @@ function RepairFormContent() {
           return; // Stop execution, login will redirect
         }
         // If not logged in and not in client (e.g. external browser), user stays as Guest
-      } catch (error) {
+      } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
+        setLiffError(error?.message || "LIFF Init Failed");
         setLiffInitialized(true);
       }
     };
@@ -662,6 +664,19 @@ function RepairFormContent() {
             </button>
           </div>
         </form>
+
+        {/* Debug Info (Auto-hidden in production if needed, currently visible for troubleshooting) */}
+        <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500 font-mono break-all">
+          <p className="font-bold mb-2">🔧 Debug Info:</p>
+          <p>
+            LINE ID:{" "}
+            {lineUserId
+              ? `${lineUserId.substring(0, 8)}...`
+              : "Not Found (Guest)"}
+          </p>
+          <p>LIFF Init: {liffInitialized ? "Done" : "Loading..."}</p>
+          {liffError && <p className="text-red-500">LIFF Error: {liffError}</p>}
+        </div>
       </main>
     </div>
   );
