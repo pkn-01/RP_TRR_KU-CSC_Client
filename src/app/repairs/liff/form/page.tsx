@@ -676,7 +676,7 @@ function RepairFormContent() {
         </form>
 
         {/* Debug Info (Auto-hidden in production if needed, currently visible for troubleshooting) */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500 font-mono break-all">
+        {/* <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500 font-mono break-all">
           <p className="font-bold mb-2">🔧 Debug Info:</p>
           <p>
             LINE ID:{" "}
@@ -686,7 +686,7 @@ function RepairFormContent() {
           </p>
           <p>LIFF Init: {liffInitialized ? "Done" : "Loading..."}</p>
           {liffError && <p className="text-red-500">LIFF Error: {liffError}</p>}
-        </div>
+        </div> */}
       </main>
     </div>
   );
