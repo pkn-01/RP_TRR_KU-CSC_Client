@@ -135,7 +135,7 @@ export default function ITProfilePage() {
     if (!confirm("ต้องการยกเลิกการเชื่อมต่อ LINE หรือไม่?")) return;
 
     try {
-      await apiFetch(`/line-oa/linking?userId=${profile.id}`, "DELETE");
+      await apiFetch(`/line-oa/linking/unlink?userId=${profile.id}`, "DELETE");
       setLineLink(null);
     } catch (error) {
       console.error("Failed to unlink LINE account:", error);

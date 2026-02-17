@@ -140,7 +140,7 @@ export default function ProfilePage() {
 
     try {
       const response = await fetch(
-        `/api/line-oa/linking?userId=${profile.id}`,
+        `/api/line-oa/linking/unlink?userId=${profile.id}`,
         {
           method: "DELETE",
         },
