@@ -131,40 +131,18 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{
-          background:
-            "linear-gradient(135deg, #fdf6f0 0%, #f0e6da 50%, #e8ddd2 100%)",
-        }}
-      >
-        <div className="flex flex-col items-center gap-3">
-          <div
-            className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: "#5D2E1E", borderTopColor: "transparent" }}
-          />
-          <div style={{ color: "#5D2E1E" }} className="font-medium">
-            กำลังโหลด...
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">กำลังโหลด...</div>
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen p-4 md:p-6"
-      style={{
-        background:
-          "linear-gradient(135deg, #fdf6f0 0%, #f0e6da 50%, #e8ddd2 100%)",
-      }}
-    >
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h1 className="text-2xl font-bold" style={{ color: "#3B1A0E" }}>
-            แดชบอร์ด
-          </h1>
+          <h1 className="text-2xl font-semibold text-gray-900">แดชบอร์ด</h1>
 
           <div className="flex items-center gap-3">
             {/* Filter Tabs */}
@@ -212,34 +190,18 @@ export default function AdminDashboard() {
 
         {/* Main Stats Cards */}
         {/* Main Stats Cards */}
-        <div
-          className="rounded-xl p-5 shadow-lg border"
-          style={{
-            background:
-              "linear-gradient(135deg, #5D2E1E 0%, #8B4513 50%, #A0522D 100%)",
-            borderColor: "rgba(93,46,30,0.3)",
-          }}
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x-0 md:divide-x divide-gray-100">
             <MainStatItem
               label="รายการซ่อมทั้งหมด"
               value={stats?.all.total || 0}
-
             />
             <MainStatItem
               label="กำลังดำเนินการ"
               value={stats?.all.inProgress || 0}
-
             />
-            <MainStatItem
-              label="ปิดงาน"
-              value={stats?.all.completed || 0}
-            />
-            <MainStatItem
-              label="ยกเลิก"
-              value={stats?.all.cancelled || 0}
-              
-            />
+            <MainStatItem label="ปิดงาน" value={stats?.all.completed || 0} />
+            <MainStatItem label="ยกเลิก" value={stats?.all.cancelled || 0} />
           </div>
         </div>
 
@@ -248,121 +210,72 @@ export default function AdminDashboard() {
             label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.total || 0}
             link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
-            color="#4F46E5"
-            bgColor="#EEF2FF"
-
           />
           <TodayStatCard
             label={`กำลังดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.inProgress || 0}
             link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
-            color="#D97706"
-            bgColor="#FFFBEB"
-
           />
           <TodayStatCard
             label={`ปิดงาน(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.completed || 0}
             link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
-            color="#059669"
-            bgColor="#ECFDF5"
-
           />
           <TodayStatCard
             label={`ยกเลิก(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.cancelled || 0}
             link={`/admin/repairs?status=CANCELLED&filter=${filter}&date=${selectedDate}`}
-            color="#DC2626"
-            bgColor="#FEF2F2"
-
           />
         </div>
 
         {/* Repairs Table */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div
-            className="px-6 py-4 flex items-center justify-between"
-            style={{
-              background: "linear-gradient(90deg, #5D2E1E, #8B4513)",
-              borderBottom: "2px solid rgba(93,46,30,0.1)",
-            }}
-          >
-            <h2 className="text-lg font-semibold text-white">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
               รายการแจ้งซ่อมล่าสุด
             </h2>
             <Link
               href="/admin/repairs"
-              className="text-sm font-medium transition-colors px-3 py-1 rounded-full"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.2)",
-                color: "#fff",
-              }}
+              className="text-sm font-medium text-blue-600 hover:text-brown-800 transition-colors"
             >
-              ดูทั้งหมด →
+              ดูทั้งหมด
             </Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr
-                  style={{ backgroundColor: "#faf6f3" }}
-                  className="border-b border-gray-200"
-                >
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     รหัส
                   </th>
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     เวลา
                   </th>
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     ปัญหา
                   </th>
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     สถานที่
                   </th>
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     ความเร่งด่วน
                   </th>
-                  <th
-                    className="text-left px-4 py-3 text-sm font-semibold"
-                    style={{ color: "#5D2E1E" }}
-                  >
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     จัดการ
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {stats?.recentRepairs.slice(0, 7).map((repair) => (
-                  <tr
-                    key={repair.id}
-                    className="hover:bg-amber-50/40 transition-colors"
-                  >
-                    <td
-                      className="px-4 py-3 text-sm font-mono font-semibold"
-                      style={{ color: "#5D2E1E" }}
-                    >
+                  <tr key={repair.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900">
                       {repair.ticketCode}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {formatDate(repair.createdAt)}{" "}
                       {formatTime(repair.createdAt)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       {repair.problemTitle.length > 30
                         ? repair.problemTitle.substring(0, 30) + "..."
                         : repair.problemTitle}
@@ -370,30 +283,13 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {repair.location}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{
-                          backgroundColor:
-                            repair.urgency === "CRITICAL" ||
-                            repair.urgency === "URGENT"
-                              ? "#FEE2E2"
-                              : "#DBEAFE",
-                          color:
-                            repair.urgency === "CRITICAL" ||
-                            repair.urgency === "URGENT"
-                              ? "#DC2626"
-                              : "#2563EB",
-                        }}
-                      >
-                        {getUrgencyLabel(repair.urgency)}
-                      </span>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {getUrgencyLabel(repair.urgency)}
                     </td>
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/repairs/${repair.id}`}
-                        className="p-1.5 rounded-full transition-colors"
-                        style={{ color: "#5D2E1E" }}
+                        className="text-gray-400 hover:text-gray-600"
                       >
                         <ChevronRight size={20} />
                       </Link>
@@ -418,12 +314,12 @@ export default function AdminDashboard() {
 
         {/* Department Statistics */}
         <div>
-          <h2 className="text-lg font-bold mb-4" style={{ color: "#3B1A0E" }}>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
             จำนวนรายการแจ้งซ่อมของแต่ละแผนก
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {departmentStats.map((dept, index) => (
-              <DepartmentCard key={dept.department} stat={dept} index={index} />
+            {departmentStats.map((dept) => (
+              <DepartmentCard key={dept.department} stat={dept} />
             ))}
           </div>
         </div>
@@ -432,38 +328,24 @@ export default function AdminDashboard() {
   );
 }
 
-// Main Stat Card Component (unused but kept for compatibility)
+// Main Stat Card Component
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+    <div className="bg-white border border-gray-200 p-4 rounded-lg">
       <span className="text-sm text-gray-600">{label}</span>
       <div className="mt-2">
-        <span className="text-4xl font-bold" style={{ color: "#5D2E1E" }}>
-          {value}
-        </span>
+        <span className="text-4xl font-bold text-gray-900">{value}</span>
       </div>
     </div>
   );
 }
 
 // Main Stat Item Component (Internal use for the main card)
-function MainStatItem({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: number;
-  icon?: string;
-}) {
+function MainStatItem({ label, value }: { label: string; value: number }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center p-3 rounded-lg"
-      style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-    >
-      {icon && <span className="text-lg mb-1">{icon}</span>}
-      <span className="text-sm text-white/80 mb-1">{label}</span>
-      <span className="text-3xl font-bold text-white">{value}</span>
+    <div className="flex flex-col items-center justify-center p-2">
+      <span className="text-sm text-gray-600 mb-1">{label}</span>
+      <span className="text-3xl font-medium text-gray-900">{value}</span>
     </div>
   );
 }
@@ -473,108 +355,53 @@ function TodayStatCard({
   label,
   value,
   link,
-  color,
-  bgColor,
-  icon,
 }: {
   label: string;
   value: number;
   link: string;
-  color?: string;
-  bgColor?: string;
-  icon?: string;
 }) {
   return (
     <Link
       href={link}
-      className="relative border p-5 rounded-xl hover:shadow-lg transition-all duration-300 group flex flex-col items-center justify-center min-h-[120px]"
-      style={{
-        backgroundColor: bgColor || "#fff",
-        borderColor: color ? `${color}30` : "#e5e7eb",
-      }}
+      className="relative bg-white border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow group flex flex-col items-center justify-center min-h-[100px]"
     >
-      <div
-        className="absolute top-2 right-2 p-1.5 rounded-full transition-colors group-hover:scale-110"
-        style={{ backgroundColor: color ? `${color}20` : "#f3f4f6" }}
-      >
-        <ArrowUpRight size={16} style={{ color: color || "#6b7280" }} />
+      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors">
+        <ArrowUpRight size={16} className="text-gray-500" />
       </div>
-      {icon && <span className="text-xl mb-1">{icon}</span>}
-      <span
-        className="text-sm mb-1 font-semibold"
-        style={{ color: color || "#4b5563" }}
-      >
-        {label}
-      </span>
-      <span
-        className="text-4xl font-bold"
-        style={{ color: color || "#111827" }}
-      >
-        {value}
-      </span>
+      <span className="text-sm text-gray-600 mb-1 font-medium">{label}</span>
+      <span className="text-4xl font-medium text-gray-900">{value}</span>
     </Link>
   );
 }
 
 // Department Card Component
-const deptGradients = [
-  "linear-gradient(135deg, #5D2E1E, #8B4513)",
-  "linear-gradient(135deg, #4F46E5, #7C3AED)",
-  "linear-gradient(135deg, #059669, #10B981)",
-  "linear-gradient(135deg, #D97706, #F59E0B)",
-  "linear-gradient(135deg, #DC2626, #EF4444)",
-  "linear-gradient(135deg, #0891B2, #06B6D4)",
-  "linear-gradient(135deg, #7C3AED, #A78BFA)",
-];
-
-function DepartmentCard({
-  stat,
-  index,
-}: {
-  stat: DepartmentStat;
-  index: number;
-}) {
-  const gradient = deptGradients[index % deptGradients.length];
+function DepartmentCard({ stat }: { stat: DepartmentStat }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <div className="h-2" style={{ background: gradient }} />
-      <div className="p-4">
-        <div className="text-center mb-3">
-          <span className="text-sm font-bold" style={{ color: "#3B1A0E" }}>
-            {stat.department}
-          </span>
+    <div className="bg-white border border-gray-200 p-4 rounded-lg">
+      <div className="text-center mb-3">
+        <span className="text-sm font-medium text-gray-700">
+          {stat.department}
+        </span>
+      </div>
+      <div className="text-center mb-4">
+        <span className="text-4xl font-bold text-gray-900">{stat.total}</span>
+      </div>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between text-gray-600 border-r-4 border-yellow-400 pr-2">
+          <span>รอดำเนินการ :</span>
+          <span>{stat.pending}</span>
         </div>
-        <div className="text-center mb-4">
-          <span className="text-4xl font-bold" style={{ color: "#5D2E1E" }}>
-            {stat.total}
-          </span>
-          <div className="text-xs text-gray-500 mt-1">รายการทั้งหมด</div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-blue-400 pr-2">
+          <span>กำลังดำเนินการ :</span>
+          <span>{stat.inProgress}</span>
         </div>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between items-center bg-amber-50 rounded-lg px-2.5 py-1.5">
-            <span className="text-amber-700 font-medium">รอดำเนินการ</span>
-            <span className="font-bold text-amber-800 bg-amber-200 px-2 py-0.5 rounded-full text-xs">
-              {stat.pending}
-            </span>
-          </div>
-          <div className="flex justify-between items-center bg-blue-50 rounded-lg px-2.5 py-1.5">
-            <span className="text-blue-700 font-medium">กำลังดำเนินการ</span>
-            <span className="font-bold text-blue-800 bg-blue-200 px-2 py-0.5 rounded-full text-xs">
-              {stat.inProgress}
-            </span>
-          </div>
-          <div className="flex justify-between items-center bg-green-50 rounded-lg px-2.5 py-1.5">
-            <span className="text-green-700 font-medium">ปิดงาน</span>
-            <span className="font-bold text-green-800 bg-green-200 px-2 py-0.5 rounded-full text-xs">
-              {stat.completed}
-            </span>
-          </div>
-          <div className="flex justify-between items-center bg-red-50 rounded-lg px-2.5 py-1.5">
-            <span className="text-red-700 font-medium">ยกเลิก</span>
-            <span className="font-bold text-red-800 bg-red-200 px-2 py-0.5 rounded-full text-xs">
-              {stat.cancelled}
-            </span>
-          </div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-green-400 pr-2">
+          <span>ปิดงาน :</span>
+          <span>{stat.completed}</span>
+        </div>
+        <div className="flex justify-between text-gray-600 border-r-4 border-red-400 pr-2">
+          <span>ยกเลิก :</span>
+          <span>{stat.cancelled}</span>
         </div>
       </div>
     </div>
