@@ -1,3 +1,13 @@
+/**
+ * @deprecated DEAD CODE — This file is NOT imported anywhere.
+ * The admin dashboard now uses proper server-side aggregation endpoints:
+ *   - /api/repairs/statistics/dashboard
+ *   - /api/repairs/statistics/by-department
+ * 
+ * This file fetched ALL tickets 3-4 times and computed stats client-side,
+ * which is extremely wasteful. Safe to delete entirely.
+ */
+
 import { apiFetch } from './api';
 
 export interface DashboardStats {

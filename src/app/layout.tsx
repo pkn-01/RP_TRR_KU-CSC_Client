@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Sarabun } from "next/font/google";
 import "./globals.css";
 
+// PERF: Reduced from 4 weights to 3 — weight 500 is rarely used, saves ~50KB font download
 const sarabun = Sarabun({
   variable: "--font-sarabun",
   subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
+  display: "swap", // PERF: Prevent FOIT (Flash of Invisible Text)
 });
 
 export const metadata: Metadata = {
@@ -14,7 +16,13 @@ export const metadata: Metadata = {
     "ระบบแจ้งซ่อมอุปกรณ์ IT สำหรับพนักงาน TRR - รวดเร็ว สะดวก ติดตามสถานะได้ตลอดเวลา",
   keywords: "IT Support, ระบบแจ้งซ่อม, TRR, Help Desk",
   authors: [{ name: "TRR Internship Team" }],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+};
+
+// PERF: viewport moved from metadata (deprecated) to dedicated export
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

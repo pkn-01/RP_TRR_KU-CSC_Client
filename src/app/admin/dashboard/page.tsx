@@ -54,6 +54,9 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     const loadDashboardData = async (showLoading = false) => {
       try {
         if (showLoading) setLoading(true);
@@ -67,22 +70,28 @@ export default function AdminDashboard() {
           apiFetch("/api/repairs/statistics/by-department", "GET"),
         ]);
 
+        if (!isMounted) return; // PERF: Prevent state update on unmounted component
         setStats(dashboardStats);
         setDepartmentStats(Array.isArray(deptStats) ? deptStats : []);
       } catch (error) {
+        if (!isMounted) return;
         console.error("Failed to load dashboard data:", error);
       } finally {
-        if (showLoading) setLoading(false);
+        if (showLoading && isMounted) setLoading(false);
       }
     };
 
     // Initial load with spinner
     loadDashboardData(true);
 
-    // Set interval for real-time updates (every 30 seconds) without spinner
-    const interval = setInterval(() => loadDashboardData(false), 30000);
+    // PERF: Reduced from 30s to 60s polling to cut server load by 50%
+    const interval = setInterval(() => loadDashboardData(false), 60000);
 
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      controller.abort();
+      clearInterval(interval);
+    };
   }, [filter, selectedDate]);
 
   const getUrgencyLabel = (urgency: string) => {
