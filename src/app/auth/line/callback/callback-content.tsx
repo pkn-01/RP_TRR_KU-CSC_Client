@@ -136,7 +136,11 @@ export default function CallbackContent() {
               },
             );
 
-            if (!verifyRes.ok) throw new Error("การแจ้งยืนยันตัวตนล้มเหลว");
+            if (!verifyRes.ok) {
+              const errorData = await verifyRes.json().catch(() => ({}));
+              throw new Error(errorData.message || "การแจ้งยืนยันตัวตนล้มเหลว");
+            }
+
             const { lineUserId } = await verifyRes.json();
             console.log("[Callback] Got lineUserId:", lineUserId);
             setCachedLineUserId(lineUserId);
@@ -209,7 +213,8 @@ export default function CallbackContent() {
           );
 
           if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
+            console.error("LINE Callback Error:", errorData);
             throw new Error(errorData.message || "การยืนยันตัวตนล้มเหลว");
           }
 
