@@ -245,7 +245,7 @@ export default function AdminSidebar() {
             );
           })}
 
-          <Link
+          {/* <Link
             href="/admin/data-management"
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors mt-2 ${
               isActive("/admin/data-management")
@@ -255,7 +255,7 @@ export default function AdminSidebar() {
           >
             <Database size={20} strokeWidth={1.5} />
             <span className="text-sm">จัดการข้อมูลระบบ</span>
-          </Link>
+          </Link> */}
         </nav>
 
         {/* User Profile Section */}
