@@ -170,6 +170,14 @@ function RepairFormContent() {
       >,
     ) => {
       const { id, value } = e.target;
+
+      // Phone: allow only digits, max 10 characters
+      if (id === "phone") {
+        const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+        setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+        return;
+      }
+
       setFormData((prev) => ({ ...prev, [id]: value }));
     },
     [],
@@ -228,11 +236,11 @@ function RepairFormContent() {
       return;
     }
 
-    if (!formData.phone.trim()) {
+    if (!formData.phone.trim() || formData.phone.length !== 10) {
       await showAlert({
         icon: "warning",
         title: "แจ้งเตือน",
-        text: "กรุณาระบุเบอร์โทรติดต่อ",
+        text: "กรุณาระบุเบอร์โทรติดต่อ 10 หลัก",
       });
       return;
     }
@@ -542,7 +550,10 @@ function RepairFormContent() {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    placeholder="0XX-XXX-XXXX"
+                    maxLength={10}
+                    inputMode="numeric"
+                    pattern="[0-9]{10}"
+                    placeholder="0XXXXXXXXX"
                     className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all"
                   />
                 </div>
