@@ -122,14 +122,12 @@ function RepairFormContent() {
           const isLineInAppBrowser = /Line/i.test(ua);
 
           if (isLineInAppBrowser) {
-            // User opened from Rich Menu (regular URL) — redirect to LIFF URL for proper login
+            // User opened from Rich Menu (regular URL) — use liff.login() to authenticate
             console.log(
-              "Detected LINE in-app browser via user-agent. Redirecting to LIFF URL for login...",
+              "Detected LINE in-app browser via user-agent. Triggering LIFF login...",
             );
-            const currentParams = new URLSearchParams(window.location.search);
-            const liffUrl = `https://liff.line.me/${liffId}?${currentParams.toString()}`;
-            window.location.href = liffUrl;
-            return; // Stop execution, redirect will happen
+            liff.login();
+            return; // Stop execution, login will redirect back with auth
           }
           // Truly external browser (desktop/Chrome/Safari) — user stays as Guest
           console.log("External browser detected, continuing as Guest");
