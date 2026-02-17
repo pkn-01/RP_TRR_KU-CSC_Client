@@ -96,32 +96,44 @@ function RepairFormContent() {
         setLiffInitialized(true);
 
         if (liff.isLoggedIn()) {
+          // User is logged in via LIFF — get their profile
           try {
             const profile = await liff.getProfile();
             if (profile.userId) {
-              setLineUserId(profile.userId);
-            }
-          } catch (profileError) {
-            console.warn("Failed to get LINE profile:", profileError);
-          }
-        }
-        if (liff.isLoggedIn()) {
-          try {
-            const profile = await liff.getProfile();
-            if (profile.userId) {
+              console.log(
+                "Got LINE profile userId:",
+                profile.userId.substring(0, 8) + "...",
+              );
               setLineUserId(profile.userId);
             }
           } catch (profileError) {
             console.warn("Failed to get LINE profile:", profileError);
           }
         } else if (liff.isInClient()) {
-          // If in LINE client but not logged in, force login
+          // In LINE client but not logged in, force login
           // This fixes the issue where Rich Menu (direct URL) doesn't auto-login
           console.log("In LINE client but not logged in. Forcing login...");
           liff.login();
           return; // Stop execution, login will redirect
+        } else {
+          // Not in LINE client and not logged in
+          // Check if we're in LINE's in-app browser via user-agent (Rich Menu opens regular URL)
+          const ua = navigator.userAgent || "";
+          const isLineInAppBrowser = /Line/i.test(ua);
+
+          if (isLineInAppBrowser) {
+            // User opened from Rich Menu (regular URL) — redirect to LIFF URL for proper login
+            console.log(
+              "Detected LINE in-app browser via user-agent. Redirecting to LIFF URL for login...",
+            );
+            const currentParams = new URLSearchParams(window.location.search);
+            const liffUrl = `https://liff.line.me/${liffId}?${currentParams.toString()}`;
+            window.location.href = liffUrl;
+            return; // Stop execution, redirect will happen
+          }
+          // Truly external browser (desktop/Chrome/Safari) — user stays as Guest
+          console.log("External browser detected, continuing as Guest");
         }
-        // If not logged in and not in client (e.g. external browser), user stays as Guest
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
         setLiffError(error?.message || "LIFF Init Failed");
