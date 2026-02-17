@@ -40,7 +40,7 @@ export default function AdminUsersPage() {
   const fetchUsers = useCallback(async (page: number) => {
     setIsLoading(true);
     try {
-      const response = await userService.getAllUsers(page, LIMIT);
+      const response = await userService.getAllUsers(page, LIMIT, "ADMIN,IT");
       setUsers(response.data);
       setTotalPages(response.pagination.totalPages);
       setTotalUsers(response.pagination.total);
@@ -58,8 +58,6 @@ export default function AdminUsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      // Exclude USER role (สมาชิกทั่วไป)
-      if (user.role === "USER") return false;
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase());

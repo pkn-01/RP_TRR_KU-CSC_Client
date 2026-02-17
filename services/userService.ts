@@ -32,8 +32,10 @@ export interface UsersResponse {
 }
 
 export const userService = {
-  async getAllUsers(page: number = 1, limit: number = 10): Promise<UsersResponse> {
-    return apiFetch(`/users?page=${page}&limit=${limit}`);
+  async getAllUsers(page: number = 1, limit: number = 10, roles?: string): Promise<UsersResponse> {
+    const query = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (roles) query.append('roles', roles);
+    return apiFetch(`/users?${query.toString()}`);
   },
 
   async getUserById(id: number): Promise<User> {
