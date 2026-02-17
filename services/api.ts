@@ -1,12 +1,8 @@
 // Use environment variable, or fallback to production URL, then localhost for dev
 const getBaseUrl = () => {
-  // If running on client side
+  // If running on client side, use relative path (Next.js Proxy)
   if (typeof window !== 'undefined') {
-    // If NOT running on localhost, FORCE production URL
-    // This fixes issues where NEXT_PUBLIC_API_URL might be baked as 'localhost' in Vercel env
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return 'https://rp-trr-ku-csc-server-smoky.vercel.app';
-    }
+    return '';
   }
 
   // Check env var (for localhost or server-side)
