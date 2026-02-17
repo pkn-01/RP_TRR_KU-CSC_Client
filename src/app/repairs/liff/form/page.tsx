@@ -221,10 +221,14 @@ function RepairFormContent() {
     setIsLoading(true);
     try {
       // Include lineUserId if user comes from LINE OA (either via URL or LIFF SDK)
+      // DEBUG: Log the lineUserId being sent
+      const finalLineUserId = lineUserId || lineUserIdFromUrl || "Guest";
+      console.log("Submitting form with lineUserId:", finalLineUserId);
+
       const dataPayload = {
         reporterName: formData.name.trim(),
-        reporterLineId: lineUserId || "Guest",
-        lineUserId: lineUserId || undefined, // For direct LINE notification
+        reporterLineId: finalLineUserId, // IMPORTANT: Should be the actual LINE ID for notifications
+        lineUserId: lineUserId || lineUserIdFromUrl || undefined, // For direct LINE notification (must be U...)
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
