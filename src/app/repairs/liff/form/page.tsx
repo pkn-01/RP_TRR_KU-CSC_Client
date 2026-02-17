@@ -104,7 +104,23 @@ function RepairFormContent() {
             console.warn("Failed to get LINE profile:", profileError);
           }
         }
-        // If not logged in, user stays as Guest (lineUserId is empty or from URL)
+        if (liff.isLoggedIn()) {
+          try {
+            const profile = await liff.getProfile();
+            if (profile.userId) {
+              setLineUserId(profile.userId);
+            }
+          } catch (profileError) {
+            console.warn("Failed to get LINE profile:", profileError);
+          }
+        } else if (liff.isInClient()) {
+          // If in LINE client but not logged in, force login
+          // This fixes the issue where Rich Menu (direct URL) doesn't auto-login
+          console.log("In LINE client but not logged in. Forcing login...");
+          liff.login();
+          return; // Stop execution, login will redirect
+        }
+        // If not logged in and not in client (e.g. external browser), user stays as Guest
       } catch (error) {
         console.warn("LIFF initialization failed, using guest mode:", error);
         setLiffInitialized(true);
