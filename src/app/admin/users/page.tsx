@@ -34,7 +34,7 @@ export default function AdminUsersPage() {
   const stats = {
     total: totalUsers,
     it: users.filter((u) => u.role === "IT").length,
-    user: users.filter((u) => u.role === "USER").length,
+    admin: users.filter((u) => u.role === "ADMIN").length,
   };
 
   const fetchUsers = useCallback(async (page: number) => {
@@ -58,6 +58,8 @@ export default function AdminUsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
+      // Exclude USER role (สมาชิกทั่วไป)
+      if (user.role === "USER") return false;
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -134,10 +136,9 @@ export default function AdminUsersPage() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <StatCard label="ผู้ใช้ทั้งหมด" value={stats.total} />
           <StatCard label="ทีม IT" value={stats.it} />
-          <StatCard label="ผู้ใช้ทั่วไป" value={stats.user} />
         </div>
 
         {/* Filters */}
@@ -166,7 +167,6 @@ export default function AdminUsersPage() {
               <option value="all">ทุกบทบาท</option>
               <option value="ADMIN">ผู้ดูแลระบบ</option>
               <option value="IT">ทีม IT</option>
-              <option value="USER">สมาชิกทั่วไป</option>
             </select>
           </div>
 
