@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../../../services/api";
 import { ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
+import CalendarPop from "../../../components/CalendarPop";
 
 interface RepairItem {
   id: number;
@@ -171,20 +172,18 @@ export default function AdminDashboard() {
             </div>
 
             {/* Date Picker */}
-            <label className="relative flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:border-gray-300 transition-colors">
-              <div className="flex items-center gap-2 pointer-events-none">
-                <span className="text-sm text-gray-600">
-                  {formatDisplayDate(selectedDate)}
-                </span>
-                <Calendar size={18} className="text-gray-400" />
-              </div>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-              />
-            </label>
+            <CalendarPop
+              selectedDate={(() => {
+                const [y, m, d] = selectedDate.split("-").map(Number);
+                return new Date(y, m - 1, d);
+              })()}
+              onChange={(date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                setSelectedDate(`${year}-${month}-${day}`);
+              }}
+            />
           </div>
         </div>
 
