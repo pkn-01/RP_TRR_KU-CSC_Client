@@ -234,26 +234,21 @@ function RepairFormContent() {
         problemCategory: "OTHER",
       };
 
-      
-      const backendUrl =
-        typeof window !== "undefined" &&
-        window.location.hostname === "localhost"
-          ? "http://localhost:3001"
-          : "https://rp-trr-ku-csc-server-smoky.vercel.app";
+      // Use relative URL to go through Next.js API route proxy
+      // This avoids CORS issues and ensures the request reaches the backend
       const response = await uploadData(
-        `${backendUrl}/api/repairs/liff/create`,
+        `/api/repairs/liff/create`,
         dataPayload,
         file || undefined,
       );
 
-      
       setSuccessData({
         ticketCode: response.ticketCode,
-        linkingCode: lineUserId ? undefined : response.linkingCode, 
+        linkingCode: lineUserId ? undefined : response.linkingCode,
         hasLineUserId: !!lineUserId,
       });
     } catch (error: unknown) {
-      setIsLoading(false); 
+      setIsLoading(false);
       const errorMessage =
         error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง";
       await showAlert({
@@ -266,7 +261,6 @@ function RepairFormContent() {
     }
   };
 
-  
   const handleNewRequest = () => {
     setSuccessData(null);
     setFormData({
