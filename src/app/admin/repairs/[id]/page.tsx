@@ -454,8 +454,18 @@ export default function RepairDetailPage() {
   /* -------------------- UI -------------------- */
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8">
+    <div className="min-h-screen bg-white relative">
+      {/* Loading Overlay */}
+      {saving && (
+        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
+            <p className="text-gray-600 font-medium">กำลังบันทึกข้อมูล...</p>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-10">
         {/* ── Header ───────────────────────────────── */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -513,7 +523,7 @@ export default function RepairDetailPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <InfoField label="สถานที่" value={data.location} />
-                  <InfoField label="หัวข้อ" value={data.title} />
+                  <InfoField label="เรื่อง" value={data.title} />
                 </div>
                 <InfoField
                   label="วันที่แจ้ง"
@@ -726,7 +736,7 @@ export default function RepairDetailPage() {
 
             {/* Action Buttons */}
             {!isLocked && canEdit() && (
-              <div className="space-y-3">
+              <div className="space-y-4 pt-4">
                 <button
                   onClick={handleSave}
                   disabled={saving}
