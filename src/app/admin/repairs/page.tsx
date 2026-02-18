@@ -555,77 +555,77 @@ function AdminRepairsContent() {
           </div>
         </div>
 
-        <div className="hidden md:block bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-          <table className="w-full text-left table-fixed">
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white rounded-lg overflow-hidden">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 text-gray-600 font-semibold text-xs uppercase tracking-wider">
-                <th className="px-6 py-4 w-[12%]">รหัส</th>
-                <th className="px-6 py-4 w-[15%]">เวลา</th>
-                <th className="px-6 py-4 w-[28%]">ปัญหา</th>
-                <th className="px-6 py-4 w-[18%]">สถานที่</th>
-                <th className="px-6 py-4 w-[10%] text-center">ความเร่งด่วน</th>
-                <th className="px-6 py-4 w-[10%] text-center">สถานะ</th>
-                <th className="px-6 py-4 w-[7%] text-right"></th>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  รหัส
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  เวลา
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  ปัญหา
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  สถานที่
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  ความเร่งด่วน
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  สถานะ
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
+                  จัดการ
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {paginatedRepairs.map((repair) => (
                 <tr
                   key={repair.id}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-b-0"
+                  className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => router.push(`/admin/repairs/${repair.id}`)}
                 >
-                  <td className="px-6 py-4 align-top">
-                    <span className="text-sm font-mono text-gray-900 font-medium whitespace-nowrap">
+                  <td className="px-6 py-4">
+                    <span className="text-sm font-mono text-gray-900">
                       {repair.ticketCode}
                     </span>
                   </td>
-                  <td className="px-6 py-4 align-top">
-                    <div className="text-sm text-gray-600 flex flex-col">
-                      <span>
-                        {new Date(repair.createdAt).toLocaleDateString(
-                          "th-TH",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "2-digit",
-                          },
-                        )}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(repair.createdAt).toLocaleTimeString(
-                          "th-TH",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </span>
-                    </div>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700">
+                      {new Date(repair.createdAt).toLocaleDateString("th-TH", {
+                        day: "numeric",
+                        month: "short",
+                        year: "2-digit",
+                      })}{" "}
+                      {new Date(repair.createdAt).toLocaleTimeString("th-TH", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 align-top">
-                    <div className="text-sm text-gray-900 break-words whitespace-normal line-clamp-2 hover:line-clamp-none transition-all">
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-900">
                       {repair.problemTitle}
-                    </div>
-                    {repair.problemDescription && (
-                      <div className="text-xs text-gray-400 mt-1 break-words whitespace-normal line-clamp-1">
-                        {repair.problemDescription}
-                      </div>
-                    )}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 align-top">
-                    <div className="text-sm text-gray-600 break-words whitespace-normal">
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700">
                       {repair.location}
-                    </div>
+                    </span>
                   </td>
-                  <td className="px-6 py-4 align-top text-center">
+                  <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
                         repair.urgency === "CRITICAL"
-                          ? "bg-red-100 text-red-800"
+                          ? "bg-red-100 text-red-700"
                           : repair.urgency === "URGENT"
-                            ? "bg-orange-100 text-orange-800"
-                            : "bg-green-100 text-green-800"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-green-100 text-green-700"
                       }`}
                     >
                       {repair.urgency === "CRITICAL"
@@ -635,43 +635,41 @@ function AdminRepairsContent() {
                           : "ปกติ"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 align-top text-center">
+                  <td className="px-6 py-4">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
                         repair.status === "COMPLETED"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-green-100 text-green-700"
                           : repair.status === "IN_PROGRESS"
-                            ? "bg-blue-100 text-blue-800"
+                            ? "bg-blue-100 text-blue-700"
                             : repair.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {statusLabels[repair.status] || repair.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 align-top text-right whitespace-nowrap">
+                  <td className="px-6 py-4 text-right">
                     <div
                       className="flex items-center justify-end gap-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
                         onClick={() =>
-                          handleDelete(repair.id, repair.ticketCode)
+                          router.push(`/admin/repairs/${repair.id}`)
                         }
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                        title="ลบรายการ"
+                        className="p-1 text-gray-400 hover:text-gray-600"
                       >
-                        <Trash2 size={16} />
+                        <ChevronRight size={18} />
                       </button>
                       <button
                         onClick={() =>
-                          router.push(`/admin/repairs/${repair.id}`)
+                          handleDelete(repair.id, repair.ticketCode)
                         }
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-                        title="ดูรายละเอียด"
+                        className="p-1 text-gray-400 hover:text-red-600"
                       >
-                        <ChevronRight size={18} />
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </td>
