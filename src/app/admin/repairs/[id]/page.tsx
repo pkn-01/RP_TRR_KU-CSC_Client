@@ -740,7 +740,8 @@ export default function RepairDetailPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full py-3.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+                  className="w-full py-3.5 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
                 >
                   {saving ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
@@ -750,7 +751,8 @@ export default function RepairDetailPage() {
                   <button
                     onClick={handleCompleteClick}
                     disabled={saving}
-                    className="w-full py-3 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: "#16a34a", color: "#ffffff" }}
+                    className="w-full py-3 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50"
                   >
                     ปิดงาน (เสร็จสิ้น)
                   </button>
@@ -759,7 +761,8 @@ export default function RepairDetailPage() {
                 <button
                   onClick={handleCancelClick}
                   disabled={saving}
-                  className="w-full py-3.5 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 shadow-sm transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
+                  className="w-full py-3.5 text-white text-sm font-semibold rounded-xl hover:bg-red-600 shadow-sm transition-colors disabled:opacity-50"
                 >
                   ยกเลิกงาน
                 </button>
