@@ -85,6 +85,8 @@ function RepairFormContent() {
 
         if (!liffId) {
           console.warn("LIFF ID not configured, using URL param or guest mode");
+          const userIdFromUrl = searchParams.get("lineUserId");
+          if (userIdFromUrl) setLineUserId(userIdFromUrl);
           setLiffInitialized(true);
           return;
         }
@@ -113,6 +115,15 @@ function RepairFormContent() {
           liff.login();
           return;
         } else {
+          // Check URL params first (fallback)
+          const userIdFromUrl = searchParams.get("lineUserId");
+          if (userIdFromUrl) {
+            console.log("Using lineUserId from URL param:", userIdFromUrl);
+            setLineUserId(userIdFromUrl);
+          } else {
+            console.log("External browser detected, continuing as Guest");
+          }
+
           const ua = navigator.userAgent || "";
           const isLineInAppBrowser = /Line/i.test(ua);
 
@@ -120,13 +131,17 @@ function RepairFormContent() {
             console.log(
               "Detected LINE in-app browser via user-agent. Triggering LIFF login...",
             );
-            liff.login();
+            // Optional: liff.login(); if you want to force it, but user might want to use URL param
+            // liff.login();
             return;
           }
-          console.log("External browser detected, continuing as Guest");
         }
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
+        // Fallback to URL in case of error
+        const userIdFromUrl = searchParams.get("lineUserId");
+        if (userIdFromUrl) setLineUserId(userIdFromUrl);
+
         setLiffError(error?.message || "LIFF Init Failed");
         setLiffInitialized(true);
       }
