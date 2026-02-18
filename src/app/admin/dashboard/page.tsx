@@ -181,7 +181,7 @@ export default function AdminDashboard() {
         {/* Main Stats Cards */}
         {/* Main Stats Cards */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-x-0 md:divide-x divide-gray-100">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x-0 md:divide-x divide-gray-100">
             <MainStatItem
               label="รายการซ่อมทั้งหมด"
               value={stats?.all.total || 0}
@@ -333,8 +333,10 @@ function StatCard({ label, value }: { label: string; value: number }) {
 // Main Stat Item Component (Internal use for the main card)
 function MainStatItem({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex flex-col items-center justify-center p-2">
-      <span className="text-sm text-gray-600 mb-1">{label}</span>
+    <div className="flex flex-col items-center justify-center p-2 min-w-0 w-full">
+      <span className="text-sm text-gray-600 mb-1 text-center whitespace-nowrap">
+        {label}
+      </span>
       <span className="text-3xl font-medium text-gray-900">{value}</span>
     </div>
   );
@@ -353,12 +355,14 @@ function TodayStatCard({
   return (
     <Link
       href={link}
-      className="relative bg-white border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow group flex flex-col items-center justify-center min-h-[100px]"
+      className="relative bg-white border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow group flex flex-col items-center justify-center min-h-[100px] min-w-0 w-full"
     >
       <div className="absolute top-2 right-2 p-1.5 rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors">
         <ArrowUpRight size={16} className="text-gray-500" />
       </div>
-      <span className="text-sm text-gray-600 mb-1 font-medium">{label}</span>
+      <span className="text-sm text-gray-600 mb-1 font-medium text-center whitespace-nowrap">
+        {label}
+      </span>
       <span className="text-4xl font-medium text-gray-900">{value}</span>
     </Link>
   );
