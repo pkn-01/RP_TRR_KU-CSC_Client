@@ -534,7 +534,7 @@ function RepairFormContent() {
                     value={formData.details}
                     onChange={handleChange}
                     placeholder="อธิบายอาการเสียหรือปัญหาที่พบเพิ่มเติม............"
-                    className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all resize-none"
+                    className="w-full px-4 py-2.5 bg-gray-100 border-0 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all resize-none"
                   />
                 
               </div>
