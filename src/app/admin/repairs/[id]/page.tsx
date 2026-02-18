@@ -512,11 +512,9 @@ export default function RepairDetailPage() {
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <InfoField label="หมวดหมู่" value={data.category} />
                   <InfoField label="สถานที่" value={data.location} />
+                  <InfoField label="หัวข้อ" value={data.title} />
                 </div>
-                <InfoField label="หัวข้อ" value={data.title} />
-                <InfoField label="รายละเอียด" value={data.description} />
                 <InfoField
                   label="วันที่แจ้ง"
                   value={new Date(data.createdAt).toLocaleString("th-TH", {
@@ -533,7 +531,7 @@ export default function RepairDetailPage() {
               {data.attachments && data.attachments.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <p className="text-xs text-gray-400 mb-2">รูปภาพประกอบ</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {data.attachments.map((att) => (
                       <a
                         key={att.id}
@@ -545,7 +543,7 @@ export default function RepairDetailPage() {
                         <img
                           src={att.fileUrl}
                           alt={att.filename}
-                          className="w-full h-32 object-cover"
+                          className="w-full h-48 object-cover"
                         />
                       </a>
                     ))}
@@ -732,7 +730,7 @@ export default function RepairDetailPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="w-full py-3.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-colors disabled:opacity-50"
                 >
                   {saving ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
@@ -751,7 +749,7 @@ export default function RepairDetailPage() {
                 <button
                   onClick={handleCancelClick}
                   disabled={saving}
-                  className="w-full py-3 text-red-500 text-sm font-medium rounded-xl border border-red-300 bg-white hover:bg-red-50 transition-colors disabled:opacity-50"
+                  className="w-full py-3.5 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 shadow-sm transition-colors disabled:opacity-50"
                 >
                   ยกเลิกงาน
                 </button>
