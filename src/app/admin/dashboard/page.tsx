@@ -195,7 +195,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <TodayStatCard
             label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.total || 0}
@@ -363,7 +363,7 @@ function TodayStatCard({
       <span className="text-sm text-gray-600 mb-1 font-medium text-center whitespace-nowrap">
         {label}
       </span>
-      <span className="text-4xl font-medium text-gray-900">{value}</span>
+      <span className="text-3xl font-medium text-gray-900">{value}</span>
     </Link>
   );
 }
