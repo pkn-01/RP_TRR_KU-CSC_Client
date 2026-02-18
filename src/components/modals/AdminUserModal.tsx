@@ -124,9 +124,6 @@ export default function AdminUserModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-              <User size={20} className="text-white" />
-            </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900">
                 {isEditMode ? "แก้ไขผู้ใช้" : "เพิ่มผู้ใช้ใหม่"}
@@ -153,10 +150,6 @@ export default function AdminUserModal({
                 ชื่อ-นามสกุล <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <User
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
                 <input
                   type="text"
                   value={formData.name || ""}
@@ -182,10 +175,6 @@ export default function AdminUserModal({
                 อีเมล <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <Mail
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
                 <input
                   type="email"
                   value={formData.email || ""}
@@ -211,10 +200,6 @@ export default function AdminUserModal({
                 บทบาท <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <Shield
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
                 <select
                   value={formData.role || "USER"}
                   onChange={(e) =>
