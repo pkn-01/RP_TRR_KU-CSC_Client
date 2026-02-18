@@ -32,7 +32,6 @@ export default function AdminUserModal({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState<"basic" | "contact">("basic");
 
   const isEditMode = !!user;
 
@@ -60,7 +59,6 @@ export default function AdminUserModal({
       setPassword("");
       setConfirmPassword("");
       setErrors({});
-      setActiveTab("basic");
     }
   }, [user, isOpen]);
 
@@ -147,228 +145,139 @@ export default function AdminUserModal({
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-100">
-          <button
-            onClick={() => setActiveTab("basic")}
-            className={`flex-1 py-3 text-sm font-medium transition-all ${
-              activeTab === "basic"
-                ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            ข้อมูลหลัก
-          </button>
-          <button
-            onClick={() => setActiveTab("contact")}
-            className={`flex-1 py-3 text-sm font-medium transition-all ${
-              activeTab === "contact"
-                ? "text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50/30"
-                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            ข้อมูลติดต่อ
-          </button>
-        </div>
-
-        {/* Form Body */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {activeTab === "basic" && (
-            <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  ชื่อ-นามสกุล <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <User
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
-                    type="text"
-                    value={formData.name || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
-                      errors.name
-                        ? "border-rose-300 bg-rose-50"
-                        : "border-slate-200"
-                    } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                    placeholder="ชื่อ นามสกุล"
-                  />
-                </div>
-                {errors.name && (
-                  <p className="text-xs text-rose-500 mt-1">{errors.name}</p>
-                )}
+          <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                ชื่อ-นามสกุล <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <User
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="text"
+                  value={formData.name || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
+                    errors.name
+                      ? "border-rose-300 bg-rose-50"
+                      : "border-slate-200"
+                  } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
+                  placeholder="ชื่อ นามสกุล"
+                />
               </div>
+              {errors.name && (
+                <p className="text-xs text-rose-500 mt-1">{errors.name}</p>
+              )}
+            </div>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  อีเมล <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <Mail
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
-                    type="email"
-                    value={formData.email || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
-                      errors.email
-                        ? "border-rose-300 bg-rose-50"
-                        : "border-slate-200"
-                    } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                    placeholder="email@example.com"
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-xs text-rose-500 mt-1">{errors.email}</p>
-                )}
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                อีเมล <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="email"
+                  value={formData.email || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
+                    errors.email
+                      ? "border-rose-300 bg-rose-50"
+                      : "border-slate-200"
+                  } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
+                  placeholder="email@example.com"
+                />
               </div>
+              {errors.email && (
+                <p className="text-xs text-rose-500 mt-1">{errors.email}</p>
+              )}
+            </div>
 
-              {/* Role */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  บทบาท <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <Shield
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <select
-                    value={formData.role || "USER"}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.target.value as any })
-                    }
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
-                  >
-                    <option value="USER">ผู้ใช้ทั่วไป</option>
-                    <option value="IT">ทีมไอที</option>
-                    <option value="ADMIN">ผู้ดูแลระบบ</option>
-                  </select>
-                </div>
+            {/* Role */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                บทบาท <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Shield
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <select
+                  value={formData.role || "USER"}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value as any })
+                  }
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
+                >
+                  <option value="USER">ผู้ใช้ทั่วไป</option>
+                  <option value="IT">ทีมไอที</option>
+                  <option value="ADMIN">ผู้ดูแลระบบ</option>
+                </select>
               </div>
+            </div>
 
-              {/* Password Section */}
-              <div className="pt-4 border-t border-slate-100">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3">
-                  {isEditMode ? "เปลี่ยนรหัสผ่าน (ไม่บังคับ)" : "รหัสผ่าน"}
-                </h4>
-                <div className="space-y-3">
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full px-4 py-2.5 rounded-xl border ${
-                        errors.password
-                          ? "border-rose-300 bg-rose-50"
-                          : "border-slate-200"
-                      } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm pr-10`}
-                      placeholder="รหัสผ่าน"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-xs text-rose-500">{errors.password}</p>
-                  )}
-
+            {/* Password Section */}
+            <div className="pt-4 border-t border-slate-100">
+              <h4 className="text-sm font-semibold text-slate-700 mb-3">
+                {isEditMode ? "เปลี่ยนรหัสผ่าน (ไม่บังคับ)" : "รหัสผ่าน"}
+              </h4>
+              <div className="space-y-3">
+                <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className={`w-full px-4 py-2.5 rounded-xl border ${
-                      errors.confirmPassword
+                      errors.password
                         ? "border-rose-300 bg-rose-50"
                         : "border-slate-200"
-                    } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                    placeholder="ยืนยันรหัสผ่าน"
+                    } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm pr-10`}
+                    placeholder="รหัสผ่าน"
                   />
-                  {errors.confirmPassword && (
-                    <p className="text-xs text-rose-500">
-                      {errors.confirmPassword}
-                    </p>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-rose-500">{errors.password}</p>
+                )}
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`w-full px-4 py-2.5 rounded-xl border ${
+                    errors.confirmPassword
+                      ? "border-rose-300 bg-rose-50"
+                      : "border-slate-200"
+                  } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
+                  placeholder="ยืนยันรหัสผ่าน"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-rose-500">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
-          )}
-
-          {activeTab === "contact" && (
-            <div className="space-y-4">
-              {/* Department */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  แผนก
-                </label>
-                <input
-                  type="text"
-                  value={formData.department || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, department: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-                  placeholder="เช่น IT, HR, Finance"
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  เบอร์โทรศัพท์
-                </label>
-                <div className="relative">
-                  <Phone
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
-                    type="tel"
-                    value={formData.phoneNumber || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phoneNumber: e.target.value })
-                    }
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-                    placeholder="08x-xxx-xxxx"
-                  />
-                </div>
-              </div>
-
-              {/* LINE ID */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  LINE ID
-                </label>
-                <input
-                  type="text"
-                  value={formData.lineId || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lineId: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-                  placeholder="@line_id"
-                />
-              </div>
-
-              <div className="pt-4 text-center text-xs text-slate-400">
-                ข้อมูลติดต่อจะช่วยในการสื่อสารกับผู้ใช้
-              </div>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Footer */}
