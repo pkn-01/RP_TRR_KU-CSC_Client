@@ -109,26 +109,20 @@ function RepairFormContent() {
             console.warn("Failed to get LINE profile:", profileError);
           }
         } else if (liff.isInClient()) {
-          // In LINE client but not logged in, force login
-          // This fixes the issue where Rich Menu (direct URL) doesn't auto-login
           console.log("In LINE client but not logged in. Forcing login...");
           liff.login();
-          return; // Stop execution, login will redirect
+          return;
         } else {
-          // Not in LINE client and not logged in
-          // Check if we're in LINE's in-app browser via user-agent (Rich Menu opens regular URL)
           const ua = navigator.userAgent || "";
           const isLineInAppBrowser = /Line/i.test(ua);
 
           if (isLineInAppBrowser) {
-            // User opened from Rich Menu (regular URL) — use liff.login() to authenticate
             console.log(
               "Detected LINE in-app browser via user-agent. Triggering LIFF login...",
             );
             liff.login();
-            return; // Stop execution, login will redirect back with auth
+            return;
           }
-          // Truly external browser (desktop/Chrome/Safari) — user stays as Guest
           console.log("External browser detected, continuing as Guest");
         }
       } catch (error: any) {
@@ -165,7 +159,6 @@ function RepairFormContent() {
     ) => {
       const { id, value } = e.target;
 
-      // Phone: allow only digits, max 10 characters
       if (id === "phone") {
         const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
         setFormData((prev) => ({ ...prev, phone: digitsOnly }));
@@ -209,7 +202,6 @@ function RepairFormContent() {
 
         setFile(selectedFile);
 
-        // Use object URL for faster preview and lower memory usage
         const url = URL.createObjectURL(selectedFile);
         setFilePreview(url);
       }
@@ -225,7 +217,6 @@ function RepairFormContent() {
     setFilePreview(null);
   }, [filePreview]);
 
-  // Clean up object URL when component unmounts
   useEffect(() => {
     return () => {
       if (filePreview) {
@@ -237,10 +228,8 @@ function RepairFormContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prevent double submit
     if (isLoading) return;
 
-    // Validate required fields
     if (!formData.name.trim()) {
       await showAlert({
         icon: "warning",
@@ -283,9 +272,8 @@ function RepairFormContent() {
 
     setIsLoading(true);
 
-    // Timeout handling: cancel request if backend is too slow
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => abortController.abort(), 30000);
 
     try {
       const finalLineUserId = lineUserId || "Guest";
@@ -293,7 +281,7 @@ function RepairFormContent() {
       const dataPayload = {
         reporterName: formData.name.trim(),
         reporterLineId: finalLineUserId,
-        lineUserId: lineUserId || undefined, // Only from LIFF SDK, never from URL
+        lineUserId: lineUserId || undefined,
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
@@ -361,13 +349,11 @@ function RepairFormContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Full Page Loading Overlay - Moved outside header/main to ensure it covers everything */}
       {isLoading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-200">
             <div className="relative mb-6">
               <div className="w-16 h-16 border-[5px] border-gray-100 border-t-[#5D3A29] rounded-full animate-spin"></div>
-              {/* Optional: Add logo or icon in center if desired, but simple spinner is fine */}
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
               กำลังดำเนินการ
