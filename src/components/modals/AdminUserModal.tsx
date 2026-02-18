@@ -147,7 +147,7 @@ export default function AdminUserModal({
             {/* Name */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                ชื่อ-นามสกุล <span className="text-rose-500">*</span>
+                ชื่อ<span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -156,7 +156,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
+                  className={`w-full px-4 py-2.5 rounded-xl border ${
                     errors.name
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
@@ -181,7 +181,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border ${
+                  className={`w-full px-4 py-2.5 rounded-xl border ${
                     errors.email
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
@@ -205,7 +205,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as any })
                   }
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
                 >
                   <option value="USER">ผู้ใช้ทั่วไป</option>
                   <option value="IT">ทีมไอที</option>
