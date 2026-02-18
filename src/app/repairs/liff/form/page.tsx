@@ -4,6 +4,8 @@ import React, { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { uploadData } from "@/services/uploadService";
 import Swal from "sweetalert2";
+import RepairSuccess from "@/components/repairs/RepairSuccess";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   Camera,
   MapPinHouse,
@@ -11,13 +13,13 @@ import {
   X,
   Building2,
   User,
-  ShieldAlert,
-  CirclePlus,
-  Pencil,
   ChevronDown,
-  Bell,
 } from "lucide-react";
 import { DEPARTMENT_OPTIONS } from "@/constants/departments";
+
+// File validation constants
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 // Pre-imported SweetAlert for faster alerts
 const showAlert = (options: {
@@ -51,11 +53,8 @@ function RepairFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read lineUserId from URL (fallback for when passed from another page)
-  const lineUserIdFromUrl = searchParams.get("lineUserId") || "";
-
-  // State for LINE user ID (from LIFF SDK or URL)
-  const [lineUserId, setLineUserId] = useState<string>(lineUserIdFromUrl);
+  // State for LINE user ID (from LIFF SDK only — never trust URL params)
+  const [lineUserId, setLineUserId] = useState<string>("");
   const [liffInitialized, setLiffInitialized] = useState(false);
   const [liffError, setLiffError] = useState<string | null>(null);
 
@@ -139,13 +138,8 @@ function RepairFormContent() {
       }
     };
 
-    // Only init if we don't already have a lineUserId from URL
-    if (!lineUserIdFromUrl) {
-      initLiff();
-    } else {
-      setLiffInitialized(true);
-    }
-  }, [lineUserIdFromUrl]);
+    initLiff();
+  }, []);
 
   const handleLineLogin = async () => {
     try {
@@ -187,6 +181,32 @@ function RepairFormContent() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const selectedFile = e.target.files[0];
+
+        // Validate file size
+        if (selectedFile.size > MAX_FILE_SIZE) {
+          showAlert({
+            icon: "warning",
+            title: "ไฟล์มีขนาดใหญ่เกินไป",
+            text: "กรุณาเลือกไฟล์ขนาดไม่เกิน 5MB",
+          });
+          e.target.value = "";
+          return;
+        }
+
+        // Validate file type (MIME type check)
+        if (
+          !selectedFile.type.startsWith("image/") ||
+          !ALLOWED_FILE_TYPES.includes(selectedFile.type)
+        ) {
+          showAlert({
+            icon: "warning",
+            title: "ประเภทไฟล์ไม่ถูกต้อง",
+            text: "รองรับเฉพาะไฟล์รูปภาพ (JPEG, PNG, WebP) เท่านั้น",
+          });
+          e.target.value = "";
+          return;
+        }
+
         setFile(selectedFile);
 
         // Use object URL for faster preview and lower memory usage
@@ -217,6 +237,9 @@ function RepairFormContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent double submit
+    if (isLoading) return;
+
     // Validate required fields
     if (!formData.name.trim()) {
       await showAlert({
@@ -236,11 +259,15 @@ function RepairFormContent() {
       return;
     }
 
-    if (!formData.phone.trim() || formData.phone.length !== 10) {
+    if (
+      !formData.phone.trim() ||
+      formData.phone.length !== 10 ||
+      !formData.phone.startsWith("0")
+    ) {
       await showAlert({
         icon: "warning",
         title: "แจ้งเตือน",
-        text: "กรุณาระบุเบอร์โทรติดต่อ 10 หลัก",
+        text: "กรุณาระบุเบอร์โทรติดต่อ 10 หลัก (ขึ้นต้นด้วย 0)",
       });
       return;
     }
@@ -255,16 +282,18 @@ function RepairFormContent() {
     }
 
     setIsLoading(true);
+
+    // Timeout handling: cancel request if backend is too slow
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 30000); // 30s timeout
+
     try {
-      // Include lineUserId if user comes from LINE OA (either via URL or LIFF SDK)
-      // DEBUG: Log the lineUserId being sent
-      const finalLineUserId = lineUserId || lineUserIdFromUrl || "Guest";
-      console.log("Submitting form with lineUserId:", finalLineUserId);
+      const finalLineUserId = lineUserId || "Guest";
 
       const dataPayload = {
         reporterName: formData.name.trim(),
-        reporterLineId: finalLineUserId, // IMPORTANT: Should be the actual LINE ID for notifications
-        lineUserId: lineUserId || lineUserIdFromUrl || undefined, // For direct LINE notification (must be U...)
+        reporterLineId: finalLineUserId,
+        lineUserId: lineUserId || undefined, // Only from LIFF SDK, never from URL
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
@@ -274,12 +303,11 @@ function RepairFormContent() {
         problemCategory: "OTHER",
       };
 
-      // Use relative URL to go through Next.js API route proxy
-      // This avoids CORS issues and ensures the request reaches the backend
       const response = await uploadData(
         `/api/repairs/liff/create`,
         dataPayload,
         file || undefined,
+        { signal: abortController.signal },
       );
 
       setSuccessData({
@@ -288,15 +316,19 @@ function RepairFormContent() {
         hasLineUserId: !!lineUserId,
       });
     } catch (error: unknown) {
-      setIsLoading(false);
-      const errorMessage =
-        error instanceof Error ? error.message : "กรุณาลองใหม่อีกครั้ง";
+      let errorMessage = "กรุณาลองใหม่อีกครั้ง";
+      if (error instanceof DOMException && error.name === "AbortError") {
+        errorMessage = "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       await showAlert({
         icon: "error",
         title: "เกิดข้อผิดพลาด",
         text: errorMessage,
       });
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
@@ -318,118 +350,12 @@ function RepairFormContent() {
   // Success Page
   if (successData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50/50 flex items-center justify-center p-6">
-        <div className="w-full max-w-md text-center">
-          {/* Success Icon */}
-          <div className="mb-6">
-            <div className="mx-auto w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-10 h-10 text-emerald-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          {/* Success Message */}
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
-            ส่งเรื่องแจ้งซ่อมสำเร็จ
-          </h1>
-          <p className="text-slate-500 mb-6">
-            ทีมงานจะดำเนินการตรวจสอบโดยเร็วที่สุด
-          </p>
-
-          {/* Ticket Code Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
-            <p className="text-sm text-slate-500 mb-2">รหัสการแจ้งซ่อม</p>
-            <p className="text-2xl font-mono font-bold text-emerald-600 tracking-wider">
-              {successData.ticketCode}
-            </p>
-          </div>
-
-          {/* LINE Notification Registration */}
-          {/* {successData.hasLineUserId ? (
-            <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-6 text-left">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 bg-green-100 p-1.5 rounded-full">
-                  <Bell className="w-4 h-4 text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-green-800 text-sm mb-1">
-                    ✅ เชื่อมต่อ LINE เรียบร้อย
-                  </h3>
-                  <p className="text-xs text-green-600 leading-relaxed">
-                    คุณจะได้รับแจ้งเตือนสถานะการซ่อมผ่าน LINE โดยอัตโนมัติ
-                    <br />
-                    ไม่ต้องลงทะเบียนเพิ่มเติม
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : successData.linkingCode ? (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-left">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 bg-blue-100 p-1.5 rounded-full">
-                  <Bell className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-blue-800 text-sm mb-1">
-                    รับแจ้งเตือนผ่าน LINE
-                  </h3>
-                  <p className="text-xs text-blue-600 mb-3 leading-relaxed">
-                    1. เพิ่มเพื่อน LINE Official Account
-                    <br />
-                    2. ส่งรหัสนี้ไปที่แชทเพื่อลงทะเบียน
-                  </p>
-
-                  <div className="bg-white rounded-lg border border-blue-200 p-2 text-center mb-3">
-                    <span className="font-mono font-bold text-blue-700 text-lg tracking-wider">
-                      {successData.linkingCode}
-                    </span>
-                  </div>
-
-                  <a
-                    href="https://line.me/R/ti/p/@YOUR_LINE_OA_ID" // TODO: Replace with actual LINE OA ID
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full py-2 bg-[#06C755] hover:bg-[#05b34c] text-white text-xs font-semibold rounded-lg text-center transition-colors shadow-sm"
-                  >
-                    เพิ่มเพื่อน LINE OA
-                  </a>
-                </div>
-              </div>
-            </div>
-          ) : (
-            
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
-              <p className="text-sm text-amber-800 font-medium mb-1">
-                กรุณาจดรหัสนี้ไว้
-              </p>
-              <p className="text-xs text-amber-700">
-                ใช้รหัสนี้เพื่อติดตามสถานะการแจ้งซ่อมของคุณ
-              </p>
-            </div>
-          )} */}
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={handleNewRequest}
-              className="w-full py-3 bg-[#5D3A29] hover:bg-[#4A2E21] text-white rounded-xl font-medium transition-all duration-200"
-            >
-              แจ้งซ่อมรายการใหม่
-            </button>
-          </div>
-        </div>
-      </div>
+      <RepairSuccess
+        ticketCode={successData.ticketCode}
+        linkingCode={successData.linkingCode}
+        hasLineUserId={successData.hasLineUserId}
+        onNewRequest={handleNewRequest}
+      />
     );
   }
 
@@ -685,19 +611,6 @@ function RepairFormContent() {
             </button>
           </div>
         </form>
-
-        {/* Debug Info (Auto-hidden in production if needed, currently visible for troubleshooting) */}
-        {/* <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500 font-mono break-all">
-          <p className="font-bold mb-2">🔧 Debug Info:</p>
-          <p>
-            LINE ID:{" "}
-            {lineUserId
-              ? `${lineUserId.substring(0, 8)}...`
-              : "Not Found (Guest)"}
-          </p>
-          <p>LIFF Init: {liffInitialized ? "Done" : "Loading..."}</p>
-          {liffError && <p className="text-red-500">LIFF Error: {liffError}</p>}
-        </div> */}
       </main>
     </div>
   );
@@ -705,14 +618,16 @@ function RepairFormContent() {
 
 export default function RepairLiffFormPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
-      <RepairFormContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-white">
+            <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin" />
+          </div>
+        }
+      >
+        <RepairFormContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

@@ -10,7 +10,8 @@ import { resizeImage } from "@/utils/imageResize";
 export async function uploadData(
   url: string,
   formData: Record<string, any>,
-  files?: File | File[]
+  files?: File | File[],
+  options?: { signal?: AbortSignal }
 ) {
   const payload = new FormData();
 
@@ -55,7 +56,8 @@ export async function uploadData(
   const res = await fetch(url, {
     method: "POST",
     body: payload,
-    headers: headers
+    headers: headers,
+    signal: options?.signal,
   });
 
   if (!res.ok) {
