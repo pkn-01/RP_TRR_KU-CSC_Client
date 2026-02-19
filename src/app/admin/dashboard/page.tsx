@@ -257,7 +257,10 @@ export default function AdminDashboard() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {stats?.recentRepairs.slice(0, 7).map((repair) => (
-                  <tr key={repair.id} className="hover:bg-gray-50">
+                  <tr
+                    key={repair.id}
+                    className="hover:bg-blue-50 transition-colors"
+                  >
                     <td className="px-4 py-3 text-sm font-mono text-gray-900">
                       {repair.ticketCode}
                     </td>
@@ -273,8 +276,17 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {repair.location}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {getUrgencyLabel(repair.urgency)}
+                    <td className="px-4 py-3 text-sm">
+                      {repair.urgency === "CRITICAL" ||
+                      repair.urgency === "URGENT" ? (
+                        <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
+                          ด่วน
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">
+                          ปกติ
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <Link
@@ -332,12 +344,23 @@ function StatCard({ label, value }: { label: string; value: number }) {
 
 // Main Stat Item Component (Internal use for the main card)
 function MainStatItem({ label, value }: { label: string; value: number }) {
+  const colorMap: Record<string, string> = {
+    รายการซ่อมทั้งหมด: "bg-gray-50 text-gray-800",
+    กำลังดำเนินการ: "bg-blue-50 text-blue-700",
+    ปิดงาน: "bg-green-50 text-green-700",
+    ยกเลิก: "bg-red-50 text-red-700",
+  };
+
+  const colorClass = colorMap[label] || "bg-gray-50 text-gray-800";
+
   return (
-    <div className="flex flex-col items-center justify-center p-2 min-w-0 w-full">
-      <span className="text-sm text-gray-600 mb-1 text-center whitespace-nowrap">
+    <div
+      className={`flex flex-col items-center justify-center p-4 min-w-0 w-full rounded-lg ${colorClass}`}
+    >
+      <span className="text-sm mb-1 text-center whitespace-nowrap opacity-80">
         {label}
       </span>
-      <span className="text-3xl font-medium text-gray-900">{value}</span>
+      <span className="text-3xl font-bold">{value}</span>
     </div>
   );
 }
@@ -352,18 +375,25 @@ function TodayStatCard({
   value: number;
   link: string;
 }) {
+  let colorClass = "bg-gray-50 text-gray-800";
+
+  if (label.includes("กำลังดำเนินการ")) colorClass = "bg-blue-50 text-blue-700";
+  if (label.includes("ปิดงาน")) colorClass = "bg-green-50 text-green-700";
+  if (label.includes("ยกเลิก")) colorClass = "bg-red-50 text-red-700";
+
   return (
     <Link
       href={link}
-      className="relative bg-white border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow group flex flex-col items-center justify-center min-h-[100px] min-w-0 w-full"
+      className={`relative border p-4 rounded-lg hover:shadow-md transition-all group flex flex-col items-center justify-center min-h-[100px] min-w-0 w-full ${colorClass}`}
     >
-      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors">
-        <ArrowUpRight size={16} className="text-gray-500" />
+      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/60 group-hover:bg-white transition-colors">
+        <ArrowUpRight size={16} />
       </div>
-      <span className="text-sm text-gray-600 mb-1 font-medium text-center whitespace-nowrap">
+
+      <span className="text-sm mb-1 font-medium text-center whitespace-nowrap opacity-80">
         {label}
       </span>
-      <span className="text-3xl font-medium text-gray-900">{value}</span>
+      <span className="text-3xl font-bold">{value}</span>
     </Link>
   );
 }
@@ -371,7 +401,7 @@ function TodayStatCard({
 // Department Card Component
 function DepartmentCard({ stat }: { stat: DepartmentStat }) {
   return (
-    <div className="bg-white border border-gray-200 p-4 rounded-lg">
+    <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
       <div className="text-center mb-3">
         <span className="text-sm font-medium text-gray-700">
           {stat.department}
@@ -381,19 +411,19 @@ function DepartmentCard({ stat }: { stat: DepartmentStat }) {
         <span className="text-4xl font-bold text-gray-900">{stat.total}</span>
       </div>
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between text-gray-600 border-r-4 border-yellow-400 pr-2">
+        <div className="flex justify-between text-yellow-600 border-r-4 border-yellow-400 pr-2">
           <span>รอดำเนินการ :</span>
           <span>{stat.pending}</span>
         </div>
-        <div className="flex justify-between text-gray-600 border-r-4 border-blue-400 pr-2">
+        <div className="flex justify-between text-blue-600 border-r-4 border-blue-400 pr-2">
           <span>กำลังดำเนินการ :</span>
           <span>{stat.inProgress}</span>
         </div>
-        <div className="flex justify-between text-gray-600 border-r-4 border-green-400 pr-2">
+        <div className="flex justify-between text-green-600 border-r-4 border-green-400 pr-2">
           <span>ปิดงาน :</span>
           <span>{stat.completed}</span>
         </div>
-        <div className="flex justify-between text-gray-600 border-r-4 border-red-400 pr-2">
+        <div className="flex justify-between text-red-600 border-r-4 border-red-400 pr-2">
           <span>ยกเลิก :</span>
           <span>{stat.cancelled}</span>
         </div>
