@@ -345,22 +345,22 @@ function StatCard({ label, value }: { label: string; value: number }) {
 // Main Stat Item Component (Internal use for the main card)
 function MainStatItem({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
-    รายการซ่อมทั้งหมด: "bg-gray-50 text-gray-800",
-    กำลังดำเนินการ: "bg-blue-50 text-blue-700",
-    ปิดงาน: "bg-green-50 text-green-700",
-    ยกเลิก: "bg-red-50 text-red-700",
+    รายการซ่อมทั้งหมด: "bg-slate-800 text-white",
+    กำลังดำเนินการ: "bg-blue-600 text-white",
+    ปิดงาน: "bg-emerald-600 text-white",
+    ยกเลิก: "bg-rose-600 text-white",
   };
 
-  const colorClass = colorMap[label] || "bg-gray-50 text-gray-800";
+  const colorClass = colorMap[label] || "bg-slate-800 text-white";
 
   return (
     <div
-      className={`flex flex-col items-center justify-center p-4 min-w-0 w-full rounded-lg ${colorClass}`}
+      className={`flex flex-col items-center justify-center p-5 min-w-0 w-full rounded-xl shadow-sm transition-all hover:scale-[1.02] ${colorClass}`}
     >
-      <span className="text-sm mb-1 text-center whitespace-nowrap opacity-80">
+      <span className="text-sm mb-1 text-center whitespace-nowrap font-medium uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-3xl font-bold">{value}</span>
+      <span className="text-4xl font-extrabold">{value}</span>
     </div>
   );
 }
@@ -375,25 +375,25 @@ function TodayStatCard({
   value: number;
   link: string;
 }) {
-  let colorClass = "bg-gray-50 text-gray-800";
+  let colorClass = "bg-slate-700 text-white";
 
-  if (label.includes("กำลังดำเนินการ")) colorClass = "bg-blue-50 text-blue-700";
-  if (label.includes("ปิดงาน")) colorClass = "bg-green-50 text-green-700";
-  if (label.includes("ยกเลิก")) colorClass = "bg-red-50 text-red-700";
+  if (label.includes("กำลังดำเนินการ")) colorClass = "bg-blue-600 text-white";
+  if (label.includes("ปิดงาน")) colorClass = "bg-emerald-600 text-white";
+  if (label.includes("ยกเลิก")) colorClass = "bg-rose-600 text-white";
 
   return (
     <Link
       href={link}
-      className={`relative border p-4 rounded-lg hover:shadow-md transition-all group flex flex-col items-center justify-center min-h-[100px] min-w-0 w-full ${colorClass}`}
+      className={`relative border-0 p-5 rounded-xl shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all group flex flex-col items-center justify-center min-h-[110px] min-w-0 w-full ${colorClass}`}
     >
-      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/60 group-hover:bg-white transition-colors">
-        <ArrowUpRight size={16} />
+      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-colors">
+        <ArrowUpRight size={18} className="text-white" />
       </div>
 
-      <span className="text-sm mb-1 font-medium text-center whitespace-nowrap opacity-80">
+      <span className="text-sm mb-1 font-semibold text-center whitespace-nowrap uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-3xl font-bold">{value}</span>
+      <span className="text-4xl font-extrabold">{value}</span>
     </Link>
   );
 }
@@ -401,29 +401,29 @@ function TodayStatCard({
 // Department Card Component
 function DepartmentCard({ stat }: { stat: DepartmentStat }) {
   return (
-    <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border-0 p-5 rounded-xl shadow-md hover:shadow-xl transition-all hover:scale-[1.02] border-t-4 border-slate-500">
       <div className="text-center mb-3">
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-bold text-slate-700 uppercase tracking-tighter">
           {stat.department}
         </span>
       </div>
       <div className="text-center mb-4">
-        <span className="text-4xl font-bold text-gray-900">{stat.total}</span>
+        <span className="text-4xl font-black text-slate-900">{stat.total}</span>
       </div>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between text-yellow-600 border-r-4 border-yellow-400 pr-2">
+      <div className="space-y-2.5 text-sm">
+        <div className="flex justify-between font-bold text-amber-600 border-r-4 border-amber-400 pr-2 bg-amber-50/50 py-1 rounded-l">
           <span>รอดำเนินการ :</span>
           <span>{stat.pending}</span>
         </div>
-        <div className="flex justify-between text-blue-600 border-r-4 border-blue-400 pr-2">
+        <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-400 pr-2 bg-blue-50/50 py-1 rounded-l">
           <span>กำลังดำเนินการ :</span>
           <span>{stat.inProgress}</span>
         </div>
-        <div className="flex justify-between text-green-600 border-r-4 border-green-400 pr-2">
+        <div className="flex justify-between font-bold text-emerald-600 border-r-4 border-emerald-400 pr-2 bg-emerald-50/50 py-1 rounded-l">
           <span>ปิดงาน :</span>
           <span>{stat.completed}</span>
         </div>
-        <div className="flex justify-between text-red-600 border-r-4 border-red-400 pr-2">
+        <div className="flex justify-between font-bold text-rose-600 border-r-4 border-rose-400 pr-2 bg-rose-50/50 py-1 rounded-l">
           <span>ยกเลิก :</span>
           <span>{stat.cancelled}</span>
         </div>
