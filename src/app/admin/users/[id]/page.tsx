@@ -2,17 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import {
-  User,
-  Mail,
-  Shield,
-  Phone,
-  Eye,
-  EyeOff,
-  Save,
-  ChevronLeft,
-  Loader2,
-} from "lucide-react";
+import { Eye, EyeOff, Save, ChevronLeft, Loader2 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import Swal from "sweetalert2";
 
@@ -35,7 +25,7 @@ export default function EditUserPage() {
         setFormData({
           name: user.name || "",
           email: user.email || "",
-          role: user.role || "USER",
+          role: user.role || "IT",
           department: user.department || "",
           phoneNumber: user.phoneNumber || "",
           lineId: user.lineId || "",
@@ -137,23 +127,19 @@ export default function EditUserPage() {
                 {/* Name */}
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                    ชื่อ<span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
                     <input
                       type="text"
                       value={formData.name || ""}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
+                      className={`w-full px-4 py-2 rounded-lg border ${
                         errors.name ? "border-red-500" : "border-gray-300"
                       } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                      placeholder="ชื่อ นามสกุล"
+                      placeholder=""
                     />
                   </div>
                   {errors.name && (
@@ -167,20 +153,16 @@ export default function EditUserPage() {
                     อีเมล <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Mail
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
                     <input
                       type="email"
                       value={formData.email || ""}
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
+                      className={`w-full px-4 py-2 rounded-lg border ${
                         errors.email ? "border-red-500" : "border-gray-300"
                       } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                      placeholder="email@example.com"
+                      placeholder=""
                     />
                   </div>
                   {errors.email && (
@@ -194,23 +176,18 @@ export default function EditUserPage() {
                     บทบาท <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Shield
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
                     <select
-                      value={formData.role || "USER"}
+                      value={formData.role || "IT"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
                           role: e.target.value as any,
                         })
                       }
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
                     >
-                      <option value="USER">User (ผู้ใช้ทั่วไป)</option>
-                      <option value="IT">IT Support</option>
-                      <option value="ADMIN">Admin</option>
+                      <option value="IT">ไอที</option>
+                      <option value="ADMIN">ผู้ดูแลระบบ</option>
                     </select>
                   </div>
                 </div>
@@ -237,10 +214,6 @@ export default function EditUserPage() {
                     เบอร์โทรศัพท์
                   </label>
                   <div className="relative">
-                    <Phone
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
                     <input
                       type="tel"
                       value={formData.phoneNumber || ""}
@@ -250,7 +223,7 @@ export default function EditUserPage() {
                           phoneNumber: e.target.value,
                         })
                       }
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="08x-xxx-xxxx"
                     />
                   </div>

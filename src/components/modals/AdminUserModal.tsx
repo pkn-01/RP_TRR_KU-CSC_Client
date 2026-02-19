@@ -41,7 +41,7 @@ export default function AdminUserModal({
         setFormData({
           name: user.name || "",
           email: user.email || "",
-          role: user.role || "USER",
+          role: user.role || "IT",
           department: user.department || "",
           phoneNumber: user.phoneNumber || "",
           lineId: user.lineId || "",
@@ -50,7 +50,7 @@ export default function AdminUserModal({
         setFormData({
           name: "",
           email: "",
-          role: "USER",
+          role: "IT",
           department: "",
           phoneNumber: "",
           lineId: "",
@@ -201,13 +201,12 @@ export default function AdminUserModal({
               </label>
               <div className="relative">
                 <select
-                  value={formData.role || "USER"}
+                  value={formData.role || "IT"}
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as any })
                   }
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
                 >
-                  <option value="USER">ผู้ใช้ทั่วไป</option>
                   <option value="IT">ทีมไอที</option>
                   <option value="ADMIN">ผู้ดูแลระบบ</option>
                 </select>

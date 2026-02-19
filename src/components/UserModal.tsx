@@ -44,7 +44,7 @@ export default function UserModal({
       setFormData({
         name: "",
         email: "",
-        role: "USER",
+        role: "IT",
         department: "",
         phoneNumber: "",
       });
@@ -135,7 +135,7 @@ export default function UserModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ชื่อ-นามสกุล <span className="text-red-500">*</span>
+                  ชื่อผู้ใช้<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -145,7 +145,7 @@ export default function UserModal({
                     setFormData({ ...formData, name: e.target.value })
                   }
                   disabled={isLoading}
-                  placeholder="เช่น นายสมชาย"
+                  placeholder=""
                 />
                 {formErrors.name && (
                   <p className={errorClasses}>{formErrors.name}</p>
@@ -163,7 +163,7 @@ export default function UserModal({
                     setFormData({ ...formData, email: e.target.value })
                   }
                   disabled={isLoading}
-                  placeholder="user@example.com"
+                  placeholder=""
                 />
                 {formErrors.email && (
                   <p className={errorClasses}>{formErrors.email}</p>
@@ -184,13 +184,12 @@ export default function UserModal({
                 </label>
                 <select
                   className={inputClasses}
-                  value={formData.role || "USER"}
+                  value={formData.role || "IT"}
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as any })
                   }
                   disabled={isLoading}
                 >
-                  <option value="USER">ผู้ใช้งานทั่วไป</option>
                   <option value="IT">ทีมไอที</option>
                   <option value="ADMIN">ผู้ดูแลระบบ</option>
                 </select>
@@ -202,7 +201,7 @@ export default function UserModal({
                 <input
                   type="text"
                   className={inputClasses}
-                  placeholder="เช่น IT, HR"
+                  placeholder=""
                   value={formData.department || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, department: e.target.value })
@@ -226,7 +225,7 @@ export default function UserModal({
                 <input
                   type="tel"
                   className={inputClasses}
-                  placeholder="08x-xxx-xxxx"
+                  placeholder=""
                   value={formData.phoneNumber || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, phoneNumber: e.target.value })
@@ -241,7 +240,7 @@ export default function UserModal({
                 <input
                   type="text"
                   className={inputClasses}
-                  placeholder="Line ID"
+                  placeholder=""
                   value={formData.lineId || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, lineId: e.target.value })
@@ -267,7 +266,7 @@ export default function UserModal({
                 <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   {formErrors.password && (
                     <p className="text-sm text-red-600 font-medium">
-                      ⚠️ {formErrors.password}
+                      {formErrors.password}
                     </p>
                   )}
                   <div>
@@ -277,7 +276,7 @@ export default function UserModal({
                     <div className="relative">
                       <input
                         type={showPassword ? "text" : "password"}
-                        placeholder="ระบุรหัสผ่านใหม่"
+                        placeholder=""
                         className={inputClasses}
                         value={passwordData.newPassword}
                         onChange={(e) => {
@@ -313,7 +312,7 @@ export default function UserModal({
                     <div className="relative">
                       <input
                         type={showConfirmPassword ? "text" : "password"}
-                        placeholder="ระบุรหัสผ่านใหม่อีกครั้ง"
+                        placeholder=""
                         className={inputClasses}
                         value={passwordData.confirmPassword}
                         onChange={(e) => {
