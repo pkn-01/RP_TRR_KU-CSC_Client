@@ -625,7 +625,7 @@ function AdminRepairsContent() {
                           ? "bg-red-100 text-red-700"
                           : repair.urgency === "URGENT"
                             ? "bg-orange-100 text-orange-700"
-                            : "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {repair.urgency === "CRITICAL"
@@ -639,12 +639,12 @@ function AdminRepairsContent() {
                     <span
                       className={`px-3 py-1 text-xs font-medium rounded-full ${
                         repair.status === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-emerald-100 text-emerald-700"
                           : repair.status === "IN_PROGRESS"
                             ? "bg-blue-100 text-blue-700"
                             : repair.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-gray-200 text-gray-600"
                       }`}
                     >
                       {statusLabels[repair.status] || repair.status}
