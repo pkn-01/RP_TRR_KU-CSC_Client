@@ -101,7 +101,6 @@ export default function ExportDataPage() {
         แผนก: repair.reporterDepartment || "-",
         เบอร์โทร: repair.reporterPhone || "-",
         สถานะ: statusLabels[repair.status] || repair.status,
-        รายละเอียด: safeTruncate(repair.description || "-", 32000),
       }));
 
       if (selectedFormat === "xlsx") {
@@ -131,13 +130,12 @@ export default function ExportDataPage() {
           { wch: 15 }, // แผนก
           { wch: 15 }, // เบอร์โทร
           { wch: 15 }, // สถานะ
-          { wch: 50 }, // รายละเอียด
         ];
 
         // Merge title cells
         ws["!merges"] = [
-          { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, // Merge title across columns
-          { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }, // Merge date across columns
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, // Merge title across columns
+          { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, // Merge date across columns
         ];
 
         XLSX.utils.book_append_sheet(wb, ws, "งานซ่อมแซม");
@@ -281,7 +279,6 @@ export default function ExportDataPage() {
               "แผนก",
               "เบอร์โทร",
               "สถานะ",
-              "รายละเอียด",
             ].map((col) => (
               <span
                 key={col}

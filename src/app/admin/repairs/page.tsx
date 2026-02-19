@@ -272,7 +272,6 @@ function AdminRepairsContent() {
           minute: "2-digit",
         }),
         "ปัญหา/รายการ": repair.problemTitle,
-        รายละเอียด: repair.problemDescription || "-",
         สถานที่: repair.location,
         ความสำคัญ:
           repair.urgency === "CRITICAL"
@@ -323,7 +322,6 @@ function AdminRepairsContent() {
         { wch: 15 }, // วันที่แจ้ง
         { wch: 10 }, // เวลาที่แจ้ง
         { wch: 30 }, // ปัญหา/รายการ
-        { wch: 40 }, // รายละเอียด
         { wch: 20 }, // สถานที่
         { wch: 12 }, // ความสำคัญ
         { wch: 20 }, // ชื่อผู้แจ้ง
@@ -335,9 +333,9 @@ function AdminRepairsContent() {
 
       // Merge Title Cells
       ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }, // Main Title
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }, // Date info
-        { s: { r: 1, c: 6 }, e: { r: 1, c: 11 } }, // Summary info
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // Main Title
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // Date info
+        { s: { r: 1, c: 5 }, e: { r: 1, c: 10 } }, // Summary info
       ];
 
       // 4. Download File
