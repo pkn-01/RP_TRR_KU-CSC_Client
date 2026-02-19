@@ -198,22 +198,10 @@ function AdminLoansContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            className="bg-blue-500 text-white"
-            label="รายการยืมทั้งหมด"
-            value={stats.total}
-          />
-          <StatCard
-            className="bg-yellow-500 text-white"
-            label="กำลังยืม"
-            value={stats.active}
-          />
-          <StatCard
-            className="bg-green-500 text-white"
-            label="คืนสำเร็จแล้ว"
-            value={stats.returned}
-          />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <StatCard label="รายการยืมทั้งหมด" value={stats.total} />
+          <StatCard label="กำลังยืม" value={stats.active} />
+          <StatCard label="คืนสำเร็จแล้ว" value={stats.returned} />
         </div>
 
         {/* Filters */}
@@ -624,22 +612,26 @@ function AdminLoansContent() {
 function StatCard({
   label,
   value,
-  color,
   className,
 }: {
   label: string;
   value: number;
-  color?: string;
   className?: string;
 }) {
+  const colorMap: Record<string, string> = {
+    รายการยืมทั้งหมด: "bg-blue-600 text-white",
+    กำลังยืม: "bg-amber-500 text-white",
+    คืนสำเร็จแล้ว: "bg-emerald-600 text-white",
+  };
+
+  const colorClass = colorMap[label] || className || "bg-blue-600 text-white";
+
   return (
-    <div className={`p-4 rounded-lg ${className || "bg-gray-200"}`}>
-      <span className="text-sm text-gray-600">{label}</span>
-      <div className="mt-2">
-        <span className={`text-3xl font-bold ${color || "text-gray-900"}`}>
-          {value}
-        </span>
-      </div>
+    <div
+      className={`flex flex-col items-center justify-center p-5 min-w-0 w-full rounded-xl shadow-md ${colorClass}`}
+    >
+      <span className="text-sm font-bold mb-1">{label}</span>
+      <span className="text-3xl font-bold">{value}</span>
     </div>
   );
 }
