@@ -362,25 +362,13 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="flex flex-col gap-3">
-            <StatCard label="รายการวันนี้" value={stats.today} />
-            <StatCard label="รายการทั้งหมด" value={stats.total} />
-          </div>
-          <StatCard
-            label="รอการดำเนินการ"
-            value={stats.pending}
-            className="h-full min-h-[140px]"
-          />
-          <StatCard
-            label="กำลังดำเนินการ"
-            value={stats.inProgress}
-            className="h-full min-h-[140px]"
-          />
-          <div className="flex flex-col gap-3">
-            <StatCard label="เสร็จสิ้น" value={stats.completed} />
-            <StatCard label="ยกเลิก" value={stats.cancelled} />
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="รายการวันนี้" value={stats.today} />
+          <StatCard label="รายการทั้งหมด" value={stats.total} />
+          <StatCard label="รอการดำเนินการ" value={stats.pending} />
+          <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
+          <StatCard label="เสร็จสิ้น" value={stats.completed} />
+          <StatCard label="ยกเลิก" value={stats.cancelled} />
         </div>
 
         {/* Filter Row Indicator */}
@@ -759,21 +747,26 @@ function AdminRepairsContent() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  className = "",
-}: {
-  label: string;
-  value: number;
-  className?: string;
-}) {
+function StatCard({ label, value }: { label: string; value: number }) {
+  const colorMap: Record<string, string> = {
+    รายการวันนี้: "bg-blue-600 text-white",
+    รายการทั้งหมด: "bg-blue-600 text-white",
+    รอการดำเนินการ: "bg-amber-500 text-white",
+    กำลังดำเนินการ: "bg-amber-500 text-white",
+    เสร็จสิ้น: "bg-emerald-600 text-white",
+    ยกเลิก: "bg-rose-600 text-white",
+  };
+
+  const colorClass = colorMap[label] || "bg-blue-600 text-white";
+
   return (
     <div
-      className={`bg-white rounded-xl p-4 flex flex-col items-center justify-center shadow-sm border border-gray-200 ${className}`}
+      className={`flex flex-col items-center justify-center p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
     >
-      <span className="text-gray-600 text-sm font-medium mb-1">{label}</span>
-      <span className="text-2xl font-bold text-gray-900">{value}</span>
+      <span className="text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
+        {label}
+      </span>
+      <span className="text-4xl font-black">{value}</span>
     </div>
   );
 }
