@@ -771,8 +771,8 @@ function StatCard({
   const colorMap: Record<string, string> = {
     รายการวันนี้: "bg-purple-600 text-white",
     รายการทั้งหมด: "bg-blue-600 text-white",
-    รอการดำเนินการ: "bg-amber-500 text-white",
-    กำลังดำเนินการ: "bg-sky-500 text-white",
+    รอการดำเนินการ: "bg-sky-500 text-white",
+    กำลังดำเนินการ: "bg-amber-500 text-white",
     เสร็จสิ้น: "bg-emerald-600 text-white",
     ยกเลิก: "bg-rose-600 text-white",
   };
