@@ -76,25 +76,33 @@ function RepairFormContent() {
     hasLineUserId?: boolean;
   } | null>(null);
 
-  // Initialize LIFF SDK to get user profile (optional - no login required)
+  // Initialize LIFF SDK to get user profile
+  // Priority: 1) URL param lineUserId  2) LIFF SDK profile  3) LINE in-app browser → force login
   useEffect(() => {
     const initLiff = async () => {
       try {
-        const liff = (await import("@line/liff")).default;
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
-
-        if (!liffId) {
-          console.warn("LIFF ID not configured, using URL param or guest mode");
-          const userIdFromUrl = searchParams.get("lineUserId");
-          if (userIdFromUrl) setLineUserId(userIdFromUrl);
+        // 1) Always check URL param first (most reliable — from backend or direct link)
+        const userIdFromUrl = searchParams.get("lineUserId");
+        if (userIdFromUrl) {
+          console.log("Using lineUserId from URL param:", userIdFromUrl);
+          setLineUserId(userIdFromUrl);
           setLiffInitialized(true);
           return;
         }
 
+        // 2) Try LIFF SDK to get userId
+        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
+
+        if (!liffId) {
+          console.warn("LIFF ID not configured, continuing as guest");
+          setLiffInitialized(true);
+          return;
+        }
+
+        const liff = (await import("@line/liff")).default;
+
         // Initialize LIFF without forcing login on external browser
-        // This allows users without LINE or on desktop to access the form as GUEST
         await liff.init({ liffId, withLoginOnExternalBrowser: false });
-        setLiffInitialized(true);
 
         if (liff.isLoggedIn()) {
           // User is logged in via LIFF — get their profile
@@ -106,36 +114,36 @@ function RepairFormContent() {
                 profile.userId.substring(0, 8) + "...",
               );
               setLineUserId(profile.userId);
+              setLiffInitialized(true);
+              return;
             }
           } catch (profileError) {
             console.warn("Failed to get LINE profile:", profileError);
           }
-        } else if (liff.isInClient()) {
+        }
+
+        if (liff.isInClient()) {
+          // In LINE client (opened via LIFF URL) but not logged in
           console.log("In LINE client but not logged in. Forcing login...");
           liff.login();
           return;
-        } else {
-          // Check URL params first (fallback)
-          const userIdFromUrl = searchParams.get("lineUserId");
-          if (userIdFromUrl) {
-            console.log("Using lineUserId from URL param:", userIdFromUrl);
-            setLineUserId(userIdFromUrl);
-          } else {
-            console.log("External browser detected, continuing as Guest");
-          }
-
-          const ua = navigator.userAgent || "";
-          const isLineInAppBrowser = /Line/i.test(ua);
-
-          if (isLineInAppBrowser) {
-            console.log(
-              "Detected LINE in-app browser via user-agent. Triggering LIFF login...",
-            );
-            // Optional: liff.login(); if you want to force it, but user might want to use URL param
-            // liff.login();
-            return;
-          }
         }
+
+        // 3) Detect LINE in-app browser (opened from Rich Menu URI action)
+        const ua = navigator.userAgent || "";
+        const isLineInAppBrowser = /Line/i.test(ua);
+
+        if (isLineInAppBrowser) {
+          console.log(
+            "Detected LINE in-app browser via user-agent. Triggering LIFF login to get userId...",
+          );
+          liff.login();
+          return;
+        }
+
+        // External browser without lineUserId — continue as Guest
+        console.log("External browser, no lineUserId. Continuing as Guest.");
+        setLiffInitialized(true);
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
         // Fallback to URL in case of error
@@ -148,7 +156,7 @@ function RepairFormContent() {
     };
 
     initLiff();
-  }, []);
+  }, [searchParams]);
 
   const handleLineLogin = async () => {
     try {
@@ -527,16 +535,15 @@ function RepairFormContent() {
                 >
                   ปัญหา<span className="text-red-500">*</span>
                 </label>
-               
-                  <textarea
-                    id="details"
-                    rows={4}
-                    value={formData.details}
-                    onChange={handleChange}
-                    placeholder="อธิบายอาการเสียหรือปัญหาที่พบเพิ่มเติม............"
-                    className="w-full px-4 py-2.5 bg-gray-100 border-0 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all resize-none"
-                  />
-                
+
+                <textarea
+                  id="details"
+                  rows={4}
+                  value={formData.details}
+                  onChange={handleChange}
+                  placeholder="อธิบายอาการเสียหรือปัญหาที่พบเพิ่มเติม............"
+                  className="w-full px-4 py-2.5 bg-gray-100 border-0 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all resize-none"
+                />
               </div>
 
               {/* Urgency*/}
