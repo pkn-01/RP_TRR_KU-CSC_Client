@@ -38,7 +38,9 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอรับงาน",
+  ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
+  WAITING_PARTS: "รออะไหล่",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
 };
@@ -475,7 +477,9 @@ function AdminRepairsContent() {
               <option value="all">ทุกสถานะ</option>
               <option value="TODAY">งานวันนี้</option>
               <option value="PENDING">รอรับงาน</option>
+              <option value="ASSIGNED">มอบหมายแล้ว</option>
               <option value="IN_PROGRESS">กำลังดำเนินการ</option>
+              <option value="WAITING_PARTS">รออะไหล่</option>
               <option value="COMPLETED">เสร็จสิ้น</option>
               <option value="CANCELLED">ยกเลิก</option>
             </select>
@@ -642,7 +646,11 @@ function AdminRepairsContent() {
                             ? "bg-blue-100 text-blue-700"
                             : repair.status === "PENDING"
                               ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-200 text-gray-600"
+                              : repair.status === "ASSIGNED"
+                                ? "bg-indigo-100 text-indigo-700"
+                                : repair.status === "WAITING_PARTS"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-gray-200 text-gray-600"
                       }`}
                     >
                       {statusLabels[repair.status] || repair.status}
