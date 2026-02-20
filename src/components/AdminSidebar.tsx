@@ -216,7 +216,7 @@ export default function AdminSidebar() {
                       <Icon
                         size={20}
                         strokeWidth={1.5}
-                        className={`${active ? "text-blue-600" : "text-gray-500"}`}
+                        className={`${active ? "text-[#795548]" : "text-gray-500"}`}
                       />
                       {!isCollapsed || isOpen ? (
                         <span className="text-sm font-medium">
@@ -265,14 +265,14 @@ export default function AdminSidebar() {
                 title={isCollapsed && !isOpen ? item.label : ""}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   active
-                    ? "bg-blue-50 text-blue-700 font-medium"
+                    ? "bg-[#795548]/10 text-[#795548] font-medium"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 } ${isCollapsed && !isOpen ? "justify-center" : ""}`}
               >
                 <Icon
                   size={20}
                   strokeWidth={1.5}
-                  className={`${active ? "text-blue-600" : "text-gray-500"}`}
+                  className={`${active ? "text-[#795548]" : "text-gray-500"}`}
                 />
                 {!isCollapsed || isOpen ? (
                   <span className="text-sm">{item.label}</span>
@@ -311,16 +311,16 @@ export default function AdminSidebar() {
                 alt={adminProfile?.name || "Admin"}
                 width={40}
                 height={40}
-                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-[#795548] transition-colors"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center group-hover:bg-amber-600 transition-colors shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[#795548] flex items-center justify-center group-hover:bg-[#8d6e63] transition-colors shrink-0">
                 <User size={20} className="text-white" />
               </div>
             )}
             {!isCollapsed || isOpen ? (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-blue-700 transition-colors">
+                <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-[#795548] transition-colors">
                   {adminProfile?.name || "admin"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
