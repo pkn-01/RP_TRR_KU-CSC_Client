@@ -49,7 +49,7 @@ function DetailSection({ data }: { data: RepairDetail }) {
         <div>
           <span className="text-gray-500">ไฟล์แนบ:</span>
           <ul className="list-disc list-inside mt-1">
-            {data.attachments.map((att: any) => (
+            {data.attachments.map((att) => (
               <li key={att.id}>
                 <a
                   href={att.fileUrl}
@@ -63,6 +63,50 @@ function DetailSection({ data }: { data: RepairDetail }) {
             ))}
           </ul>
         </div>
+      )}
+    </div>
+  );
+}
+
+function AssigneeSection({
+  data,
+  canEdit,
+  id,
+}: {
+  data: RepairDetail;
+  canEdit: boolean;
+  id: string;
+}) {
+  const router = useRouter();
+  return (
+    <div className="border rounded-xl p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-lg">ผู้รับผิดชอบ</h2>
+        {canEdit && (
+          <button
+            onClick={() => router.push(`/admin/repairs/${id}/assigned`)}
+            className="text-sm px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            มอบหมายงาน
+          </button>
+        )}
+      </div>
+      {data.assignees && data.assignees.length > 0 ? (
+        <ul className="space-y-2">
+          {data.assignees.map((a) => (
+            <li
+              key={a.userId}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg"
+            >
+              <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-medium">
+                {a.user.name.charAt(0)}
+              </span>
+              <span className="text-sm text-gray-800">{a.user.name}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-gray-400">ยังไม่มีผู้รับผิดชอบ</p>
       )}
     </div>
   );
@@ -290,6 +334,7 @@ export default function RepairDetailPage() {
       <div className="grid lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
           <ReporterSection data={data} />
+          <AssigneeSection data={data} canEdit={canEdit} id={id as string} />
           <DetailSection data={data} />
         </div>
 
