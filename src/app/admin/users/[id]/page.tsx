@@ -204,7 +204,7 @@ export default function EditUserPage() {
                       setFormData({ ...formData, department: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder=""
+                    placeholder="เช่น ไอที บัญชี ฝ่ายอ้อย"
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function EditUserPage() {
                   <div className="relative">
                     <input
                       type="tel"
-                      value={formData.phoneNumber || ""}
+                      value={formData.phoneNumber || "08X-XXX-XXXX"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -241,7 +241,7 @@ export default function EditUserPage() {
                       setFormData({ ...formData, lineId: e.target.value })
                     }
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder=""
+                    placeholder="@LlineID"
                   />
                 </div>
               </div>
@@ -265,7 +265,7 @@ export default function EditUserPage() {
                       className={`w-full px-4 py-2 rounded-lg border ${
                         errors.password ? "border-red-500" : "border-gray-300"
                       } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                      placeholder=""
+                      placeholder="กรอกรหัสผ่านใหม่"
                     />
                     <button
                       type="button"
@@ -295,7 +295,7 @@ export default function EditUserPage() {
                         ? "border-red-500"
                         : "border-gray-300"
                     } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder=""
+                    placeholder="ยืนยันรหัสผ่านอีกครั้ง"
                   />
                   {errors.confirmPassword && (
                     <p className="text-xs text-red-500 mt-1">
