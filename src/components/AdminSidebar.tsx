@@ -21,8 +21,11 @@ import {
   CheckSquare,
   Trash2,
   Database,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
+import { useSidebar } from "@/context/SidebarContext";
 
 interface SubMenuItem {
   label: string;
@@ -41,6 +44,7 @@ interface MenuItem {
 }
 
 export default function AdminSidebar() {
+  const { isCollapsed, toggleSidebar } = useSidebar();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [adminProfile, setAdminProfile] = useState<UserType | null>(null);
@@ -68,7 +72,7 @@ export default function AdminSidebar() {
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
-  // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
+    // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
     {
       icon: Package,
       label: "การยืม",
@@ -155,17 +159,36 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-56 bg-white transition-transform duration-300 z-[60] flex flex-col ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed left-0 top-0 h-screen bg-white transition-all duration-300 z-[60] flex flex-col border-r border-gray-200 ${
+          isOpen ? "translate-x-0 w-56" : "-translate-x-full lg:translate-x-0"
+        } ${!isOpen && isCollapsed ? "lg:w-20" : "lg:w-56"}`}
       >
         {/* Logo Header */}
-        <div className="h-20 flex items-center justify-center bg-[#795548]">
-          <Link href="/admin/dashboard" className="flex items-center">
+        <div
+          className={`h-20 flex items-center bg-[#795548] px-4 transition-all duration-300 ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
+        >
+          <Link
+            href="/admin/dashboard"
+            className={`flex items-center gap-2 ${isCollapsed && !isOpen ? "hidden" : "flex"}`}
+          >
             <span className="text-xl font-bold text-white tracking-wider">
               TRR-RP
             </span>
           </Link>
+
+          {/* Desktop Toggle Button */}
+          <button
+            onClick={toggleSidebar}
+            className={`hidden lg:flex p-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors ${
+              isCollapsed && !isOpen ? "" : ""
+            }`}
+          >
+            {isCollapsed ? (
+              <ChevronRight size={18} />
+            ) : (
+              <ChevronLeft size={18} />
+            )}
+          </button>
         </div>
 
         {/* Navigation */}
@@ -182,25 +205,31 @@ export default function AdminSidebar() {
                   {/* Parent Menu with Dropdown */}
                   <button
                     onClick={() => toggleMenu(item.label)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+                    title={isCollapsed && !isOpen ? item.label : ""}
+                    className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-colors ${
                       active
                         ? "text-gray-900"
                         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                    }`}
+                    } ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         size={20}
                         strokeWidth={1.5}
-                        className="text-gray-500"
+                        className={`${active ? "text-blue-600" : "text-gray-500"}`}
                       />
-                      <span className="text-sm font-medium">{item.label}</span>
+                      {!isCollapsed || isOpen ? (
+                        <span className="text-sm font-medium">
+                          {item.label}
+                        </span>
+                      ) : null}
                     </div>
-                    {isExpanded ? (
-                      <ChevronUp size={18} className="text-gray-400" />
-                    ) : (
-                      <ChevronDown size={18} className="text-gray-400" />
-                    )}
+                    {(!isCollapsed || isOpen) &&
+                      (isExpanded ? (
+                        <ChevronUp size={18} className="text-gray-400" />
+                      ) : (
+                        <ChevronDown size={18} className="text-gray-400" />
+                      ))}
                   </button>
 
                   {/* Submenu Items */}
@@ -233,14 +262,21 @@ export default function AdminSidebar() {
               <Link
                 key={item.href}
                 href={item.href!}
+                title={isCollapsed && !isOpen ? item.label : ""}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   active
-                    ? "text-gray-900 font-medium"
+                    ? "bg-blue-50 text-blue-700 font-medium"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+                } ${isCollapsed && !isOpen ? "justify-center" : ""}`}
               >
-                <Icon size={20} strokeWidth={1.5} className="text-gray-500" />
-                <span className="text-sm">{item.label}</span>
+                <Icon
+                  size={20}
+                  strokeWidth={1.5}
+                  className={`${active ? "text-blue-600" : "text-gray-500"}`}
+                />
+                {!isCollapsed || isOpen ? (
+                  <span className="text-sm">{item.label}</span>
+                ) : null}
               </Link>
             );
           })}
@@ -259,10 +295,13 @@ export default function AdminSidebar() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="p-4 bg-white">
+        <div
+          className={`p-4 bg-white border-t border-gray-100 ${isCollapsed && !isOpen ? "flex flex-col items-center" : ""}`}
+        >
           <Link
             href="/admin/profile"
-            className="flex items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group"
+            title={isCollapsed && !isOpen ? adminProfile?.name || "admin" : ""}
+            className={`flex items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
           >
             {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
               <Image
@@ -270,31 +309,38 @@ export default function AdminSidebar() {
                   adminProfile?.profilePicture || adminProfile?.pictureUrl || ""
                 }
                 alt={adminProfile?.name || "Admin"}
-                width={44}
-                height={44}
-                className="w-11 h-11 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 group-hover:border-blue-400 transition-colors"
               />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-amber-700 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center group-hover:bg-amber-600 transition-colors shrink-0">
                 <User size={20} className="text-white" />
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-blue-700 transition-colors">
-                {adminProfile?.name || "admin"}
-              </p>
-              <p className="text-xs text-gray-500 truncate">
-                {adminProfile?.email || "admin@trr.com"}
-              </p>
-            </div>
+            {!isCollapsed || isOpen ? (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-blue-700 transition-colors">
+                  {adminProfile?.name || "admin"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {adminProfile?.email || "admin@trr.com"}
+                </p>
+              </div>
+            ) : null}
           </Link>
 
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium"
+            title={isCollapsed && !isOpen ? "ออกจากระบบ" : ""}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium ${isCollapsed && !isOpen ? "px-0" : ""}`}
           >
-            ออกจากระบบ
+            <LogOut
+              size={18}
+              className={`${isCollapsed && !isOpen ? "" : ""}`}
+            />
+            {!isCollapsed || isOpen ? <span>ออกจากระบบ</span> : null}
           </button>
         </div>
       </aside>
