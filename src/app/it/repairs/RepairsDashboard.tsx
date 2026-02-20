@@ -163,48 +163,24 @@ export function RepairsDashboard() {
         {/* ===== Stat Cards ===== */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* รายการทั้งหมด */}
-          <div
-            className="rounded-xl p-4 flex flex-col justify-between min-h-[90px]"
-            style={{ backgroundColor: "#e8f5a1" }}
-          >
-            <span className="text-sm font-medium text-gray-700">
-              รายการทั้งหมด
-            </span>
-            <span className="text-3xl font-bold text-gray-900">
-              {stats.total}
-            </span>
+          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-blue-600 text-white">
+            <span className="text-sm font-bold mb-1">รายการทั้งหมด</span>
+            <span className="text-3xl font-bold">{stats.total}</span>
           </div>
           {/* กำลังดำเนินการ */}
-          <div
-            className="rounded-xl p-4 flex flex-col justify-between min-h-[90px]"
-            style={{ backgroundColor: "#f5f5a0" }}
-          >
-            <span className="text-sm font-medium text-gray-700">
-              กำลังดำเนินการ
-            </span>
-            <span className="text-3xl font-bold text-gray-900">
-              {stats.inProgress}
-            </span>
+          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-amber-500 text-white">
+            <span className="text-sm font-bold mb-1">กำลังดำเนินการ</span>
+            <span className="text-3xl font-bold">{stats.inProgress}</span>
           </div>
           {/* เสร็จสิ้น */}
-          <div
-            className="rounded-xl p-4 flex flex-col justify-between min-h-[90px]"
-            style={{ backgroundColor: "#6bf5a5" }}
-          >
-            <span className="text-sm font-medium text-gray-700">เสร็จสิ้น</span>
-            <span className="text-3xl font-bold text-gray-900">
-              {stats.completed}
-            </span>
+          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-emerald-600 text-white">
+            <span className="text-sm font-bold mb-1">เสร็จสิ้น</span>
+            <span className="text-3xl font-bold">{stats.completed}</span>
           </div>
           {/* ยกเลิก */}
-          <div
-            className="rounded-xl p-4 flex flex-col justify-between min-h-[90px]"
-            style={{ backgroundColor: "#ff7b7b" }}
-          >
-            <span className="text-sm font-medium text-white">ยกเลิก</span>
-            <span className="text-3xl font-bold text-white">
-              {stats.cancelled}
-            </span>
+          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-rose-600 text-white">
+            <span className="text-sm font-bold mb-1">ยกเลิก</span>
+            <span className="text-3xl font-bold">{stats.cancelled}</span>
           </div>
         </div>
 
