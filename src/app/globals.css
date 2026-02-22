@@ -28,11 +28,7 @@
   --card-border: #e2e8f0; /* slate-200 */
 }
 
-body,
-button,
-input,
-select,
-textarea {
+body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sarabun);
