@@ -291,16 +291,16 @@ export default function RepairDetailPage() {
     };
 
     setData(detailData);
-    setNotes(detailData.notes);
-    setMessageToReporter(detailData.messageToReporter);
+    setNotes("");
+    setMessageToReporter("");
 
     const initialAssigneeIds = assignees.map((a: Assignee) => a.userId);
     setAssigneeIds(initialAssigneeIds);
 
     setInitialData({
       status: res.status,
-      notes: detailData.notes,
-      messageToReporter: detailData.messageToReporter,
+      notes: "",
+      messageToReporter: "",
       assigneeIds: initialAssigneeIds,
     });
   }, [id]);
@@ -903,7 +903,7 @@ export default function RepairDetailPage() {
 
               <div className="space-y-6">
                 {/* Assignment (Multi-select via Checkboxes) */}
-                {data.assignees.length === 0 || !isLocked ? (
+                {data.assignees.length === 0 ? (
                   <div>
                     <label className="flex flex-col text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
                       <span>ผู้รับผิดชอบ (เลือกได้หลายคน)</span>
