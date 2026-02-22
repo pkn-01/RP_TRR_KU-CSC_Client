@@ -52,6 +52,7 @@ export default function ExportDataPage() {
   const [selectedFormat, setSelectedFormat] = useState<"csv" | "json" | "xlsx">(
     "xlsx",
   );
+  const [exportLimit, setExportLimit] = useState<number | "all">("all");
   const [isExporting, setIsExporting] = useState(false);
   const [repairs, setRepairs] = useState<Repair[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,8 +88,12 @@ export default function ExportDataPage() {
         return text.substring(0, maxLength) + "...(ตัดทอนเคื่องจากยาวเกินไป)";
       };
 
+      // Apply export limit
+      const dataToExport =
+        exportLimit === "all" ? repairs : repairs.slice(0, exportLimit);
+
       // Prepare data with Thai headers
-      const exportData = repairs.map((repair) => ({
+      const exportData = dataToExport.map((repair) => ({
         เลขใบงาน: repair.ticketCode,
         วันที่: new Date(repair.createdAt).toLocaleDateString("th-TH"),
         เวลา: new Date(repair.createdAt).toLocaleTimeString("th-TH", {
@@ -178,7 +183,7 @@ export default function ExportDataPage() {
       }
 
       alert(
-        `ส่งออกข้อมูล ${repairs.length} รายการเป็น ${selectedFormat.toUpperCase()} เรียบร้อย`,
+        `ส่งออกข้อมูล ${dataToExport.length} รายการเป็น ${selectedFormat.toUpperCase()} เรียบร้อย`,
       );
     } catch (error) {
       console.error("Export error:", error);
@@ -290,6 +295,28 @@ export default function ExportDataPage() {
           </div>
         </div>
 
+        {/* Export Limit Selection */}
+        <div className="mb-6">
+          <p className="text-sm font-medium text-slate-300 mb-3">
+            จำนวนรายการที่ต้องการส่งออก (ล่าสุด):
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {["all", 10, 20, 30, 50, 100].map((limit) => (
+              <button
+                key={limit}
+                onClick={() => setExportLimit(limit as number | "all")}
+                className={`px-4 py-2 rounded-lg border transition-all ${
+                  exportLimit === limit
+                    ? "bg-blue-600/30 border-blue-500 text-blue-300 font-semibold"
+                    : "bg-slate-700/30 border-slate-600 text-slate-400 hover:border-slate-500"
+                }`}
+              >
+                {limit === "all" ? "ทั้งหมด" : `${limit} รายการ`}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Format Selection */}
         <div className="mb-6">
           <p className="text-sm font-medium text-slate-300 mb-3">
@@ -341,7 +368,11 @@ export default function ExportDataPage() {
           ) : (
             <>
               <Download size={20} />
-              ส่งออก {repairs.length} รายการ
+              ส่งออก{" "}
+              {exportLimit === "all"
+                ? repairs.length
+                : Math.min(exportLimit, repairs.length)}{" "}
+              รายการ
             </>
           )}
         </button>
