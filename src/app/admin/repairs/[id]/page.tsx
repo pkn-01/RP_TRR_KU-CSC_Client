@@ -997,15 +997,11 @@ export default function RepairDetailPage() {
               canEdit() &&
               (data.status === "IN_PROGRESS" ||
                 data.status === "WAITING_PARTS") && (
-                <section className="bg-white border border-green-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
+                <>
                   <h3 className="text-sm font-bold text-green-800 mb-2 ml-2">
                     ปิดงานซ่อม
                   </h3>
-                  <p className="text-xs font-medium text-gray-600 mb-4 ml-2 leading-relaxed">
-                    เมื่อดำเนินการเสร็จสิ้น
-                    กรุณากดปุ่มเพื่อสรุปผลและแนบภาพประกอบปิดทิกเก็ต
-                  </p>
+
                   <button
                     onClick={handleCompleteClick}
                     disabled={saving}
@@ -1013,7 +1009,7 @@ export default function RepairDetailPage() {
                   >
                     ปิดงาน (เสร็จสิ้น)
                   </button>
-                </section>
+                </>
               )}
 
             {/* Danger Zone */}
