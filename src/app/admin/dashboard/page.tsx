@@ -248,6 +248,9 @@ export default function AdminDashboard() {
                     ความเร่งด่วน
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    สถานะ
+                  </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     จัดการ
                   </th>
                 </tr>
@@ -285,6 +288,28 @@ export default function AdminDashboard() {
                         </span>
                       )}
                     </td>
+                    <td className="px-4 py-3 text-sm">
+                      {repair.status === "PENDING" && (
+                        <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
+                          รอดำเนินการ
+                        </span>
+                      )}
+                      {repair.status === "IN_PROGRESS" && (
+                        <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+                          กำลังดำเนินการ
+                        </span>
+                      )}
+                      {repair.status === "COMPLETED" && (
+                        <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
+                          ปิดงาน
+                        </span>
+                      )}
+                      {repair.status === "CANCELLED" && (
+                        <span className="px-2 py-1 text-xs font-semibold bg-rose-100 text-rose-700 rounded-full">
+                          ยกเลิก
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/repairs/${repair.id}`}
@@ -299,7 +324,7 @@ export default function AdminDashboard() {
                   stats.recentRepairs.length === 0) && (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-4 py-8 text-center text-gray-500 text-sm"
                     >
                       ไม่มีรายการ
