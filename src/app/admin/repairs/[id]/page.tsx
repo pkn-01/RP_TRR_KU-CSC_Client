@@ -998,10 +998,6 @@ export default function RepairDetailPage() {
               (data.status === "IN_PROGRESS" ||
                 data.status === "WAITING_PARTS") && (
                 <>
-                  <h3 className="text-sm font-bold text-green-800 mb-2 ml-2">
-                    ปิดงานซ่อม
-                  </h3>
-
                   <button
                     onClick={handleCompleteClick}
                     disabled={saving}
