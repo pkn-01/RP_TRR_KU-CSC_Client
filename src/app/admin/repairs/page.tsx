@@ -60,7 +60,7 @@ function AdminRepairsContent() {
   const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [exportLimit, setExportLimit] = useState<number | "all">("all");
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Stats
   const today = new Date();
@@ -768,25 +768,70 @@ function AdminRepairsContent() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 0 && (
-          <div className="flex items-center justify-end gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <span className="text-sm text-gray-700">
-              {currentPage}/{totalPages}
-            </span>
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
-            >
-              <ChevronRight size={18} />
-            </button>
+        {filteredRepairs.length > 0 && (
+          <div className="flex items-center justify-end gap-6 text-sm text-gray-700">
+            {/* Rows per page selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Rows per page:</span>
+              <div className="relative">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // Reset to first page when changing page size
+                  }}
+                  className="appearance-none bg-transparent pl-2 pr-6 py-1 cursor-pointer outline-none hover:bg-gray-50 rounded"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-500">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Display range e.g. "1-100 of 3543" */}
+            <div className="font-medium text-slate-700">
+              {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, filteredRepairs.length)} of{" "}
+              {filteredRepairs.length}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-1">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
+                title="Previous page"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="p-1 text-gray-800 hover:text-black disabled:opacity-30 disabled:hover:text-gray-800 transition-colors"
+                title="Next page"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         )}
       </div>
