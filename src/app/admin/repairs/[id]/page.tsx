@@ -5,17 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/services/api";
 import { AuthService } from "@/lib/authService";
 import Swal from "sweetalert2";
-import {
-  User as UserIcon,
-  MapPin,
-  Clock,
-  Image as ImageIcon,
-  Wrench,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-} from "lucide-react";
 
 /* =====================================================
     Types & Constants
@@ -100,15 +89,15 @@ const STATUS_STYLE: Record<Status, string> = {
 const URGENCY_CONFIG: Record<Urgency, { style: string; label: string }> = {
   NORMAL: {
     style: "bg-green-100 text-green-800 border border-green-200",
-    label: "🟢 ปกติ",
+    label: "ปกติ",
   },
   URGENT: {
     style: "bg-orange-100 text-orange-800 border border-orange-200",
-    label: "🟠 ด่วน",
+    label: "ด่วน",
   },
   CRITICAL: {
     style: "bg-red-100 text-red-800 border border-red-200",
-    label: "🔴 ด่วนมาก",
+    label: "ด่วนมาก",
   },
 };
 
@@ -172,9 +161,9 @@ function LightboxModal({
     <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 z-10"
+        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 z-10 text-2xl font-bold"
       >
-        <X className="w-8 h-8" />
+        ✕
       </button>
 
       {images.length > 1 && (
@@ -184,18 +173,18 @@ function LightboxModal({
               e.stopPropagation();
               onIndexChange((currentIndex - 1 + images.length) % images.length);
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2 text-4xl font-bold"
           >
-            <ChevronLeft className="w-10 h-10" />
+            ‹
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onIndexChange((currentIndex + 1) % images.length);
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2 text-4xl font-bold"
           >
-            <ChevronRight className="w-10 h-10" />
+            ›
           </button>
         </>
       )}
@@ -237,9 +226,9 @@ export default function RepairDetailPage() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   // Editable fields
-  const [status, setStatus] = useState<Status>("PENDING");
   const [notes, setNotes] = useState("");
-  const [assigneeId, setAssigneeId] = useState<number | "">(""); // changed to single ID
+  const [messageToReporter, setMessageToReporter] = useState("");
+  const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
 
   // Lightbox
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
@@ -266,9 +255,9 @@ export default function RepairDetailPage() {
   const hasChanges = () => {
     if (!initialData) return false;
     return (
-      status !== initialData.status ||
       notes !== initialData.notes ||
-      (assigneeId || "") !== (initialData.assigneeId || "")
+      messageToReporter !== initialData.messageToReporter ||
+      JSON.stringify([...assigneeIds].sort()) !== JSON.stringify([...initialData.assigneeIds].sort())
     );
   };
 
@@ -278,14 +267,6 @@ export default function RepairDetailPage() {
     if (!id) return;
     const res = await apiFetch(`/api/repairs/${id}`);
     const assignees = res.assignees || [];
-
-    // Combine notes and messageToReporter from backend for the frontend merged field
-    let mergedNotes = res.notes || "";
-    if (res.messageToReporter) {
-      mergedNotes = mergedNotes
-        ? `${mergedNotes}\n---ข้อความถึงผู้แจ้ง---\n${res.messageToReporter}`
-        : res.messageToReporter;
-    }
 
     const detailData: RepairDetail = {
       id: res.id,
@@ -301,23 +282,25 @@ export default function RepairDetailPage() {
       reporterDepartment: res.reporterDepartment,
       reporterPhone: res.reporterPhone,
       createdAt: res.createdAt,
-      notes: mergedNotes,
-      messageToReporter: "", // we don't plan to save back to this field separately
+      notes: res.notes || "",
+      messageToReporter: res.messageToReporter || "",
       estimatedCompletionDate: res.estimatedCompletionDate || "",
       attachments: res.attachments || [],
       assignmentHistory: res.assignmentHistory || [],
     };
 
     setData(detailData);
-    setStatus(res.status);
-    setNotes(mergedNotes);
-    const primaryAssigneeId = assignees.length > 0 ? assignees[0].userId : "";
-    setAssigneeId(primaryAssigneeId);
+    setNotes(detailData.notes);
+    setMessageToReporter(detailData.messageToReporter);
+    
+    const initialAssigneeIds = assignees.map((a: Assignee) => a.userId);
+    setAssigneeIds(initialAssigneeIds);
 
     setInitialData({
       status: res.status,
-      notes: mergedNotes,
-      assigneeId: primaryAssigneeId,
+      notes: detailData.notes,
+      messageToReporter: detailData.messageToReporter,
+      assigneeIds: initialAssigneeIds,
     });
   }, [id]);
 
@@ -361,19 +344,26 @@ export default function RepairDetailPage() {
 
   /* -------------------- Actions -------------------- */
 
+  const toggleAssignee = (userId: number) => {
+    setAssigneeIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
   const handleSave = async () => {
     if (!data || !hasChanges()) return;
 
     try {
       setSaving(true);
 
-      let finalStatus = status;
-      // Auto upgrade status if assigned from pending
-      if (finalStatus === "PENDING" && assigneeId) {
-        finalStatus = "ASSIGNED";
+      let finalStatus = data.status;
+      // Auto upgrade status if assigned from pending. The user requested:
+      // "เมื่อสถานะเป็น รอรับงาน เมื่อมีการบันทึก สถานะจะเป็น กำลังดำเนินการตลอด"
+      if (data.status === "PENDING" && assigneeIds.length > 0) {
+        finalStatus = "IN_PROGRESS";
       }
-
-      const assigneeIdsToSave = assigneeId ? [Number(assigneeId)] : [];
 
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
@@ -381,8 +371,8 @@ export default function RepairDetailPage() {
           status: finalStatus,
           urgency: data.urgency, // keep original urgency
           notes,
-          messageToReporter: "", // backend might have this, send empty
-          assigneeIds: assigneeIdsToSave,
+          messageToReporter,
+          assigneeIds: assigneeIds,
         },
       });
 
@@ -626,7 +616,7 @@ export default function RepairDetailPage() {
               onClick={() => router.back()}
               className="group flex items-center text-sm text-gray-500 hover:text-gray-900 transition-colors mb-3"
             >
-              <ChevronLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+              <span className="mr-1 group-hover:-translate-x-1 transition-transform">‹</span>
               ย้อนกลับ
             </button>
             <div className="flex flex-wrap items-center gap-3 md:gap-4">
@@ -650,7 +640,6 @@ export default function RepairDetailPage() {
                     key={a.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm"
                   >
-                    <UserIcon className="w-4 h-4 text-gray-400" />
                     {a.user.name}
                   </span>
                 ))}
@@ -661,7 +650,6 @@ export default function RepairDetailPage() {
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-4 rounded-xl mb-6 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
             <p>{error}</p>
           </div>
         )}
@@ -673,9 +661,6 @@ export default function RepairDetailPage() {
             {/* Reporter Info */}
             <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <UserIcon className="w-5 h-5 text-blue-600" />
-                </div>
                 <h2 className="text-base font-bold text-gray-900">
                   ข้อมูลผู้แจ้ง
                 </h2>
@@ -712,9 +697,6 @@ export default function RepairDetailPage() {
             <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
               <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-orange-50 rounded-lg">
-                    <AlertTriangle className="w-5 h-5 text-orange-600" />
-                  </div>
                   <h2 className="text-base font-bold text-gray-900">
                     รายละเอียดปัญหา
                   </h2>
@@ -729,7 +711,6 @@ export default function RepairDetailPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">
                         สถานที่
@@ -740,7 +721,6 @@ export default function RepairDetailPage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs font-semibold text-gray-500 mb-1">
                         วันที่แจ้ง
@@ -783,7 +763,6 @@ export default function RepairDetailPage() {
               {data.attachments && data.attachments.length > 0 && (
                 <div className="mt-6 pt-5 border-t border-gray-100">
                   <div className="flex items-center gap-2 mb-4">
-                    <ImageIcon className="w-4 h-4 text-gray-500" />
                     <p className="text-sm font-bold text-gray-900">
                       รูปภาพประกอบ ({data.attachments.length})
                     </p>
@@ -812,9 +791,6 @@ export default function RepairDetailPage() {
             {/* Operation History Timeline */}
             <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-indigo-50 rounded-lg">
-                  <Wrench className="w-5 h-5 text-indigo-600" />
-                </div>
                 <h2 className="text-base font-bold text-gray-900">
                   ประวัติดำเนินการ
                 </h2>
@@ -866,7 +842,6 @@ export default function RepairDetailPage() {
                                 )}
                               </p>
                               <p className="text-xs font-medium text-gray-500 shrink-0 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5" />
                                 {formatDate(log.createdAt)}
                               </p>
                             </div>
@@ -904,7 +879,6 @@ export default function RepairDetailPage() {
                 ) : (
                   <div className="text-center py-10">
                     <div className="inline-flex flex-col items-center justify-center p-6 bg-gray-50 border border-dashed border-gray-300 rounded-2xl w-full max-w-sm mx-auto">
-                      <Clock className="w-8 h-8 text-gray-400 mb-3" />
                       <p className="text-sm font-medium text-gray-500">
                         ยังไม่มีประวัติดำเนินการ
                       </p>
@@ -923,66 +897,71 @@ export default function RepairDetailPage() {
               </h3>
 
               <div className="space-y-6">
-                {/* Status Update */}
-                <div>
-                  <label className="flex items-center text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                    สถานะงาน
-                  </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as Status)}
-                    disabled={!canEdit() || isLocked}
-                    className={`w-full px-4 py-3 border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-70 shadow-sm transition-shadow ${isLocked ? "border-gray-200 bg-gray-50 text-gray-500" : "border-gray-300 bg-white hover:border-blue-400"}`}
-                  >
-                    <option value="PENDING">⚪ รอดำเนินการ</option>
-                    <option value="ASSIGNED">🔵 มอบหมายแล้ว</option>
-                    <option value="IN_PROGRESS">🟣 กำลังดำเนินการ</option>
-                    <option value="WAITING_PARTS">🟠 รออะไหล่</option>
-                    {/* Keep completed/cancelled visible if already in that state */}
-                    {data.status === "COMPLETED" && (
-                      <option value="COMPLETED">🟢 เสร็จสิ้น</option>
-                    )}
-                    {data.status === "CANCELLED" && (
-                      <option value="CANCELLED">🔴 ยกเลิก</option>
-                    )}
-                  </select>
-                </div>
 
-                {/* Assignment */}
+                {/* Assignment (Multi-select via Checkboxes) */}
                 {data.assignees.length === 0 || !isLocked ? (
                   <div>
                     <label className="flex flex-col text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                      <span>ผู้รับผิดชอบ (เลือกได้ 1 คน)</span>
+                      <span>ผู้รับผิดชอบ (เลือกได้หลายคน)</span>
                     </label>
-                    <select
-                      value={assigneeId}
-                      onChange={(e) =>
-                        setAssigneeId(
-                          e.target.value ? Number(e.target.value) : "",
-                        )
-                      }
-                      disabled={!canEdit() && data.status !== "PENDING"}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                    >
-                      <option value="">-- ไม่ระบุ --</option>
-                      {technicians.map((tech) => (
-                        <option key={tech.id} value={tech.id}>
-                          {tech.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="space-y-2 border border-gray-300 rounded-xl p-3 bg-white max-h-48 overflow-y-auto">
+                      {technicians.length === 0 ? (
+                        <p className="text-sm text-gray-400">ไม่พบรายชื่อ IT</p>
+                      ) : (
+                        technicians.map((tech) => (
+                          <label
+                            key={tech.id}
+                            className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors ${
+                              assigneeIds.includes(tech.id)
+                                ? "bg-blue-50 border-blue-200 text-blue-800 font-medium"
+                                : "bg-white border-transparent hover:bg-gray-50"
+                            } ${
+                              canEdit() || data.status === "PENDING"
+                                ? "cursor-pointer"
+                                : "cursor-default opacity-60"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={assigneeIds.includes(tech.id)}
+                              onChange={() => toggleAssignee(tech.id)}
+                              disabled={!canEdit() && data.status !== "PENDING"}
+                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm">
+                              {tech.name}
+                            </span>
+                          </label>
+                        ))
+                      )}
+                    </div>
                   </div>
                 ) : null}
+
+                {/* Message to Reporter */}
+                <div>
+                  <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                    ข้อความถึงผู้แจ้งซ่อม (ถ้ามี)
+                  </label>
+                  <textarea
+                    value={messageToReporter}
+                    onChange={(e) => setMessageToReporter(e.target.value)}
+                    rows={2}
+                    disabled={!canEdit() || isLocked}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
+                    placeholder="แชท/แจ้งให้ผู้แจ้งซ่อมทราบ..."
+                  />
+                </div>
 
                 {/* Internal Notes */}
                 <div>
                   <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                    บันทึกภายใน (แจ้งผู้ซ่อม/หมายเหตุ)
+                    บันทึกภายใน / แจ้งผู้รับผิดชอบ
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    rows={4}
+                    rows={3}
                     disabled={!canEdit() || isLocked}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
                     placeholder="รายละเอียด / จดบันทึกภายในสำหรับทีมช่าง..."
@@ -1012,10 +991,10 @@ export default function RepairDetailPage() {
             </section>
 
             {/* Complete Action Area */}
-            {!isLocked &&
+            {(!isLocked &&
               canEdit() &&
               (data.status === "IN_PROGRESS" ||
-                data.status === "WAITING_PARTS") && (
+                data.status === "WAITING_PARTS")) && (
                 <section className="bg-white border border-green-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
                   <h3 className="text-sm font-bold text-green-800 mb-2 ml-2">
@@ -1038,11 +1017,7 @@ export default function RepairDetailPage() {
             {/* Danger Zone */}
             {!isLocked && (canEdit() || isAdmin) && (
               <section className="bg-red-50/50 border-2 border-dashed border-red-200 rounded-2xl p-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <AlertTriangle className="w-16 h-16 text-red-600" />
-                </div>
                 <h3 className="flex items-center gap-2 text-sm font-bold text-red-700 mb-2 relative z-10">
-                  <AlertTriangle className="w-4 h-4" />
                   Danger Zone
                 </h3>
                 <p className="text-xs font-medium text-gray-600 mb-5 relative z-10">
