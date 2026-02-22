@@ -216,7 +216,7 @@ export default function EditUserPage() {
                   <div className="relative">
                     <input
                       type="tel"
-                      value={formData.phoneNumber || "08X-XXX-XXXX"}
+                      value={formData.phoneNumber || ""}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -224,7 +224,7 @@ export default function EditUserPage() {
                         })
                       }
                       className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder=""
+                      placeholder="08X-XXX-XXXX"
                     />
                   </div>
                 </div>
