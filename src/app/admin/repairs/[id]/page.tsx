@@ -1016,21 +1016,15 @@ export default function RepairDetailPage() {
 
             {/* Danger Zone */}
             {!isLocked && (canEdit() || isAdmin) && (
-              <section className="bg-red-50/50 border-2 border-dashed border-red-200 rounded-2xl p-5 relative overflow-hidden">
-                <h3 className="flex items-center gap-2 text-sm font-bold text-red-700 mb-2 relative z-10">
-                  Danger Zone
-                </h3>
-                <p className="text-xs font-medium text-gray-600 mb-5 relative z-10">
-                  ยกเลิกคำขอแจ้งซ่อม หากไม่ใช่ปัญหา หรือเป็นข้อมูลซ้ำซ้อน
-                </p>
+              
                 <button
                   onClick={handleCancelClick}
                   disabled={saving}
-                  className="w-full relative z-10 py-3 bg-white border border-red-200 text-red-600 text-sm font-bold rounded-xl hover:bg-red-50 hover:border-red-300 focus:ring-4 focus:ring-red-100 shadow-sm transition-all disabled:opacity-50"
+                  className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
                 >
                   ยกเลิกงาน
                 </button>
-              </section>
+            
             )}
           </div>
         </div>

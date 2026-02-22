@@ -120,12 +120,7 @@ export default function ITRepairDetailPage() {
     if (!data) return false;
     if (["COMPLETED", "CANCELLED"].includes(data.status)) return false;
     if (!isAssignedToMe()) return false;
-    return !["PENDING", "ASSIGNED"].includes(data.status);
-  }, [data, isAssignedToMe]);
-
-  const canAcceptJob = useCallback(() => {
-    if (!data) return false;
-    return data.status === "ASSIGNED" && isAssignedToMe();
+    return data.status !== "PENDING";
   }, [data, isAssignedToMe]);
 
   const canPickupJob = useCallback(() => {
@@ -185,54 +180,6 @@ export default function ITRepairDetailPage() {
   }, [id]);
 
   /* -------------------- Actions -------------------- */
-
-  const handleAcceptJob = async () => {
-    if (!data) return;
-
-    const { value: msg } = await Swal.fire({
-      title: "รับงานนี้?",
-      text: "คุณสามารถส่งข้อความถึงผู้แจ้งได้ (ถ้ามี)",
-      icon: "question",
-      input: "textarea",
-      inputPlaceholder: "พิมพ์ข้อความถึงผู้แจ้งที่นี่...",
-      showCancelButton: true,
-      confirmButtonColor: "#7c3aed",
-      cancelButtonColor: "#a1a1aa",
-      confirmButtonText: "รับงาน",
-      cancelButtonText: "ยกเลิก",
-    });
-
-    if (msg === undefined) return;
-
-    try {
-      setSaving(true);
-      await apiFetch(`/api/repairs/${data.id}`, {
-        method: "PUT",
-        body: {
-          status: "IN_PROGRESS",
-          messageToReporter: msg || "",
-        },
-      });
-
-      await Swal.fire({
-        title: "รับงานสำเร็จ!",
-        text: "คุณสามารถเริ่มดำเนินการได้เลย",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-
-      window.location.reload();
-    } catch (err: any) {
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: err.message || "รับงานไม่สำเร็จ",
-        icon: "error",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handlePickupJob = async () => {
     if (!data || !currentUserId) return;
@@ -494,27 +441,6 @@ export default function ITRepairDetailPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-4 rounded-2xl">
             {error}
-          </div>
-        )}
-
-        {/* Accept Job Banner */}
-        {canAcceptJob() && (
-          <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 flex items-center justify-between">
-            <div>
-              <p className="font-medium text-purple-900">
-                งานนี้ถูกมอบหมายให้คุณ
-              </p>
-              <p className="text-sm text-purple-700">
-                กดรับงานเพื่อเริ่มดำเนินการ
-              </p>
-            </div>
-            <button
-              onClick={handleAcceptJob}
-              disabled={saving}
-              className="bg-purple-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
-            >
-              รับงาน
-            </button>
           </div>
         )}
 
