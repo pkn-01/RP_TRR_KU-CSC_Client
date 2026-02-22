@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
-  Trash2,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -142,40 +141,6 @@ function AdminRepairsContent() {
     }
     return () => clearInterval(timer);
   }, [autoRefreshEnabled, fetchRepairs]);
-
-  const handleDelete = async (id: string, ticketCode: string) => {
-    const result = await Swal.fire({
-      title: "ยืนยันการลบข้อมูล?",
-      text: `คุณกำลังจะลบรายการแจ้งซ่อม #${ticketCode} ออกจากระบบถาวร (ไม่สามารถย้อนกลับได้)`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#a1a1aa",
-      confirmButtonText: "ลบข้อมูล",
-      cancelButtonText: "ยกเลิก",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await apiFetch(`/api/repairs/${id}`, { method: "DELETE" });
-      setRepairs(repairs.filter((r) => r.id !== id));
-      Swal.fire({
-        title: "ลบสำเร็จ!",
-        text: `ลบรายการ #${ticketCode} เรียบร้อยแล้ว`,
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (err) {
-      console.error("Error deleting repair:", err);
-      Swal.fire({
-        title: "เกิดข้อผิดพลาด",
-        text: "ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
-        icon: "error",
-      });
-    }
-  };
 
   const isSameWeek = (date1: Date, date2: Date) => {
     const d1 = new Date(date1);
@@ -670,14 +635,6 @@ function AdminRepairsContent() {
                       >
                         <ChevronRight size={18} />
                       </button>
-                      <button
-                        onClick={() =>
-                          handleDelete(repair.id, repair.ticketCode)
-                        }
-                        className="p-1 text-gray-400 hover:text-red-600"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </td>
                 </tr>
@@ -717,15 +674,6 @@ function AdminRepairsContent() {
               </p>
               <p className="text-xs text-gray-500">{repair.location}</p>
               <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(repair.id, repair.ticketCode);
-                  }}
-                  className="p-2 text-gray-400 hover:text-red-600"
-                >
-                  <Trash2 size={16} />
-                </button>
                 <button className="p-2 text-gray-400 hover:text-gray-600">
                   <ChevronRight size={16} />
                 </button>
