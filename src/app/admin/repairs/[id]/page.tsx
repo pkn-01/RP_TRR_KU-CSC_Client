@@ -750,17 +750,6 @@ export default function RepairDetailPage() {
                   <p className="text-base font-bold text-gray-900 mb-4">
                     {data.title || "-"}
                   </p>
-
-                  {data.description && (
-                    <>
-                      <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-                        รายละเอียดเพิ่มเติม
-                      </p>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                        {data.description}
-                      </p>
-                    </>
-                  )}
                 </div>
               </div>
 
