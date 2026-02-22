@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, Suspense, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { uploadData } from "@/services/uploadService";
 import Swal from "sweetalert2";
 import RepairSuccess from "@/components/repairs/RepairSuccess";
@@ -32,27 +31,12 @@ const showAlert = (options: {
 };
 
 const URGENCY_OPTIONS = [
-  {
-    id: "NORMAL",
-    label: "ปกติ",
-    color: "!bg-green-500 hover:!bg-green-600 !text-gray-900",
-  },
-  {
-    id: "URGENT",
-    label: "ด่วน",
-    color: "!bg-yellow-400 hover:!bg-yellow-500 !text-gray-900",
-  },
-  {
-    id: "CRITICAL",
-    label: "ด่วนมาก",
-    color: "!bg-red-500 hover:!bg-red-600 !text-gray-900",
-  },
+  { id: "NORMAL", label: "ปกติ" },
+  { id: "URGENT", label: "ด่วน" },
+  { id: "CRITICAL", label: "ด่วนมาก" },
 ];
 
 function RepairFormContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   // State for LINE user ID (from LIFF SDK only — never trust URL params)
   const [lineUserId, setLineUserId] = useState<string>("");
   const [liffInitialized, setLiffInitialized] = useState(false);
@@ -76,23 +60,11 @@ function RepairFormContent() {
     hasLineUserId?: boolean;
   } | null>(null);
 
-  // Initialize LIFF SDK to get user profile
-  // Priority: 1) URL param lineUserId  2) LIFF SDK profile  3) LINE in-app browser → force login
+  // Initialize LIFF SDK to get user profile (LIFF SDK only — never trust URL params)
   useEffect(() => {
     const initLiff = async () => {
       try {
-        // 1) Always check URL param first (most reliable — from backend or direct link)
-        const userIdFromUrl = searchParams.get("lineUserId");
-        if (userIdFromUrl) {
-          console.log("Using lineUserId from URL param:", userIdFromUrl);
-          setLineUserId(userIdFromUrl);
-          setLiffInitialized(true);
-          return;
-        }
-
-        // 2) Try LIFF SDK to get userId
-        const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
-
+        const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
         if (!liffId) {
           console.warn("LIFF ID not configured, continuing as guest");
           setLiffInitialized(true);
@@ -100,63 +72,27 @@ function RepairFormContent() {
         }
 
         const liff = (await import("@line/liff")).default;
+        await liff.init({ liffId });
 
-        // Initialize LIFF without forcing login on external browser
-        await liff.init({ liffId, withLoginOnExternalBrowser: false });
-
-        if (liff.isLoggedIn()) {
-          // User is logged in via LIFF — get their profile
-          try {
-            const profile = await liff.getProfile();
-            if (profile.userId) {
-              console.log(
-                "Got LINE profile userId:",
-                profile.userId.substring(0, 8) + "...",
-              );
-              setLineUserId(profile.userId);
-              setLiffInitialized(true);
-              return;
-            }
-          } catch (profileError) {
-            console.warn("Failed to get LINE profile:", profileError);
-          }
-        }
-
-        if (liff.isInClient()) {
-          // In LINE client (opened via LIFF URL) but not logged in
-          console.log("In LINE client but not logged in. Forcing login...");
+        if (!liff.isLoggedIn()) {
           liff.login();
           return;
         }
 
-        // 3) Detect LINE in-app browser (opened from Rich Menu URI action)
-        const ua = navigator.userAgent || "";
-        const isLineInAppBrowser = /Line/i.test(ua);
-
-        if (isLineInAppBrowser) {
-          console.log(
-            "Detected LINE in-app browser via user-agent. Triggering LIFF login to get userId...",
-          );
-          liff.login();
-          return;
-        }
-
-        // External browser without lineUserId — continue as Guest
-        console.log("External browser, no lineUserId. Continuing as Guest.");
+        const profile = await liff.getProfile();
+        setLineUserId(profile.userId);
         setLiffInitialized(true);
-      } catch (error: any) {
-        console.warn("LIFF initialization failed, using guest mode:", error);
-        // Fallback to URL in case of error
-        const userIdFromUrl = searchParams.get("lineUserId");
-        if (userIdFromUrl) setLineUserId(userIdFromUrl);
-
-        setLiffError(error?.message || "LIFF Init Failed");
+      } catch (error: unknown) {
+        console.error("LIFF init error:", error);
+        setLiffError(
+          error instanceof Error ? error.message : "LIFF Init Failed",
+        );
         setLiffInitialized(true);
       }
     };
 
     initLiff();
-  }, [searchParams]);
+  }, []);
 
   const handleLineLogin = async () => {
     try {
@@ -295,52 +231,53 @@ function RepairFormContent() {
 
     setIsLoading(true);
 
-    const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 30000);
-
     try {
-      const finalLineUserId = lineUserId || "Guest";
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 30000);
 
-      const dataPayload = {
-        reporterName: formData.name.trim(),
-        reporterLineId: finalLineUserId,
-        lineUserId: lineUserId || undefined,
-        reporterDepartment: formData.dept,
-        reporterPhone: formData.phone,
-        problemTitle: formData.details,
-        problemDescription: formData.details,
-        location: formData.location,
-        urgency: formData.urgency,
-        problemCategory: "OTHER",
-      };
+      try {
+        const dataPayload = {
+          reporterName: formData.name.trim(),
+          reporterLineId: lineUserId || "Guest",
+          reporterDepartment: formData.dept,
+          reporterPhone: formData.phone,
+          problemTitle: formData.details.slice(0, 80),
+          problemDescription: formData.details,
+          location: formData.location,
+          urgency: formData.urgency,
+          problemCategory: "OTHER",
+        };
 
-      const response = await uploadData(
-        `/api/repairs/liff/create`,
-        dataPayload,
-        file || undefined,
-        { signal: abortController.signal },
-      );
+        const response = await uploadData(
+          `/api/repairs/liff/create`,
+          dataPayload,
+          file || undefined,
+          { signal: abortController.signal },
+        );
 
-      setSuccessData({
-        ticketCode: response.ticketCode,
-        linkingCode: lineUserId ? undefined : response.linkingCode,
-        hasLineUserId: !!lineUserId,
-      });
-    } catch (error: unknown) {
-      let errorMessage = "กรุณาลองใหม่อีกครั้ง";
-      if (error instanceof DOMException && error.name === "AbortError") {
-        errorMessage = "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+        setSuccessData({
+          ticketCode: response.ticketCode,
+          linkingCode: lineUserId ? undefined : response.linkingCode,
+          hasLineUserId: !!lineUserId,
+        });
+      } catch (error: unknown) {
+        let errorMessage = "กรุณาลองใหม่อีกครั้ง";
+        if (error instanceof DOMException && error.name === "AbortError") {
+          errorMessage = "การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง";
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        await showAlert({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: errorMessage,
+        });
+      } finally {
+        clearTimeout(timeoutId);
       }
-      await showAlert({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด",
-        text: errorMessage,
-      });
     } finally {
-      clearTimeout(timeoutId);
-      setIsLoading(false);
+      // Delay re-enabling button after error to prevent rapid re-submission
+      setTimeout(() => setIsLoading(false), 1500);
     }
   };
 
