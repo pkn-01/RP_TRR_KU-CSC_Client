@@ -257,7 +257,8 @@ export default function RepairDetailPage() {
     return (
       notes !== initialData.notes ||
       messageToReporter !== initialData.messageToReporter ||
-      JSON.stringify([...assigneeIds].sort()) !== JSON.stringify([...initialData.assigneeIds].sort())
+      JSON.stringify([...assigneeIds].sort()) !==
+        JSON.stringify([...initialData.assigneeIds].sort())
     );
   };
 
@@ -292,7 +293,7 @@ export default function RepairDetailPage() {
     setData(detailData);
     setNotes(detailData.notes);
     setMessageToReporter(detailData.messageToReporter);
-    
+
     const initialAssigneeIds = assignees.map((a: Assignee) => a.userId);
     setAssigneeIds(initialAssigneeIds);
 
@@ -348,7 +349,7 @@ export default function RepairDetailPage() {
     setAssigneeIds((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
+        : [...prev, userId],
     );
   };
 
@@ -616,7 +617,9 @@ export default function RepairDetailPage() {
               onClick={() => router.back()}
               className="group flex items-center text-sm text-gray-500 hover:text-gray-900 transition-colors mb-3"
             >
-              <span className="mr-1 group-hover:-translate-x-1 transition-transform">‹</span>
+              <span className="mr-1 group-hover:-translate-x-1 transition-transform">
+                ‹
+              </span>
               ย้อนกลับ
             </button>
             <div className="flex flex-wrap items-center gap-3 md:gap-4">
@@ -655,9 +658,11 @@ export default function RepairDetailPage() {
         )}
 
         {/* ── Main Grid ────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div
+          className={`grid grid-cols-1 ${isLocked ? "lg:max-w-4xl lg:mx-auto lg:w-full" : "lg:grid-cols-3"} gap-6`}
+        >
           {/* ─── LEFT: Info (2 cols inside Grid) ─── */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className={`${isLocked ? "" : "lg:col-span-2"} space-y-6`}>
             {/* Reporter Info */}
             <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100">
@@ -890,14 +895,13 @@ export default function RepairDetailPage() {
           </div>
 
           {/* ─── RIGHT: Management (1 col) ─── */}
-          <div className="space-y-6">
+          <div className={`space-y-6 ${isLocked ? "hidden" : ""}`}>
             <section className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
               <h3 className="text-sm font-bold text-gray-900 mb-5 pb-3 border-b border-gray-100">
                 จัดการงานซ่อม
               </h3>
 
               <div className="space-y-6">
-
                 {/* Assignment (Multi-select via Checkboxes) */}
                 {data.assignees.length === 0 || !isLocked ? (
                   <div>
@@ -928,9 +932,7 @@ export default function RepairDetailPage() {
                               disabled={!canEdit() && data.status !== "PENDING"}
                               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className="text-sm">
-                              {tech.name}
-                            </span>
+                            <span className="text-sm">{tech.name}</span>
                           </label>
                         ))
                       )}
@@ -991,10 +993,10 @@ export default function RepairDetailPage() {
             </section>
 
             {/* Complete Action Area */}
-            {(!isLocked &&
+            {!isLocked &&
               canEdit() &&
               (data.status === "IN_PROGRESS" ||
-                data.status === "WAITING_PARTS")) && (
+                data.status === "WAITING_PARTS") && (
                 <section className="bg-white border border-green-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
                   <h3 className="text-sm font-bold text-green-800 mb-2 ml-2">
@@ -1016,15 +1018,13 @@ export default function RepairDetailPage() {
 
             {/* Danger Zone */}
             {!isLocked && (canEdit() || isAdmin) && (
-              
-                <button
-                  onClick={handleCancelClick}
-                  disabled={saving}
-                  className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
-                >
-                  ยกเลิกงาน
-                </button>
-            
+              <button
+                onClick={handleCancelClick}
+                disabled={saving}
+                className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
+              >
+                ยกเลิกงาน
+              </button>
             )}
           </div>
         </div>
