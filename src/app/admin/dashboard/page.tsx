@@ -42,22 +42,14 @@ interface DepartmentStat {
   cancelled: number;
 }
 
-type FilterType = "day" | "week" | "month";
-type DeptFilterType = "all" | "day" | "week" | "month";
+type FilterType = "all" | "day" | "week" | "month";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("day");
+  const [filter, setFilter] = useState<FilterType>("all");
   const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
-
-  // Independent filter state for department section
-  const [deptFilter, setDeptFilter] = useState<DeptFilterType>("all");
-  const [deptSelectedDate, setDeptSelectedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
@@ -67,18 +59,16 @@ export default function AdminDashboard() {
       try {
         if (showLoading) setLoading(true);
 
-        // Fetch dashboard statistics with filter and department statistics in parallel
-        const deptQuery =
-          deptFilter !== "all"
-            ? `?filter=${deptFilter}&date=${deptSelectedDate}`
-            : "";
+        // Build query strings based on filter
+        const dateQuery =
+          filter !== "all" ? `?filter=${filter}&date=${selectedDate}` : "";
 
         const [dashboardStats, deptStats] = await Promise.all([
           apiFetch(
-            `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
+            `/api/repairs/statistics/dashboard${filter !== "all" ? `?filter=${filter}&date=${selectedDate}` : "?filter=day&date=" + selectedDate}`,
             "GET",
           ),
-          apiFetch(`/api/repairs/statistics/by-department${deptQuery}`, "GET"),
+          apiFetch(`/api/repairs/statistics/by-department${dateQuery}`, "GET"),
         ]);
 
         setStats(dashboardStats);
@@ -97,13 +87,13 @@ export default function AdminDashboard() {
     const interval = setInterval(() => loadDashboardData(false), 30000);
 
     return () => clearInterval(interval);
-  }, [filter, selectedDate, deptFilter, deptSelectedDate]);
+  }, [filter, selectedDate]);
 
   const getUrgencyLabel = (urgency: string) => {
     const labels: Record<string, string> = {
-      CRITICAL: "ด่วน",
-      URGENT: "ด่วน",
-      NORMAL: "ปกติ",
+      CRITICAL: "\u0E14\u0E48\u0E27\u0E19",
+      URGENT: "\u0E14\u0E48\u0E27\u0E19",
+      NORMAL: "\u0E1B\u0E01\u0E15\u0E34",
     };
     return labels[urgency] || urgency;
   };
@@ -137,7 +127,9 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
+        <div className="text-gray-500">
+          {"\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14..."}
+        </div>
       </div>
     );
   }
@@ -147,12 +139,14 @@ export default function AdminDashboard() {
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-gray-900">แดชบอร์ด</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
+          </h1>
 
           <div className="flex items-center gap-3">
             {/* Filter Tabs */}
             <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
-              {(["day", "week", "month"] as FilterType[]).map((f) => (
+              {(["all", "day", "week", "month"] as FilterType[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -166,63 +160,77 @@ export default function AdminDashboard() {
                     color: filter === f ? "#ffffff" : undefined,
                   }}
                 >
-                  {f === "day"
-                    ? "รายวัน"
-                    : f === "week"
-                      ? "รายสัปดาห์"
-                      : "รายเดือน"}
+                  {f === "all"
+                    ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
+                    : f === "day"
+                      ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
+                      : f === "week"
+                        ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
+                        : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
                 </button>
               ))}
             </div>
 
-            {/* Date Picker */}
-            <CalendarPop
-              selectedDate={(() => {
-                const [y, m, d] = selectedDate.split("-").map(Number);
-                return new Date(y, m - 1, d);
-              })()}
-              onChange={(date: Date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0");
-                setSelectedDate(`${year}-${month}-${day}`);
-              }}
-            />
+            {/* Date Picker — visible only when filter is not 'all' */}
+            {filter !== "all" && (
+              <CalendarPop
+                selectedDate={(() => {
+                  const [y, m, d] = selectedDate.split("-").map(Number);
+                  return new Date(y, m - 1, d);
+                })()}
+                onChange={(date: Date) => {
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, "0");
+                  const day = String(date.getDate()).padStart(2, "0");
+                  setSelectedDate(`${year}-${month}-${day}`);
+                }}
+              />
+            )}
           </div>
         </div>
 
         {/* Main Stats Cards Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MainStatItem
-            label="รายการซ่อมทั้งหมด"
+            label={
+              "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
+            }
             value={stats?.all.total || 0}
           />
           <MainStatItem
-            label="กำลังดำเนินการ"
+            label={
+              "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
+            }
             value={stats?.all.inProgress || 0}
           />
-          <MainStatItem label="เสร็จสิ้น" value={stats?.all.completed || 0} />
-          <MainStatItem label="ยกเลิก" value={stats?.all.cancelled || 0} />
+          <MainStatItem
+            label={"\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"}
+            value={stats?.all.completed || 0}
+          />
+          <MainStatItem
+            label={"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
+            value={stats?.all.cancelled || 0}
+          />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <TodayStatCard
-            label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.total || 0}
             link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`กำลังดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            label={`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.inProgress || 0}
             link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`เสร็จสิ้น(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            label={`\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.completed || 0}
             link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`ยกเลิก(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            label={`\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.cancelled || 0}
             link={`/admin/repairs?status=CANCELLED&filter=${filter}&date=${selectedDate}`}
           />
@@ -232,13 +240,15 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
-              รายการแจ้งซ่อมล่าสุด
+              {
+                "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14"
+              }
             </h2>
             <Link
               href="/admin/repairs"
               className="text-sm font-medium text-blue-600 hover:text-brown-800 transition-colors"
             >
-              ดูทั้งหมด
+              {"\u0E14\u0E39\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"}
             </Link>
           </div>
           <div className="overflow-x-auto">
@@ -246,25 +256,27 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    รหัส
+                    {"\u0E23\u0E2B\u0E31\u0E2A"}
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    เวลา
+                    {"\u0E40\u0E27\u0E25\u0E32"}
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    ปัญหา
+                    {"\u0E1B\u0E31\u0E0D\u0E2B\u0E32"}
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    สถานที่
+                    {"\u0E2A\u0E16\u0E32\u0E19\u0E17\u0E35\u0E48"}
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    ความเร่งด่วน
+                    {
+                      "\u0E04\u0E27\u0E32\u0E21\u0E40\u0E23\u0E48\u0E07\u0E14\u0E48\u0E27\u0E19"
+                    }
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    สถานะ
+                    {"\u0E2A\u0E16\u0E32\u0E19\u0E30"}
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    จัดการ
+                    {"\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23"}
                   </th>
                 </tr>
               </thead>
@@ -293,33 +305,39 @@ export default function AdminDashboard() {
                       {repair.urgency === "CRITICAL" ||
                       repair.urgency === "URGENT" ? (
                         <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
-                          ด่วน
+                          {"\u0E14\u0E48\u0E27\u0E19"}
                         </span>
                       ) : (
                         <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">
-                          ปกติ
+                          {"\u0E1B\u0E01\u0E15\u0E34"}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {repair.status === "PENDING" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-sky-100 text-sky-700 rounded-full">
-                          รอดำเนินการ
+                          {
+                            "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
+                          }
                         </span>
                       )}
                       {repair.status === "IN_PROGRESS" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
-                          กำลังดำเนินการ
+                          {
+                            "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
+                          }
                         </span>
                       )}
                       {repair.status === "COMPLETED" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                          เสร็จสิ้น
+                          {
+                            "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"
+                          }
                         </span>
                       )}
                       {repair.status === "CANCELLED" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-rose-100 text-rose-700 rounded-full">
-                          ยกเลิก
+                          {"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
                         </span>
                       )}
                     </td>
@@ -340,7 +358,9 @@ export default function AdminDashboard() {
                       colSpan={7}
                       className="px-4 py-8 text-center text-gray-500 text-sm"
                     >
-                      ไม่มีรายการ
+                      {
+                        "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23"
+                      }
                     </td>
                   </tr>
                 )}
@@ -351,71 +371,22 @@ export default function AdminDashboard() {
 
         {/* Department Statistics */}
         <div>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">
-              จำนวนรายการแจ้งซ่อมของแต่ละแผนก
-              {deptFilter !== "all" && (
-                <span className="text-sm font-normal text-gray-500 ml-2">
-                  (
-                  {deptFilter === "day"
-                    ? `วันที่ ${formatDisplayDate(deptSelectedDate)}`
-                    : deptFilter === "week"
-                      ? `สัปดาห์ของ ${formatDisplayDate(deptSelectedDate)}`
-                      : `เดือน ${new Date(deptSelectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
-                  )
-                </span>
-              )}
-            </h2>
-
-            <div className="flex items-center gap-3">
-              {/* Department Filter Tabs */}
-              <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
-                {(["all", "day", "week", "month"] as DeptFilterType[]).map(
-                  (f) => (
-                    <button
-                      key={f}
-                      onClick={() => setDeptFilter(f)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
-                        deptFilter === f
-                          ? "text-white shadow-sm"
-                          : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                      style={{
-                        backgroundColor:
-                          deptFilter === f ? "#5D2E1E" : undefined,
-                        color: deptFilter === f ? "#ffffff" : undefined,
-                      }}
-                    >
-                      {f === "all"
-                        ? "ทั้งหมด"
-                        : f === "day"
-                          ? "รายวัน"
-                          : f === "week"
-                            ? "รายสัปดาห์"
-                            : "รายเดือน"}
-                    </button>
-                  ),
-                )}
-              </div>
-
-              {/* Department Calendar Picker — visible only when filter is not 'all' */}
-              {deptFilter !== "all" && (
-                <CalendarPop
-                  selectedDate={(() => {
-                    const [y, m, d] = deptSelectedDate.split("-").map(Number);
-                    return new Date(y, m - 1, d);
-                  })()}
-                  onChange={(date: Date) => {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, "0");
-                    const day = String(date.getDate()).padStart(2, "0");
-                    setDeptSelectedDate(`${year}-${month}-${day}`);
-                  }}
-                />
-              )}
-            </div>
-          </div>
-
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            {
+              "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
+            }
+            {filter !== "all" && (
+              <span className="text-sm font-normal text-gray-500 ml-2">
+                (
+                {filter === "day"
+                  ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
+                  : filter === "week"
+                    ? `\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E02\u0E2D\u0E07 ${formatDisplayDate(selectedDate)}`
+                    : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
+                )
+              </span>
+            )}
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {departmentStats.length > 0 ? (
               departmentStats.map((dept) => (
@@ -423,7 +394,9 @@ export default function AdminDashboard() {
               ))
             ) : (
               <div className="col-span-full text-center py-8 text-gray-500 text-sm">
-                ไม่มีข้อมูลในช่วงเวลาที่เลือก
+                {
+                  "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E43\u0E19\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E27\u0E25\u0E32\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01"
+                }
               </div>
             )}
           </div>
@@ -448,10 +421,13 @@ function StatCard({ label, value }: { label: string; value: number }) {
 // Main Stat Item Component (Internal use for the main card)
 function MainStatItem({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
-    รายการซ่อมทั้งหมด: "bg-blue-600 text-white",
-    กำลังดำเนินการ: "bg-amber-500 text-white",
-    เสร็จสิ้น: "bg-emerald-600 text-white",
-    ยกเลิก: "bg-rose-600 text-white",
+    "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14":
+      "bg-blue-600 text-white",
+    "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23":
+      "bg-amber-500 text-white",
+    "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19":
+      "bg-emerald-600 text-white",
+    "\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01": "bg-rose-600 text-white",
   };
 
   const colorClass = colorMap[label] || "bg-blue-600 text-white";
@@ -480,9 +456,16 @@ function TodayStatCard({
 }) {
   let colorClass = "bg-blue-600 text-white";
 
-  if (label.includes("กำลังดำเนินการ")) colorClass = "bg-amber-500 text-white";
-  if (label.includes("เสร็จสิ้น")) colorClass = "bg-emerald-600 text-white";
-  if (label.includes("ยกเลิก")) colorClass = "bg-rose-600 text-white";
+  if (
+    label.includes(
+      "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23",
+    )
+  )
+    colorClass = "bg-amber-500 text-white";
+  if (label.includes("\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"))
+    colorClass = "bg-emerald-600 text-white";
+  if (label.includes("\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"))
+    colorClass = "bg-rose-600 text-white";
 
   return (
     <Link
@@ -515,19 +498,29 @@ function DepartmentCard({ stat }: { stat: DepartmentStat }) {
       </div>
       <div className="space-y-2.5 text-sm">
         <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-400 pr-2 bg-blue-50 py-1.5 rounded-l">
-          <span>รอดำเนินการ :</span>
+          <span>
+            {
+              "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23 :"
+            }
+          </span>
           <span>{stat.pending}</span>
         </div>
         <div className="flex justify-between font-bold text-amber-600 border-r-4 border-amber-500 pr-2 bg-amber-50 py-1.5 rounded-l">
-          <span>กำลังดำเนินการ :</span>
+          <span>
+            {
+              "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23 :"
+            }
+          </span>
           <span>{stat.inProgress}</span>
         </div>
         <div className="flex justify-between font-bold text-emerald-600 border-r-4 border-emerald-500 pr-2 bg-emerald-50 py-1.5 rounded-l">
-          <span>เสร็จสิ้น :</span>
+          <span>
+            {"\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19 :"}
+          </span>
           <span>{stat.completed}</span>
         </div>
         <div className="flex justify-between font-bold text-rose-600 border-r-4 border-rose-500 pr-2 bg-rose-50 py-1.5 rounded-l">
-          <span>ยกเลิก :</span>
+          <span>{"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01 :"}</span>
           <span>{stat.cancelled}</span>
         </div>
       </div>
