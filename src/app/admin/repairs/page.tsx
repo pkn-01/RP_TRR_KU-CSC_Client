@@ -37,7 +37,7 @@ interface Repair {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: "รอรับงาน",
+  PENDING: "รอดำเนินการ",
   IN_PROGRESS: "กำลังดำเนินการ",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
@@ -335,7 +335,7 @@ function AdminRepairsContent() {
             <StatCard label="รายการทั้งหมด" value={stats.total} />
           </div>
           <StatCard
-            label="รอการดำเนินการ"
+            label="รอดำเนินการ"
             value={stats.pending}
             className="h-full min-h-[140px]"
           />
@@ -443,7 +443,7 @@ function AdminRepairsContent() {
             >
               <option value="all">ทุกสถานะ</option>
               <option value="TODAY">งานวันนี้</option>
-              <option value="PENDING">รอรับงาน</option>
+              <option value="PENDING">รอดำเนินการ</option>
               <option value="IN_PROGRESS">กำลังดำเนินการ</option>
               <option value="COMPLETED">เสร็จสิ้น</option>
               <option value="CANCELLED">ยกเลิก</option>
@@ -609,11 +609,11 @@ function AdminRepairsContent() {
                         repair.status === "COMPLETED"
                           ? "bg-emerald-100 text-emerald-700"
                           : repair.status === "IN_PROGRESS"
-                            ? "bg-blue-100 text-blue-700"
+                            ? "bg-orange-100 text-orange-600"
                             : repair.status === "PENDING"
-                              ? "bg-amber-100 text-amber-700"
+                              ? "bg-indigo-200 text-indigo-700"
                               : repair.status === "ASSIGNED"
-                                ? "bg-indigo-100 text-indigo-700"
+                                ? "bg-blue-100 text-blue-700"
                                 : repair.status === "WAITING_PARTS"
                                   ? "bg-purple-100 text-purple-700"
                                   : "bg-gray-200 text-gray-600"
@@ -771,8 +771,8 @@ function StatCard({
   const colorMap: Record<string, string> = {
     รายการวันนี้: "bg-purple-600 text-white",
     รายการทั้งหมด: "bg-blue-600 text-white",
-    รอการดำเนินการ: "bg-sky-500 text-white",
-    กำลังดำเนินการ: "bg-amber-500 text-white",
+    รอดำเนินการ: "bg-indigo-500 text-white",
+    กำลังดำเนินการ: "bg-orange-500 text-white",
     เสร็จสิ้น: "bg-emerald-600 text-white",
     ยกเลิก: "bg-rose-600 text-white",
   };
