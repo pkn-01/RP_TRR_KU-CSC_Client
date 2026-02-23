@@ -377,6 +377,19 @@ export default function ITRepairDetailPage() {
   const handleSave = async () => {
     if (!data || !hasChanges()) return;
 
+    const confirm = await Swal.fire({
+      title: "ยืนยันการบันทึก",
+      text: "คุณต้องการบันทึกการเปลี่ยนแปลงนี้หรือไม่?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#9ca3af",
+      confirmButtonText: "ยืนยันการบันทึก",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!confirm.isConfirmed) return;
+
     try {
       setSaving(true);
 
