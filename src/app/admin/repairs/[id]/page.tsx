@@ -416,11 +416,10 @@ export default function RepairDetailPage() {
       inputAttributes: {
         "aria-label": "เหตุผลการยกเลิก",
       },
-      showCancelButton: true,
+      showCancelButton: false,
+      showCloseButton: true,
       confirmButtonText: "ยืนยันการยกเลิกงาน",
-      cancelButtonText: "ปิด",
       confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#9ca3af",
       icon: "warning",
       inputValidator: (value) => {
         if (!value || !value.trim()) {
@@ -481,11 +480,9 @@ export default function RepairDetailPage() {
         <div id="swal-previews" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-top:0.75rem;"></div>
       `,
       focusConfirm: false,
-      showCancelButton: true,
+      showCloseButton: true,
       confirmButtonText: "ยืนยันปิดงาน",
-      cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#16a34a",
-      cancelButtonColor: "#9ca3af",
       width: 480,
       didOpen: () => {
         const fileInput = document.getElementById(
