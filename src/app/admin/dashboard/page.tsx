@@ -43,6 +43,7 @@ interface DepartmentStat {
 }
 
 type FilterType = "day" | "week" | "month";
+type DeptFilterType = "all" | "day" | "week" | "month";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -54,18 +55,30 @@ export default function AdminDashboard() {
     return today.toISOString().split("T")[0];
   });
 
+  // Independent filter state for department section
+  const [deptFilter, setDeptFilter] = useState<DeptFilterType>("all");
+  const [deptSelectedDate, setDeptSelectedDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
+
   useEffect(() => {
     const loadDashboardData = async (showLoading = false) => {
       try {
         if (showLoading) setLoading(true);
 
         // Fetch dashboard statistics with filter and department statistics in parallel
+        const deptQuery =
+          deptFilter !== "all"
+            ? `?filter=${deptFilter}&date=${deptSelectedDate}`
+            : "";
+
         const [dashboardStats, deptStats] = await Promise.all([
           apiFetch(
             `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
             "GET",
           ),
-          apiFetch("/api/repairs/statistics/by-department", "GET"),
+          apiFetch(`/api/repairs/statistics/by-department${deptQuery}`, "GET"),
         ]);
 
         setStats(dashboardStats);
@@ -84,7 +97,7 @@ export default function AdminDashboard() {
     const interval = setInterval(() => loadDashboardData(false), 30000);
 
     return () => clearInterval(interval);
-  }, [filter, selectedDate]);
+  }, [filter, selectedDate, deptFilter, deptSelectedDate]);
 
   const getUrgencyLabel = (urgency: string) => {
     const labels: Record<string, string> = {
@@ -188,7 +201,7 @@ export default function AdminDashboard() {
             label="กำลังดำเนินการ"
             value={stats?.all.inProgress || 0}
           />
-          <MainStatItem label="ปิดงาน" value={stats?.all.completed || 0} />
+          <MainStatItem label="เสร็จสิ้น" value={stats?.all.completed || 0} />
           <MainStatItem label="ยกเลิก" value={stats?.all.cancelled || 0} />
         </div>
 
@@ -204,7 +217,7 @@ export default function AdminDashboard() {
             link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`ปิดงาน(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
+            label={`เสร็จสิ้น(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.completed || 0}
             link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
           />
@@ -301,7 +314,7 @@ export default function AdminDashboard() {
                       )}
                       {repair.status === "COMPLETED" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                          ปิดงาน
+                          เสร็จสิ้น
                         </span>
                       )}
                       {repair.status === "CANCELLED" && (
@@ -338,13 +351,81 @@ export default function AdminDashboard() {
 
         {/* Department Statistics */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            จำนวนรายการแจ้งซ่อมของแต่ละแผนก
-          </h2>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">
+              จำนวนรายการแจ้งซ่อมของแต่ละแผนก
+              {deptFilter !== "all" && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (
+                  {deptFilter === "day"
+                    ? `วันที่ ${formatDisplayDate(deptSelectedDate)}`
+                    : deptFilter === "week"
+                      ? `สัปดาห์ของ ${formatDisplayDate(deptSelectedDate)}`
+                      : `เดือน ${new Date(deptSelectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
+                  )
+                </span>
+              )}
+            </h2>
+
+            <div className="flex items-center gap-3">
+              {/* Department Filter Tabs */}
+              <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+                {(["all", "day", "week", "month"] as DeptFilterType[]).map(
+                  (f) => (
+                    <button
+                      key={f}
+                      onClick={() => setDeptFilter(f)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
+                        deptFilter === f
+                          ? "text-white shadow-sm"
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                      style={{
+                        backgroundColor:
+                          deptFilter === f ? "#5D2E1E" : undefined,
+                        color: deptFilter === f ? "#ffffff" : undefined,
+                      }}
+                    >
+                      {f === "all"
+                        ? "ทั้งหมด"
+                        : f === "day"
+                          ? "รายวัน"
+                          : f === "week"
+                            ? "รายสัปดาห์"
+                            : "รายเดือน"}
+                    </button>
+                  ),
+                )}
+              </div>
+
+              {/* Department Calendar Picker — visible only when filter is not 'all' */}
+              {deptFilter !== "all" && (
+                <CalendarPop
+                  selectedDate={(() => {
+                    const [y, m, d] = deptSelectedDate.split("-").map(Number);
+                    return new Date(y, m - 1, d);
+                  })()}
+                  onChange={(date: Date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    setDeptSelectedDate(`${year}-${month}-${day}`);
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {departmentStats.map((dept) => (
-              <DepartmentCard key={dept.department} stat={dept} />
-            ))}
+            {departmentStats.length > 0 ? (
+              departmentStats.map((dept) => (
+                <DepartmentCard key={dept.department} stat={dept} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-gray-500 text-sm">
+                ไม่มีข้อมูลในช่วงเวลาที่เลือก
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -369,7 +450,7 @@ function MainStatItem({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
     รายการซ่อมทั้งหมด: "bg-blue-600 text-white",
     กำลังดำเนินการ: "bg-amber-500 text-white",
-    ปิดงาน: "bg-emerald-600 text-white",
+    เสร็จสิ้น: "bg-emerald-600 text-white",
     ยกเลิก: "bg-rose-600 text-white",
   };
 
@@ -400,7 +481,7 @@ function TodayStatCard({
   let colorClass = "bg-blue-600 text-white";
 
   if (label.includes("กำลังดำเนินการ")) colorClass = "bg-amber-500 text-white";
-  if (label.includes("ปิดงาน")) colorClass = "bg-emerald-600 text-white";
+  if (label.includes("เสร็จสิ้น")) colorClass = "bg-emerald-600 text-white";
   if (label.includes("ยกเลิก")) colorClass = "bg-rose-600 text-white";
 
   return (
@@ -433,16 +514,16 @@ function DepartmentCard({ stat }: { stat: DepartmentStat }) {
         <span className="text-4xl font-black text-slate-900">{stat.total}</span>
       </div>
       <div className="space-y-2.5 text-sm">
-        <div className="flex justify-between font-bold text-amber-600 border-r-4 border-amber-400 pr-2 bg-amber-50 py-1.5 rounded-l">
+        <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-400 pr-2 bg-blue-50 py-1.5 rounded-l">
           <span>รอดำเนินการ :</span>
           <span>{stat.pending}</span>
         </div>
-        <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-500 pr-2 bg-blue-50 py-1.5 rounded-l">
+        <div className="flex justify-between font-bold text-amber-600 border-r-4 border-amber-500 pr-2 bg-amber-50 py-1.5 rounded-l">
           <span>กำลังดำเนินการ :</span>
           <span>{stat.inProgress}</span>
         </div>
         <div className="flex justify-between font-bold text-emerald-600 border-r-4 border-emerald-500 pr-2 bg-emerald-50 py-1.5 rounded-l">
-          <span>ปิดงาน :</span>
+          <span>เสร็จสิ้น :</span>
           <span>{stat.completed}</span>
         </div>
         <div className="flex justify-between font-bold text-rose-600 border-r-4 border-rose-500 pr-2 bg-rose-50 py-1.5 rounded-l">
