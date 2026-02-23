@@ -47,7 +47,7 @@ export default function RepairSuccess({
         </p>
 
         {/* Ticket Code Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-4">
+        <div>
           <p className="text-sm text-slate-500 mb-2">รหัสการแจ้งซ่อม</p>
           <p className="text-2xl font-mono font-bold text-emerald-600 tracking-wider">
             {ticketCode}
