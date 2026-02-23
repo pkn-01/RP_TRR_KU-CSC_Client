@@ -290,12 +290,12 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {repair.status === "PENDING" && (
-                        <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
+                        <span className="px-2 py-1 text-xs font-semibold bg-sky-100 text-sky-700 rounded-full">
                           รอดำเนินการ
                         </span>
                       )}
                       {repair.status === "IN_PROGRESS" && (
-                        <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-700 rounded-full">
+                        <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
                           กำลังดำเนินการ
                         </span>
                       )}
