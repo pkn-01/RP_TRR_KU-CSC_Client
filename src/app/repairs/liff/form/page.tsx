@@ -316,10 +316,10 @@ function RepairFormContent() {
               <div className="w-16 h-16 border-[5px] border-gray-100 border-t-[#5D3A29] rounded-full animate-spin"></div>
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              กำลังดำเนินการ
+              กำลังโหลด
             </h3>
             <p className="text-gray-500 text-center">
-              กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลการแจ้งซ่อมของคุณ...
+              ระบบกำลังบันทึกข้อมูลการแจ้งซ่อม
             </p>
           </div>
         </div>
