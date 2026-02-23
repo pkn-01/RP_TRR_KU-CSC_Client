@@ -26,7 +26,7 @@ interface Repair {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: "รอรับงาน",
+  PENDING: "รอดำเนินการ",
   ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
   REPAIRING: "กำลังซ่อม",
@@ -326,7 +326,7 @@ export function RepairsDashboard() {
                           repair.status === "COMPLETED"
                             ? "bg-green-100 text-green-700"
                             : repair.status === "IN_PROGRESS"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-amber-100 text-amber-700"
                               : repair.status === "PENDING"
                                 ? "bg-yellow-100 text-yellow-700"
                                 : repair.status === "CANCELLED"
@@ -408,7 +408,7 @@ export function RepairsDashboard() {
                       repair.status === "COMPLETED"
                         ? "bg-green-100 text-green-700"
                         : repair.status === "IN_PROGRESS"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-amber-100 text-amber-700"
                           : repair.status === "PENDING"
                             ? "bg-yellow-100 text-yellow-700"
                             : repair.status === "CANCELLED"
