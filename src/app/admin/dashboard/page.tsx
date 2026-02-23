@@ -42,13 +42,13 @@ interface DepartmentStat {
   cancelled: number;
 }
 
-type FilterType = "all" | "day" | "week" | "month";
+type FilterType = "day" | "week" | "month";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filter, setFilter] = useState<FilterType>("day");
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -59,16 +59,16 @@ export default function AdminDashboard() {
       try {
         if (showLoading) setLoading(true);
 
-        // Build query strings based on filter
-        const dateQuery =
-          filter !== "all" ? `?filter=${filter}&date=${selectedDate}` : "";
-
+        // Fetch dashboard statistics with filter and department statistics in parallel
         const [dashboardStats, deptStats] = await Promise.all([
           apiFetch(
-            `/api/repairs/statistics/dashboard${filter !== "all" ? `?filter=${filter}&date=${selectedDate}` : "?filter=day&date=" + selectedDate}`,
+            `/api/repairs/statistics/dashboard?filter=${filter}&date=${selectedDate}`,
             "GET",
           ),
-          apiFetch(`/api/repairs/statistics/by-department${dateQuery}`, "GET"),
+          apiFetch(
+            `/api/repairs/statistics/by-department?filter=${filter}&date=${selectedDate}`,
+            "GET",
+          ),
         ]);
 
         setStats(dashboardStats);
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3">
             {/* Filter Tabs */}
             <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
-              {(["all", "day", "week", "month"] as FilterType[]).map((f) => (
+              {(["day", "week", "month"] as FilterType[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -160,32 +160,28 @@ export default function AdminDashboard() {
                     color: filter === f ? "#ffffff" : undefined,
                   }}
                 >
-                  {f === "all"
-                    ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
-                    : f === "day"
-                      ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
-                      : f === "week"
-                        ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
-                        : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
+                  {f === "day"
+                    ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
+                    : f === "week"
+                      ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
+                      : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
                 </button>
               ))}
             </div>
 
-            {/* Date Picker — visible only when filter is not 'all' */}
-            {filter !== "all" && (
-              <CalendarPop
-                selectedDate={(() => {
-                  const [y, m, d] = selectedDate.split("-").map(Number);
-                  return new Date(y, m - 1, d);
-                })()}
-                onChange={(date: Date) => {
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, "0");
-                  const day = String(date.getDate()).padStart(2, "0");
-                  setSelectedDate(`${year}-${month}-${day}`);
-                }}
-              />
-            )}
+            {/* Date Picker */}
+            <CalendarPop
+              selectedDate={(() => {
+                const [y, m, d] = selectedDate.split("-").map(Number);
+                return new Date(y, m - 1, d);
+              })()}
+              onChange={(date: Date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                setSelectedDate(`${year}-${month}-${day}`);
+              }}
+            />
           </div>
         </div>
 
@@ -215,22 +211,22 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <TodayStatCard
-            label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.total || 0}
             link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.inProgress || 0}
             link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.completed || 0}
             link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01(${filter === "all" ? "\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14" : filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.cancelled || 0}
             link={`/admin/repairs?status=CANCELLED&filter=${filter}&date=${selectedDate}`}
           />
@@ -375,17 +371,15 @@ export default function AdminDashboard() {
             {
               "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
             }
-            {filter !== "all" && (
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                (
-                {filter === "day"
-                  ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
-                  : filter === "week"
-                    ? `\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E02\u0E2D\u0E07 ${formatDisplayDate(selectedDate)}`
-                    : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
-                )
-              </span>
-            )}
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              (
+              {filter === "day"
+                ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
+                : filter === "week"
+                  ? `\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E02\u0E2D\u0E07 ${formatDisplayDate(selectedDate)}`
+                  : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
+              )
+            </span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {departmentStats.length > 0 ? (
