@@ -611,7 +611,7 @@ function AdminRepairsContent() {
                           : repair.status === "IN_PROGRESS"
                             ? "bg-orange-100 text-orange-600"
                             : repair.status === "PENDING"
-                              ? "bg-indigo-200 text-indigo-700"
+                              ? "bg-indigo-200 tex-skye-700"
                               : repair.status === "ASSIGNED"
                                 ? "bg-blue-100 text-blue-700"
                                 : repair.status === "WAITING_PARTS"
