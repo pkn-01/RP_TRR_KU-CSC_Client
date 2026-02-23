@@ -486,7 +486,7 @@ export default function RepairDetailPage() {
       title: "รายงานปิดงาน",
       html: `
         <p style="color:#6b7280;font-size:0.875rem;margin-bottom:1rem;">ID: ${data.ticketCode}</p>
-        <label style="display:block;text-align:left;font-size:0.75rem;font-weight:500;color:#6b7280;margin-bottom:0.25rem;">สรุปผลการดำเนินการ (รายงานปิดงาน) <span style="color:#ef4444">*</span></label>
+        <label style="display:block;text-align:left;font-size:0.75rem;font-weight:500;color:#6b7280;margin-bottom:0.25rem;">สรุปผลการดำเนินการ (รายงานปิดงาน)</label>
         <textarea id="swal-report" rows="4" placeholder="อธิบายสิ่งที่ได้ดำเนินการแก้ไข..." style="width:100%;padding:0.75rem 1rem;border:1px solid #e5e7eb;border-radius:0.75rem;font-size:0.875rem;resize:none;outline:none;box-sizing:border-box;"></textarea>
         <label style="display:block;text-align:left;font-size:0.75rem;font-weight:500;color:#6b7280;margin-top:1rem;margin-bottom:0.5rem;">แนบรูปภาพผลงาน (อุปกรณ์ ฯลฯ)</label>
         <input id="swal-files" type="file" accept="image/*" multiple style="width:100%;font-size:0.875rem;padding:0.5rem;border:1px solid #e5e7eb;border-radius:0.75rem;box-sizing:border-box;" />
@@ -521,20 +521,17 @@ export default function RepairDetailPage() {
         }
       },
       preConfirm: () => {
-        const report =
-          (document.getElementById("swal-report") as HTMLTextAreaElement)
-            ?.value || "";
-        const fileInput = document.getElementById(
+        const reportInput = document.getElementById(
+          "swal-report",
+        ) as HTMLTextAreaElement;
+        const filesInput = document.getElementById(
           "swal-files",
         ) as HTMLInputElement;
-        const files = Array.from(fileInput?.files || []);
 
-        if (!report.trim()) {
-          Swal.showValidationMessage("กรุณาระบุสรุปผลการดำเนินการ");
-          return false;
-        }
-
-        return { report, files };
+        return {
+          report: reportInput.value,
+          files: filesInput.files ? Array.from(filesInput.files) : [],
+        };
       },
     });
 
