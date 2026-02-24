@@ -785,17 +785,6 @@ export default function ITRepairDetailPage() {
                   <p className="text-base font-bold text-gray-900 mb-4">
                     {data.title || "-"}
                   </p>
-
-                  {data.description && (
-                    <>
-                      <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-                        รายละเอียดเพิ่มเติม
-                      </p>
-                      <p className="text-sm font-medium text-gray-800 leading-relaxed whitespace-pre-wrap">
-                        {data.description}
-                      </p>
-                    </>
-                  )}
                 </div>
               </div>
 
