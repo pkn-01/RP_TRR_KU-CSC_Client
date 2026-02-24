@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Settings,
   UserRoundCog,
+  ClipboardClock
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import { useSidebar } from "@/context/SidebarContext";
@@ -84,8 +85,8 @@ export default function AdminSidebar() {
       icon: Package,
       label: "การยืม",
       subItems: [
-        { label: "รายการยืมทั้งหมด", href: "/admin/loans" },
-        { label: "เช็คสต็อก", href: "/admin/stock" },
+        { icon:ClipboardClock,label: "รายการยืมทั้งหมด", href: "/admin/loans" },
+        // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
       ],
     },
     {
