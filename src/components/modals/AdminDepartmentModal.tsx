@@ -28,22 +28,10 @@ export default function AdminDepartmentModal({
       if (department) {
         setFormData({
           name: department.name || "",
-          code: department.code || "",
-          description: department.description || "",
-          location: department.location || "",
-          contactEmail: department.contactEmail || "",
-          contactPhone: department.contactPhone || "",
-          headName: department.headName || "",
         });
       } else {
         setFormData({
           name: "",
-          code: "",
-          description: "",
-          location: "",
-          contactEmail: "",
-          contactPhone: "",
-          headName: "",
         });
       }
       setErrors({});
@@ -57,17 +45,6 @@ export default function AdminDepartmentModal({
       newErrors.name = "กรุณากรอกชื่อแผนก";
     }
 
-    if (!formData.code?.trim()) {
-      newErrors.code = "กรุณากรอกรหัสแผนก";
-    }
-
-    if (
-      formData.contactEmail?.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)
-    ) {
-      newErrors.contactEmail = "รูปแบบอีเมลไม่ถูกต้อง";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
@@ -77,7 +54,13 @@ export default function AdminDepartmentModal({
 
     setIsLoading(true);
     try {
-      await onSave({ ...formData });
+      // Auto-generate a dummy code based on the name or a timestamp since the backend requires it
+      const payload = { ...formData };
+      if (!isEditMode) {
+        payload.code = `DEPT_${Date.now()}`;
+      }
+
+      await onSave(payload);
       onClose();
     } catch (err) {
       console.error("Save failed:", err);
@@ -114,122 +97,23 @@ export default function AdminDepartmentModal({
           </button>
         </div>
 
-        <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                รหัสแผนก<span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.code || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, code: e.target.value })
-                }
-                className={`w-full px-4 py-2.5 rounded-xl border ${errors.code ? "border-rose-300 bg-rose-50" : "border-slate-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                placeholder="เช่น IT, HR"
-              />
-              {errors.code && (
-                <p className="text-xs text-rose-500 mt-1">{errors.code}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                ชื่อแผนก<span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.name || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                className={`w-full px-4 py-2.5 rounded-xl border ${errors.name ? "border-rose-300 bg-rose-50" : "border-slate-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                placeholder="เทคโนโลยีสารสนเทศ"
-              />
-              {errors.name && (
-                <p className="text-xs text-rose-500 mt-1">{errors.name}</p>
-              )}
-            </div>
-          </div>
-
+        <div className="p-6 overflow-y-auto space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              หัวหน้าแผนก
+              ชื่อแผนก<span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
-              value={formData.headName || ""}
+              value={formData.name || ""}
               onChange={(e) =>
-                setFormData({ ...formData, headName: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-              placeholder="ชื่อหัวหน้าแผนก"
+              className={`w-full px-4 py-2.5 rounded-xl border ${errors.name ? "border-rose-300 bg-rose-50" : "border-slate-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
+              placeholder="เทคโนโลยีสารสนเทศ"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              อีเมลติดต่อ
-            </label>
-            <input
-              type="email"
-              value={formData.contactEmail || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, contactEmail: e.target.value })
-              }
-              className={`w-full px-4 py-2.5 rounded-xl border ${errors.contactEmail ? "border-rose-300 bg-rose-50" : "border-slate-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-              placeholder="email@example.com"
-            />
-            {errors.contactEmail && (
-              <p className="text-xs text-rose-500 mt-1">
-                {errors.contactEmail}
-              </p>
+            {errors.name && (
+              <p className="text-xs text-rose-500 mt-1">{errors.name}</p>
             )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                เบอร์โทรติดต่อ
-              </label>
-              <input
-                type="text"
-                value={formData.contactPhone || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, contactPhone: e.target.value })
-                }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-                placeholder="02-XXX-XXXX"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                ที่ตั้ง / ห้อง
-              </label>
-              <input
-                type="text"
-                value={formData.location || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm"
-                placeholder="อาคาร A ชั้น 2"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              คำอธิบาย / หมายเหตุ
-            </label>
-            <textarea
-              value={formData.description || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm min-h-[80px]"
-              placeholder="รายละเอียดเพิ่มเติม..."
-            />
           </div>
         </div>
 

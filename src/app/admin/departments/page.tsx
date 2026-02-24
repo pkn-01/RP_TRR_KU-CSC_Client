@@ -36,10 +36,7 @@ export default function AdminDepartmentsPage() {
 
   const filteredDepartments = useMemo(() => {
     return departments.filter((dept) => {
-      return (
-        dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        dept.code.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      return dept.name.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [departments, searchQuery]);
 
@@ -69,7 +66,7 @@ export default function AdminDepartmentsPage() {
   const confirmDelete = async (dept: Department) => {
     const result = await Swal.fire({
       title: "ยืนยันการลบแผนก",
-      text: `ต้องการลบแผนก "${dept.name} (${dept.code})" หรือไม่? การลบอาจมีผลกับข้อมูลที่เชื่อมโยง`,
+      text: `ต้องการลบแผนก "${dept.name}" หรือไม่? การลบอาจมีผลกับข้อมูลที่เชื่อมโยง`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -117,7 +114,7 @@ export default function AdminDepartmentsPage() {
           <div className="relative w-full max-w-md">
             <input
               type="text"
-              placeholder="ค้นหารหัส หรือ ชื่อแผนก"
+              placeholder="ค้นหาชื่อแผนก"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-1 focus:ring-[#795548]"
@@ -146,16 +143,7 @@ export default function AdminDepartmentsPage() {
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                    รหัส
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                     ชื่อแผนก
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                    หัวหน้า / ติดต่อ
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                    สถานที่
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
                     จัดการ
@@ -166,35 +154,9 @@ export default function AdminDepartmentsPage() {
                 {filteredDepartments.map((dept) => (
                   <tr key={dept.id} className="hover:bg-gray-50/50">
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#795548]/10 text-[#795548]">
-                        {dept.code}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
                         {dept.name}
                       </div>
-                      {dept.description && (
-                        <div className="text-xs text-gray-500">
-                          {dept.description}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-700">
-                        {dept.headName || "-"}
-                      </div>
-                      {(dept.contactEmail || dept.contactPhone) && (
-                        <div className="text-xs text-gray-500 mt-0.5">
-                          {dept.contactPhone}{" "}
-                          {dept.contactEmail && `| ${dept.contactEmail}`}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-700">
-                        {dept.location || "-"}
-                      </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
