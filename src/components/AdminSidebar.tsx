@@ -255,13 +255,22 @@ export default function AdminSidebar() {
                           <Link
                             key={subItem.href}
                             href={subItem.href}
-                            className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
                               subActive
                                 ? "text-gray-900 font-medium"
                                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                             }`}
                           >
-                            {subItem.label}
+                            {subItem.icon && (
+                              <subItem.icon
+                                size={18}
+                                strokeWidth={1.5}
+                                className={
+                                  subActive ? "text-[#795548]" : "text-gray-500"
+                                }
+                              />
+                            )}
+                            <span>{subItem.label}</span>
                           </Link>
                         );
                       })}
