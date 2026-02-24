@@ -660,8 +660,8 @@ export default function ITLoansPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Side: Item Info */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase">
-                    📦 ข้อมูลอุปกรณ์
+                  <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">
+                    ข้อมูลอุปกรณ์
                   </h3>
                   <div className="space-y-4">
                     <FormInput
@@ -698,9 +698,9 @@ export default function ITLoansPage() {
                 </div>
 
                 {/* Right Side: Borrower Info */}
-                <div className="space-y-4 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase">
-                    👤 ข้อมูลผู้ยืม
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">
+                    ข้อมูลผู้ยืม
                   </h3>
                   <div className="space-y-4">
                     <FormInput
