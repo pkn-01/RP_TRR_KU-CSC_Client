@@ -863,11 +863,17 @@ function StatCard({
 
 function LoadingState() {
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center bg-white gap-4">
-      <div className="w-10 h-10 border-3 border-gray-200 border-t-black rounded-full animate-spin"></div>
-      <p className="font-semibold text-black text-sm uppercase">
-        Loading Records...
-      </p>
+    <div className="min-h-[80vh] w-full flex flex-col items-center justify-center bg-white gap-5">
+      <div className="relative flex items-center justify-center w-12 h-12">
+        <div className="absolute inset-0 w-full h-full border-[3px] border-gray-100 rounded-full"></div>
+        <div className="absolute inset-0 w-full h-full border-[3px] border-gray-900 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+      <div className="flex flex-col items-center gap-1.5">
+        <p className="font-bold text-gray-900 text-sm tracking-wide">
+          กำลังโหลดข้อมูล
+        </p>
+        <p className="text-xs font-medium text-gray-500">กรุณารอสักครู่...</p>
+      </div>
     </div>
   );
 }
