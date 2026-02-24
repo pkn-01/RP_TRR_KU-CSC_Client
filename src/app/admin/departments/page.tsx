@@ -49,8 +49,6 @@ export default function AdminDepartmentsPage() {
         await departmentService.updateDepartment(selectedDepartment.id, data);
         Swal.fire("สำเร็จ", "แก้ไขข้อมูลแผนกเรียบร้อยแล้ว", "success");
       }
-      // แจ้ง event ไปยังหน้าอื่น ๆ ว่ามีการอัปเดตแผนก
-      window.dispatchEvent(new Event("departments-updated"));
       fetchDepartments();
       setIsModalOpen(false);
     } catch (err: any) {
@@ -82,8 +80,6 @@ export default function AdminDepartmentsPage() {
     try {
       await departmentService.deleteDepartment(dept.id);
       await Swal.fire("ลบสำเร็จ!", "ข้อมูลแผนกถูกลบแล้ว", "success");
-      // แจ้ง event ไปยังหน้าอื่น ๆ ว่ามีการอัปเดตแผนก
-      window.dispatchEvent(new Event("departments-updated"));
       fetchDepartments();
     } catch {
       Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการลบ", "error");
