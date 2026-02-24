@@ -671,15 +671,15 @@ export default function ITLoansPage() {
                       onChange={(v) =>
                         setFormData({ ...formData, itemName: v })
                       }
-                      placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
+                      placeholder="เช่น โน๊ตบุ๊ค"
                     />
                     <FormTextArea
-                      label="รายละเอียด/Serial No."
+                      label="รายละเอียด"
                       value={formData.description}
                       onChange={(v) =>
                         setFormData({ ...formData, description: v })
                       }
-                      placeholder="ระบุเลข Serial "
+                      placeholder=""
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <FormInput
@@ -710,7 +710,7 @@ export default function ITLoansPage() {
                       onChange={(v) =>
                         setFormData({ ...formData, borrowerName: v })
                       }
-                      placeholder="ชื่อพนักงาน"
+                      placeholder=""
                     />
                     <FormInput
                       label="แผนก"
@@ -727,7 +727,7 @@ export default function ITLoansPage() {
                       onChange={(v) =>
                         setFormData({ ...formData, borrowerPhone: v })
                       }
-                      placeholder="0xx-xxx-xxxx"
+                      placeholder=""
                     />
                     <FormInput
                       label="Line ID"
@@ -735,7 +735,7 @@ export default function ITLoansPage() {
                       onChange={(v) =>
                         setFormData({ ...formData, borrowerLineId: v })
                       }
-                      placeholder="@username"
+                      placeholder=""
                     />
                   </div>
                 </div>
