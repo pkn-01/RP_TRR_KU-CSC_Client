@@ -242,7 +242,7 @@ export default function ITLoansPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-black hover:bg-gray-900 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-xs md:text-base font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-lg text-xs md:text-base font-semibold flex items-center justify-center gap-2 transition-all active:scale-95"
         >
           <Plus size={18} strokeWidth={2} />
           เพิ่มรายการใหม่
