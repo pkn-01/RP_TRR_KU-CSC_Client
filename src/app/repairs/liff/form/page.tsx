@@ -78,7 +78,7 @@ function RepairFormContent() {
     fetchDepartments();
   }, []);
 
-  // Initialize LIFF SDK to get user profile (LIFF SDK only — never trust URL params)
+  
   useEffect(() => {
     const initLiff = async () => {
       try {
