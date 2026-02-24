@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  UserRoundCog,
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import { useSidebar } from "@/context/SidebarContext";
@@ -31,6 +32,11 @@ import { useSidebar } from "@/context/SidebarContext";
 interface SubMenuItem {
   label: string;
   href: string;
+  icon?: React.ComponentType<{
+    size: number;
+    strokeWidth?: number;
+    className?: string;
+  }>;
 }
 
 interface MenuItem {
@@ -82,11 +88,13 @@ export default function AdminSidebar() {
         { label: "เช็คสต็อก", href: "/admin/stock" },
       ],
     },
-    { icon: Users, label: "จัดการสมาชิก", href: "/admin/users" },
     {
       icon: Settings,
       label: "ตั้งค่า",
-      subItems: [{ label: "จัดการแผนก", href: "/admin/departments" }],
+      subItems: [
+        { icon: UserRoundCog, label: "จัดการสมาชิก", href: "/admin/users" },
+        { icon: Users, label: "จัดการแผนก", href: "/admin/departments" },
+      ],
     },
   ];
 
