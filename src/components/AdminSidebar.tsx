@@ -23,6 +23,7 @@ import {
   Database,
   ChevronLeft,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import { useSidebar } from "@/context/SidebarContext";
@@ -82,6 +83,11 @@ export default function AdminSidebar() {
       ],
     },
     { icon: Users, label: "จัดการสมาชิก", href: "/admin/users" },
+    {
+      icon: Settings,
+      label: "ตั้งค่า",
+      subItems: [{ label: "จัดการแผนก", href: "/admin/departments" }],
+    },
   ];
 
   const isActive = useCallback(
