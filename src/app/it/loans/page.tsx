@@ -62,7 +62,7 @@ const StatusBadge = ({ status }: { status: LoanStatus }) => {
       icon: CheckCircle2,
     },
     OVERDUE: {
-      color: "bg-neutral-800 text-white border-neutral-800",
+      color: "bg-neutral-800 text-white border-neutral-800 bg-",
       label: "กำลังยืม",
       icon: Clock,
     },
@@ -250,18 +250,21 @@ export default function ITLoansPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           label="รายการทั้งหมด"
           count={stats.total}
-          icon={<FileText />}
+          colorClass="bg-blue-600 text-white"
         />
-        <StatCard label="กำลังถูกยืม" count={stats.active} icon={<Clock />} />
-
+        <StatCard
+          label="กำลังถูกยืม"
+          count={stats.active}
+          colorClass="bg-amber-500 text-white"
+        />
         <StatCard
           label="คืนสำเร็จแล้ว"
           count={stats.returned}
-          icon={<CheckCircle2 />}
+          colorClass="bg-emerald-600 text-white"
         />
       </div>
 
@@ -840,23 +843,20 @@ function FormTextArea({
 function StatCard({
   label,
   count,
-  icon,
+  colorClass = "bg-blue-600 text-white",
 }: {
   label: string;
   count: number;
-  icon: React.ReactNode;
+  colorClass?: string;
 }) {
   return (
-    <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex flex-col">
-        <span className="text-gray-600 text-xs font-semibold uppercase">
-          {label}
-        </span>
-        <span className="text-3xl font-bold text-black mt-2">{count}</span>
-      </div>
-      <div className="absolute -right-2 -bottom-2 opacity-10 scale-[2] pointer-events-none">
-        {icon}
-      </div>
+    <div
+      className={`flex flex-col items-center justify-center p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
+    >
+      <span className="text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
+        {label}
+      </span>
+      <span className="text-4xl font-black">{count}</span>
     </div>
   );
 }
