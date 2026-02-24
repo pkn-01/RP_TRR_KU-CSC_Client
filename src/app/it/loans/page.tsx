@@ -722,7 +722,6 @@ export default function ITLoansPage() {
                     />
                     <FormInput
                       label="เบอร์โทรศัพท์"
-                      icon={<Phone size={14} />}
                       value={formData.borrowerPhone}
                       onChange={(v) =>
                         setFormData({ ...formData, borrowerPhone: v })
