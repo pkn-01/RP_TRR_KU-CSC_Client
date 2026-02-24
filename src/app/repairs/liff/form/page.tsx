@@ -15,7 +15,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
-import { DEPARTMENT_OPTIONS } from "@/constants/departments";
+import { departmentService } from "@/services/department.service";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -49,7 +49,7 @@ const URGENCY_OPTIONS = [
   },
 ];
 
-function RepairFormContent() {
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -67,6 +67,9 @@ function RepairFormContent() {
     location: "",
   });
 
+  // State สำหรับ department options
+  const [departmentOptions, setDepartmentOptions] = useState<string[]>([]);
+
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +78,29 @@ function RepairFormContent() {
     linkingCode?: string;
     hasLineUserId?: boolean;
   } | null>(null);
+  // โหลด department options จาก backend
+  const fetchDepartments = useCallback(async () => {
+    try {
+      const data = await departmentService.getAllDepartments();
+      if (Array.isArray(data)) {
+        setDepartmentOptions(data.map((d: any) => d.name));
+      }
+    } catch (err) {
+      setDepartmentOptions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDepartments();
+    // listen event จากหน้า admin
+    const handler = () => {
+      fetchDepartments();
+    };
+    window.addEventListener("departments-updated", handler);
+    return () => {
+      window.removeEventListener("departments-updated", handler);
+    };
+  }, [fetchDepartments]);
 
   // Initialize LIFF SDK to get user profile
   // Priority: 1) URL param lineUserId  2) LIFF SDK profile  3) LINE in-app browser → force login
@@ -460,7 +486,7 @@ function RepairFormContent() {
                     <option value="" disabled>
                       ระบุแผนก/ฝ่าย
                     </option>
-                    {DEPARTMENT_OPTIONS.map((dept) => (
+                    {departmentOptions.map((dept) => (
                       <option key={dept} value={dept}>
                         {dept}
                       </option>
