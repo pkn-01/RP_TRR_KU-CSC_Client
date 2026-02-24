@@ -752,7 +752,7 @@ export default function ITLoansPage() {
               <button
                 onClick={handleAddLoan}
                 disabled={submitting}
-                className="flex-[2] py-3 bg-black text-white font-semibold rounded-lg shadow-sm hover:bg-gray-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-[2] py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {submitting ? (
                   <Loader2 className="animate-spin" size={18} />
