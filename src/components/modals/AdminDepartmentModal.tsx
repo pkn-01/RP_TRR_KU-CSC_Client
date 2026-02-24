@@ -109,7 +109,7 @@ export default function AdminDepartmentModal({
                 setFormData({ ...formData, name: e.target.value })
               }
               className={`w-full px-4 py-2.5 rounded-xl border ${errors.name ? "border-rose-300 bg-rose-50" : "border-slate-200"} focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-              placeholder="เทคโนโลยีสารสนเทศ"
+              placeholder=""
             />
             {errors.name && (
               <p className="text-xs text-rose-500 mt-1">{errors.name}</p>
