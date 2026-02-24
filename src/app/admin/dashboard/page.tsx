@@ -91,9 +91,9 @@ export default function AdminDashboard() {
 
   const getUrgencyLabel = (urgency: string) => {
     const labels: Record<string, string> = {
-      CRITICAL: "\u0E14\u0E48\u0E27\u0E19",
-      URGENT: "\u0E14\u0E48\u0E27\u0E19",
-      NORMAL: "\u0E1B\u0E01\u0E15\u0E34",
+      CRITICAL: "ด่วนที่สุด",
+      URGENT: "ด่วน",
+      NORMAL: "ปกติ",
     };
     return labels[urgency] || urgency;
   };
@@ -298,16 +298,22 @@ export default function AdminDashboard() {
                       {repair.location}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      {repair.urgency === "CRITICAL" ||
-                      repair.urgency === "URGENT" ? (
+                      {repair.urgency === "CRITICAL" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-600 rounded-full">
-                          {"\u0E14\u0E48\u0E27\u0E19"}
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">
-                          {"\u0E1B\u0E01\u0E15\u0E34"}
+                          ด่วนที่สุด
                         </span>
                       )}
+                      {repair.urgency === "URGENT" && (
+                        <span className="px-2 py-1 text-xs font-semibold bg-orange-100 text-orange-600 rounded-full">
+                          ด่วน
+                        </span>
+                      )}
+                      {repair.urgency !== "CRITICAL" &&
+                        repair.urgency !== "URGENT" && (
+                          <span className="px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-600 rounded-full">
+                            ปกติ
+                          </span>
+                        )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       {repair.status === "PENDING" && (
