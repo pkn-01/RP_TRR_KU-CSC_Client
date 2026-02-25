@@ -76,7 +76,7 @@ export default function AdminSidebar() {
     fetchAdminProfile();
   }, []);
 
-  // Menu items with dropdowns based on design
+  
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
