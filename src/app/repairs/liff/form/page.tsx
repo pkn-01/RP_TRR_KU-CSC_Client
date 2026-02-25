@@ -93,8 +93,15 @@ function RepairFormContent() {
 
         const liff = (await import("@line/liff")).default;
 
-        // Initialize LIFF
-        await liff.init({ liffId, withLoginOnExternalBrowser: false });
+        // Initialize LIFF with timeout to prevent infinite hang
+        const initPromise = liff.init({
+          liffId,
+          withLoginOnExternalBrowser: false,
+        });
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("LIFF init timeout")), 5000),
+        );
+        await Promise.race([initPromise, timeoutPromise]);
 
         if (liff.isLoggedIn()) {
           // User is logged in via LIFF — get their profile and token
