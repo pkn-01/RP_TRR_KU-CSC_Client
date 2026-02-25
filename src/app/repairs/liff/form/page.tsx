@@ -112,8 +112,9 @@ function RepairFormContent() {
           }
         }
 
-        // Force login universally if not logged in
-        liff.login();
+        // If not logged in, we set as guest instead of forcing login
+        // to prevent infinite redirect loops in external browsers
+        setLiffInitialized(true);
         return;
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
