@@ -112,7 +112,7 @@ function RepairFormContent() {
         }
 
         // Force login universally if not logged in
-        liff.login({ redirectUri: window.location.href });
+        liff.login();
         return;
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
