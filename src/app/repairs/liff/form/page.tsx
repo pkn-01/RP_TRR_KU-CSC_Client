@@ -55,7 +55,7 @@ function RepairFormContent() {
 
   // State for LINE user ID (from LIFF SDK only — never trust URL params)
   const [lineUserId, setLineUserId] = useState<string>("");
-  const [idToken, setIdToken] = useState<string>("");
+  const [accessToken, setAccessToken] = useState<string>("");
   const [liffInitialized, setLiffInitialized] = useState(false);
   const [liffError, setLiffError] = useState<string | null>(null);
 
@@ -99,10 +99,10 @@ function RepairFormContent() {
           // User is logged in via LIFF — get their profile and token
           try {
             const profile = await liff.getProfile();
-            const token = liff.getIDToken();
+            const token = liff.getAccessToken();
             if (profile.userId && token) {
               setLineUserId(profile.userId);
-              setIdToken(token);
+              setAccessToken(token);
               setLiffInitialized(true);
               return;
             }
@@ -268,22 +268,22 @@ function RepairFormContent() {
     try {
       const finalLineUserId = lineUserId || "Guest";
 
-      // Refresh idToken right before submission to prevent "IdToken expired" errors
-      let currentIdToken = idToken;
+      // Refresh accessToken right before submission to prevent expired errors
+      let currentAccessToken = accessToken;
       try {
         const liff = (await import("@line/liff")).default;
         if (liff.isLoggedIn()) {
-          const freshToken = liff.getIDToken();
-          if (freshToken) currentIdToken = freshToken;
+          const freshToken = liff.getAccessToken();
+          if (freshToken) currentAccessToken = freshToken;
         }
       } catch (e) {
-        console.warn("Failed to fetch fresh LIFF token before submit", e);
+        console.warn("Failed to fetch fresh LIFF proxy token before submit", e);
       }
 
       const dataPayload = {
         reporterName: formData.name.trim(),
         reporterLineId: finalLineUserId,
-        idToken: currentIdToken || undefined,
+        accessToken: currentAccessToken || undefined,
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
