@@ -15,7 +15,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
-import { departmentService, Department } from "@/services/department.service";
+import { DEPARTMENT_OPTIONS } from "@/constants/departments";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -71,7 +71,6 @@ function RepairFormContent() {
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [successData, setSuccessData] = useState<{
     ticketCode: string;
     linkingCode?: string;
@@ -93,15 +92,8 @@ function RepairFormContent() {
 
         const liff = (await import("@line/liff")).default;
 
-        // Initialize LIFF with timeout to prevent infinite hang
-        const initPromise = liff.init({
-          liffId,
-          withLoginOnExternalBrowser: false,
-        });
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("LIFF init timeout")), 5000),
-        );
-        await Promise.race([initPromise, timeoutPromise]);
+        // Initialize LIFF
+        await liff.init({ liffId, withLoginOnExternalBrowser: false });
 
         if (liff.isLoggedIn()) {
           // User is logged in via LIFF — get their profile and token
@@ -119,9 +111,8 @@ function RepairFormContent() {
           }
         }
 
-        // If not logged in, we set as guest instead of forcing login
-        // to prevent infinite redirect loops in external browsers
-        setLiffInitialized(true);
+        // Force login universally if not logged in
+        liff.login();
         return;
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
@@ -132,18 +123,6 @@ function RepairFormContent() {
     };
 
     initLiff();
-  }, []);
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const data = await departmentService.getAllDepartments();
-        setDepartments(data);
-      } catch (err) {
-        console.error("Failed to fetch departments", err);
-      }
-    };
-    fetchDepartments();
   }, []);
 
   const handleLineLogin = async () => {
@@ -460,9 +439,9 @@ function RepairFormContent() {
                     <option value="" disabled>
                       ระบุแผนก/ฝ่าย
                     </option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.name}>
-                        {dept.name}
+                    {DEPARTMENT_OPTIONS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
                       </option>
                     ))}
                   </select>
