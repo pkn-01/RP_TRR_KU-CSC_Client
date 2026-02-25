@@ -81,13 +81,8 @@ export default function AdminSidebar() {
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
     // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
-    
-    
-     
         { icon:ClipboardClock,label: "รายการยืมทั้งหมด", href: "/admin/loans" },
         // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
-      
-    
     {
       icon: Settings,
       label: "ตั้งค่า",
