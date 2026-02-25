@@ -55,6 +55,7 @@ function RepairFormContent() {
 
   // State for LINE user ID (from LIFF SDK only — never trust URL params)
   const [lineUserId, setLineUserId] = useState<string>("");
+  const [idToken, setIdToken] = useState<string>("");
   const [liffInitialized, setLiffInitialized] = useState(false);
   const [liffError, setLiffError] = useState<string | null>(null);
 
@@ -77,20 +78,10 @@ function RepairFormContent() {
   } | null>(null);
 
   // Initialize LIFF SDK to get user profile
-  // Priority: 1) URL param lineUserId  2) LIFF SDK profile  3) LINE in-app browser → force login
+  // Priority: 1) LIFF SDK profile  2) If unauthenticated -> force login
   useEffect(() => {
     const initLiff = async () => {
       try {
-        // 1) Always check URL param first (most reliable — from backend or direct link)
-        const userIdFromUrl = searchParams.get("lineUserId");
-        if (userIdFromUrl) {
-          console.log("Using lineUserId from URL param:", userIdFromUrl);
-          setLineUserId(userIdFromUrl);
-          setLiffInitialized(true);
-          return;
-        }
-
-        // 2) Try LIFF SDK to get userId
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
 
         if (!liffId) {
@@ -101,19 +92,17 @@ function RepairFormContent() {
 
         const liff = (await import("@line/liff")).default;
 
-        // Initialize LIFF without forcing login on external browser
+        // Initialize LIFF
         await liff.init({ liffId, withLoginOnExternalBrowser: false });
 
         if (liff.isLoggedIn()) {
-          // User is logged in via LIFF — get their profile
+          // User is logged in via LIFF — get their profile and token
           try {
             const profile = await liff.getProfile();
-            if (profile.userId) {
-              console.log(
-                "Got LINE profile userId:",
-                profile.userId.substring(0, 8) + "...",
-              );
+            const token = liff.getIDToken();
+            if (profile.userId && token) {
               setLineUserId(profile.userId);
+              setIdToken(token);
               setLiffInitialized(true);
               return;
             }
@@ -122,33 +111,11 @@ function RepairFormContent() {
           }
         }
 
-        if (liff.isInClient()) {
-          // In LINE client (opened via LIFF URL) but not logged in
-          console.log("In LINE client but not logged in. Forcing login...");
-          liff.login();
-          return;
-        }
-
-        // 3) Detect LINE in-app browser (opened from Rich Menu URI action)
-        const ua = navigator.userAgent || "";
-        const isLineInAppBrowser = /Line/i.test(ua);
-
-        if (isLineInAppBrowser) {
-          console.log(
-            "Detected LINE in-app browser via user-agent. Triggering LIFF login to get userId...",
-          );
-          liff.login();
-          return;
-        }
-
-        // External browser without lineUserId — continue as Guest
-        console.log("External browser, no lineUserId. Continuing as Guest.");
-        setLiffInitialized(true);
+        // Force login universally if not logged in
+        liff.login({ redirectUri: window.location.href });
+        return;
       } catch (error: any) {
         console.warn("LIFF initialization failed, using guest mode:", error);
-        // Fallback to URL in case of error
-        const userIdFromUrl = searchParams.get("lineUserId");
-        if (userIdFromUrl) setLineUserId(userIdFromUrl);
 
         setLiffError(error?.message || "LIFF Init Failed");
         setLiffInitialized(true);
@@ -156,7 +123,7 @@ function RepairFormContent() {
     };
 
     initLiff();
-  }, [searchParams]);
+  }, []);
 
   const handleLineLogin = async () => {
     try {
@@ -304,7 +271,7 @@ function RepairFormContent() {
       const dataPayload = {
         reporterName: formData.name.trim(),
         reporterLineId: finalLineUserId,
-        lineUserId: lineUserId || undefined,
+        idToken: idToken || undefined,
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
