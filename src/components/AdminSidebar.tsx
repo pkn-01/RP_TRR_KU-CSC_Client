@@ -117,7 +117,7 @@ export default function AdminSidebar() {
     );
   }, []);
 
-  // Auto-expand menu if a submenu is active
+  
   useEffect(() => {
     menuItems.forEach((item) => {
       if (item.subItems) {
