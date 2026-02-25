@@ -15,7 +15,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
-import { DEPARTMENT_OPTIONS } from "@/constants/departments";
+import { departmentService, Department } from "@/services/department.service";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -59,6 +59,7 @@ function RepairFormContent() {
   const [liffInitialized, setLiffInitialized] = useState(false);
   const [liffError, setLiffError] = useState<string | null>(null);
 
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     dept: "",
@@ -123,6 +124,18 @@ function RepairFormContent() {
     };
 
     initLiff();
+  }, []);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const data = await departmentService.getAllDepartments();
+        setDepartments(data);
+      } catch (error) {
+        console.error("Failed to fetch departments:", error);
+      }
+    };
+    fetchDepartments();
   }, []);
 
   const handleLineLogin = async () => {
@@ -439,9 +452,9 @@ function RepairFormContent() {
                     <option value="" disabled>
                       ระบุแผนก/ฝ่าย
                     </option>
-                    {DEPARTMENT_OPTIONS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
                       </option>
                     ))}
                   </select>
