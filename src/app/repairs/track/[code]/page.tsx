@@ -12,10 +12,8 @@ const STATUS_CONFIG: Record<
   string,
   { text: string; color: string; bg: string }
 > = {
-  PENDING: { text: "รอดำเนินการ", color: "#D97706", bg: "#FEF3C7" },
-  ASSIGNED: { text: "มอบหมายแล้ว", color: "#2563EB", bg: "#DBEAFE" },
-  IN_PROGRESS: { text: "กำลังดำเนินการ", color: "#2563EB", bg: "#DBEAFE" },
-  WAITING_PARTS: { text: "รออะไหล่", color: "#7C3AED", bg: "#EDE9FE" },
+  PENDING: { text: "รอดำเนินการ", color: "#2563EB", bg: "#FEF3C7" },
+  IN_PROGRESS: { text: "กำลังดำเนินการ", color: "#D97706", bg: "#FEF3C7" },
   COMPLETED: { text: "เสร็จสิ้น", color: "#059669", bg: "#D1FAE5" },
   CANCELLED: { text: "ยกเลิก", color: "#DC2626", bg: "#FEE2E2" },
 };
@@ -253,14 +251,14 @@ export default function TrackRepairPage() {
           )}
 
           {/* Notes */}
-          {ticket.notes && (
+         {/* {ticket.notes && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4">
               <span className="text-blue-800 text-xs font-bold block mb-1">
                 หมายเหตุ
               </span>
               <p className="text-blue-900 text-sm">{ticket.notes}</p>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* ── Footer ── */}
