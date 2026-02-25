@@ -15,7 +15,7 @@ import {
   User,
   ChevronDown,
 } from "lucide-react";
-import { departmentService, Department } from "@/services/department.service";
+import { DEPARTMENT_OPTIONS } from "@/constants/departments";
 
 // File validation constants
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -67,9 +67,6 @@ function RepairFormContent() {
     urgency: "NORMAL",
     location: "",
   });
-
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
 
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -126,21 +123,6 @@ function RepairFormContent() {
     };
 
     initLiff();
-  }, []);
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const data = await departmentService.getAllDepartments();
-        // Sort alphabetically or map simply
-        setDepartments(data);
-      } catch (error) {
-        console.error("Failed to load departments:", error);
-      } finally {
-        setIsLoadingDepartments(false);
-      }
-    };
-    fetchDepartments();
   }, []);
 
   const handleLineLogin = async () => {
@@ -452,17 +434,14 @@ function RepairFormContent() {
                     value={formData.dept}
                     onChange={handleChange}
                     required
-                    disabled={isLoadingDepartments}
-                    className="w-full pl-12 pr-10 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full pl-12 pr-10 py-3.5 bg-gray-100 border-0 rounded-full text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#5D3A29] transition-all cursor-pointer"
                   >
                     <option value="" disabled>
-                      {isLoadingDepartments
-                        ? "กำลังโหลดแผนก..."
-                        : "ระบุแผนก/ฝ่าย"}
+                      ระบุแผนก/ฝ่าย
                     </option>
-                    {departments.map((dept) => (
-                      <option key={dept.id} value={dept.name}>
-                        {dept.name}
+                    {DEPARTMENT_OPTIONS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
                       </option>
                     ))}
                   </select>
