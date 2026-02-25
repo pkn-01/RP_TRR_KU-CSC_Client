@@ -268,10 +268,22 @@ function RepairFormContent() {
     try {
       const finalLineUserId = lineUserId || "Guest";
 
+      // Refresh idToken right before submission to prevent "IdToken expired" errors
+      let currentIdToken = idToken;
+      try {
+        const liff = (await import("@line/liff")).default;
+        if (liff.isLoggedIn()) {
+          const freshToken = liff.getIDToken();
+          if (freshToken) currentIdToken = freshToken;
+        }
+      } catch (e) {
+        console.warn("Failed to fetch fresh LIFF token before submit", e);
+      }
+
       const dataPayload = {
         reporterName: formData.name.trim(),
         reporterLineId: finalLineUserId,
-        idToken: idToken || undefined,
+        idToken: currentIdToken || undefined,
         reporterDepartment: formData.dept,
         reporterPhone: formData.phone,
         problemTitle: formData.details,
