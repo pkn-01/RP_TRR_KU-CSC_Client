@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Alert from "@/components/Alert";
 import { AuthService } from "@/lib/authService";
+import Loading from "@/components/Loading";
 
 interface FormErrors {
   email?: string;
@@ -254,7 +255,7 @@ function AdminLoginForm() {
 
 export default function AdminLogin() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loading />}>
       <AdminLoginForm />
     </Suspense>
   );
