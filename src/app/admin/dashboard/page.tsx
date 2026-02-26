@@ -5,7 +5,6 @@ import Link from "next/link";
 import { apiFetch } from "../../../../services/api";
 import { ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
 import CalendarPop from "../../../components/CalendarPop";
-import Loading from "@/components/Loading";
 
 interface RepairItem {
   id: number;
@@ -126,7 +125,13 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return <Loading fullScreen />;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">
+          {"\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14..."}
+        </div>
+      </div>
+    );
   }
 
   return (

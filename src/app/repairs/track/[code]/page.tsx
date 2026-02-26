@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import Loading from "@/components/Loading";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -91,7 +90,14 @@ export default function TrackRepairPage() {
   }, [code]);
 
   if (loading) {
-    return <Loading fullScreen />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500">กำลังโหลดข้อมูล...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !ticket) {

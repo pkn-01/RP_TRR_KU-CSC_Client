@@ -15,7 +15,6 @@ import { apiFetch } from "@/services/api";
 import { userService, User as UserType } from "@/services/userService";
 import * as XLSX from "xlsx";
 import Swal from "sweetalert2";
-import Loading from "@/components/Loading";
 
 interface Repair {
   id: string;
@@ -319,7 +318,11 @@ function AdminRepairsContent() {
   };
 
   if (loading) {
-    return <Loading fullScreen />;
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-500">กำลังโหลด...</div>
+      </div>
+    );
   }
 
   return (
@@ -788,7 +791,13 @@ function StatCard({
 
 export default function AdminRepairsPage() {
   return (
-    <Suspense fallback={<Loading fullScreen />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+          กำลังโหลด...
+        </div>
+      }
+    >
       <AdminRepairsContent />
     </Suspense>
   );

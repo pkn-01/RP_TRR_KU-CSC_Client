@@ -18,7 +18,6 @@ import {
   FileText,
 } from "lucide-react";
 import { apiFetch } from "@/services/api";
-import Loading from "@/components/Loading";
 
 interface RepairItem {
   id: number;
@@ -162,7 +161,16 @@ export default function AssignRepairPage() {
   };
 
   if (loading) {
-    return <Loading fullScreen />;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin inline-block">
+            <div className="h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+          </div>
+          <p className="text-gray-600 mt-4">กำลังโหลดข้อมูล...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!repair) {

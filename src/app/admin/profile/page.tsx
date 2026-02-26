@@ -20,7 +20,6 @@ import {
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/services/api";
 import Image from "next/image";
-import Loading from "@/components/Loading";
 
 interface LineOALink {
   lineUserId: string;
@@ -197,7 +196,13 @@ export default function AdminProfilePage() {
   };
 
   if (loading) {
-    return <Loading fullScreen />;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin">
+          <div className="h-12 w-12 border-4 border-[#4A3B32] border-t-transparent rounded-full"></div>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
