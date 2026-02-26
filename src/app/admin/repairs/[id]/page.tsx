@@ -794,7 +794,7 @@ export default function RepairDetailPage() {
               {/* Danger Zone */}
               {/* Danger Zone */}
               {!isLocked && (canEdit() || isAdmin) && (
-                <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+                <div className="mt-8 pt-6 border-t border-gray-100 flex justify-start">
                   <button
                     onClick={handleCancelClick}
                     disabled={saving}
