@@ -792,12 +792,13 @@ export default function RepairDetailPage() {
               )}
 
               {/* Danger Zone */}
+              {/* Danger Zone */}
               {!isLocked && (canEdit() || isAdmin) && (
-                <div className="mt-8 pt-6 border-t border-gray-100">
+                <div className="mt-8 pt-6 border-t border-gray-100 flex justify-center">
                   <button
                     onClick={handleCancelClick}
                     disabled={saving}
-                    className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
+                    className="px-8 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
                   >
                     ยกเลิกงาน
                   </button>
