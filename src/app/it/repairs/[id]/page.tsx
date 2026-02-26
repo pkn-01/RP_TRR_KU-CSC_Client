@@ -17,8 +17,6 @@ type Status =
   | "COMPLETED"
   | "CANCELLED";
 
-type Urgency = "NORMAL" | "URGENT" | "CRITICAL";
-
 interface Attachment {
   id: number;
   fileUrl: string;
@@ -53,7 +51,6 @@ interface RepairDetail {
   category: string;
   location: string;
   status: Status;
-  urgency: Urgency;
   assignees: Assignee[];
   reporterName: string;
   reporterDepartment: string;
@@ -82,21 +79,6 @@ const STATUS_STYLE: Record<Status, string> = {
   WAITING_PARTS: "bg-orange-100 text-orange-800 border border-orange-200",
   COMPLETED: "bg-green-100 text-green-800 border border-green-200",
   CANCELLED: "bg-red-100 text-red-800 border border-red-200",
-};
-
-const URGENCY_CONFIG: Record<Urgency, { style: string; label: string }> = {
-  NORMAL: {
-    style: "bg-green-100 text-green-800 border border-green-200",
-    label: "ปกติ",
-  },
-  URGENT: {
-    style: "bg-orange-100 text-orange-800 border border-orange-200",
-    label: "ด่วน",
-  },
-  CRITICAL: {
-    style: "bg-red-100 text-red-800 border border-red-200",
-    label: "ด่วนมาก",
-  },
 };
 
 /* =====================================================
@@ -224,7 +206,6 @@ export default function ITRepairDetailPage() {
   // Editable fields
   const [notes, setNotes] = useState("");
   const [messageToReporter, setMessageToReporter] = useState("");
-  const [urgency, setUrgency] = useState<Urgency>("NORMAL");
 
   // Lightbox
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
@@ -255,8 +236,7 @@ export default function ITRepairDetailPage() {
     if (!initialData) return false;
     return (
       notes !== initialData.notes ||
-      messageToReporter !== initialData.messageToReporter ||
-      urgency !== initialData.urgency
+      messageToReporter !== initialData.messageToReporter
     );
   };
 
@@ -283,7 +263,6 @@ export default function ITRepairDetailPage() {
       category: res.problemCategory,
       location: res.location,
       status: res.status,
-      urgency: res.urgency,
       assignees: assignees,
       reporterName: res.reporterName,
       reporterDepartment: res.reporterDepartment,
@@ -299,13 +278,11 @@ export default function ITRepairDetailPage() {
     setData(detailData);
     setNotes("");
     setMessageToReporter("");
-    setUrgency(res.urgency);
 
     setInitialData({
       status: res.status,
       notes: "",
       messageToReporter: "",
-      urgency: res.urgency,
     });
   }, [id]);
 
@@ -396,7 +373,6 @@ export default function ITRepairDetailPage() {
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
         body: {
-          urgency,
           notes,
           messageToReporter,
         },
@@ -735,17 +711,10 @@ export default function ITRepairDetailPage() {
 
             {/* Problem Details */}
             <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-gray-900">
-                    รายละเอียดปัญหา
-                  </h2>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${URGENCY_CONFIG[data.urgency].style}`}
-                >
-                  {URGENCY_CONFIG[data.urgency].label}
-                </span>
+              <div className="flex items-center mb-5 pb-4 border-b border-gray-100">
+                <h2 className="text-base font-bold text-gray-900">
+                  รายละเอียดปัญหา
+                </h2>
               </div>
 
               <div className="space-y-6">
@@ -815,20 +784,18 @@ export default function ITRepairDetailPage() {
                   </div>
                 </div>
               )}
-  {/* Danger Zone */}
-            {!isLocked && canEdit() && (
-               
-              <div className="mt-8 pt-6 border-t border-gray-100 flex justify-start">
-              <button
-                onClick={handleCancelClick}
-                disabled={saving}
-                className="px-8 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
-              >
-                ยกเลิกงาน
-              </button>
-              </div>
-            )}
-              
+              {/* Danger Zone */}
+              {!isLocked && canEdit() && (
+                <div className="mt-8 pt-6 border-t border-gray-100 flex justify-start">
+                  <button
+                    onClick={handleCancelClick}
+                    disabled={saving}
+                    className="px-8 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
+                  >
+                    ยกเลิกงาน
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* Operation History Timeline */}
@@ -940,23 +907,6 @@ export default function ITRepairDetailPage() {
               </h3>
 
               <div className="space-y-6">
-                {/* Urgency Dropdown */}
-                <div>
-                  <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                    ความเร่งด่วน
-                  </label>
-                  <select
-                    value={urgency}
-                    onChange={(e) => setUrgency(e.target.value as Urgency)}
-                    disabled={!canEdit() || isLocked}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                  >
-                    <option value="NORMAL">ความเร่งด่วน - ปกติ</option>
-                    <option value="URGENT">ความเร่งด่วน - ด่วน</option>
-                    <option value="CRITICAL">ความเร่งด่วน - ด่วนมาก</option>
-                  </select>
-                </div>
-
                 {/* Message to Reporter */}
                 <div>
                   <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
@@ -1024,8 +974,6 @@ export default function ITRepairDetailPage() {
                   </button>
                 </>
               )}
-
-          
           </div>
         </div>
       </div>
