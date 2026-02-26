@@ -359,6 +359,17 @@ export default function RepairDetailPage() {
   const handleSave = async () => {
     if (!data || !hasChanges()) return;
 
+    if (assigneeIds.length === 0) {
+      Swal.fire({
+        title: "กรุณาระบุผู้รับผิดชอบ",
+        text: "คุณต้องเลือกผู้รับผิดชอบอย่างน้อย 1 คนก่อนบันทึก",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
+
     const confirm = await Swal.fire({
       title: "ยืนยันการบันทึก",
       text: "คุณต้องการบันทึกการเปลี่ยนแปลงนี้หรือไม่?",
@@ -791,7 +802,6 @@ export default function RepairDetailPage() {
                 </div>
               )}
 
-              
               {/* Danger Zone */}
               {!isLocked && (canEdit() || isAdmin) && (
                 <div className="mt-8 pt-6 border-t border-gray-100 flex justify-start">
@@ -911,7 +921,9 @@ export default function RepairDetailPage() {
                 {data.assignees.length === 0 && (
                   <div>
                     <label className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                      <span>ผู้รับผิดชอบ</span>
+                      <span>
+                        ผู้รับผิดชอบ <span className="text-red-500">*</span>
+                      </span>
                       <span className="text-[10px] font-normal text-gray-400 normal-case">
                         {assigneeIds.length} คนที่เลือก
                       </span>
@@ -1078,8 +1090,14 @@ export default function RepairDetailPage() {
                 <div className="pt-6 mt-6 border-t border-gray-100">
                   <button
                     onClick={handleSave}
-                    disabled={saving || !hasChanges()}
-                    className={`w-full py-3.5 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex justify-center items-center ${hasChanges() ? "bg-blue-600 hover:bg-blue-700 hover:shadow-md" : "bg-gray-300 cursor-not-allowed"}`}
+                    disabled={
+                      saving || !hasChanges() || assigneeIds.length === 0
+                    }
+                    className={`w-full py-3.5 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex justify-center items-center ${
+                      hasChanges() && assigneeIds.length > 0
+                        ? "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }`}
                   >
                     {saving ? (
                       <div className="flex items-center gap-2">
