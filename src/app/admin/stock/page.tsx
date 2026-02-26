@@ -11,6 +11,7 @@ import {
   X as XIcon,
   Package,
 } from "lucide-react";
+import Loading from "@/components/Loading";
 
 interface StockItem {
   id: number;
@@ -120,11 +121,7 @@ export default function AdminStockPage() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

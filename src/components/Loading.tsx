@@ -1,28 +1,66 @@
 "use client";
 
 import React from "react";
-import { Loader2 } from "lucide-react";
 
 interface LoadingProps {
   message?: string;
   fullScreen?: boolean;
 }
 
-export default function Loading({ message, fullScreen = false }: LoadingProps) {
+export default function Loading({
+  message = "กำลังโหลด กรุณารอสักครู่...",
+  fullScreen = false,
+}: LoadingProps) {
   const content = (
-    <div className="flex flex-col items-center justify-center gap-3">
-      <Loader2 size={32} className="animate-spin text-blue-600" />
-      {message && <p className="text-gray-600 text-sm">{message}</p>}
+    <div className="flex flex-col items-center justify-center gap-4">
+      {/* Donut Spinner */}
+      <svg
+        className="animate-spin"
+        width="64"
+        height="64"
+        viewBox="0 0 64 64"
+        fill="none"
+      >
+        {/* Gray track */}
+        <circle
+          cx="32"
+          cy="32"
+          r="26"
+          stroke="#d1d5db"
+          strokeWidth="6"
+          fill="none"
+        />
+        {/* Blue spinning arc */}
+        <circle
+          cx="32"
+          cy="32"
+          r="26"
+          stroke="#3b82f6"
+          strokeWidth="6"
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="120 200"
+        />
+      </svg>
+      {message && (
+        <p className="text-white text-sm font-medium tracking-wide">
+          {message}
+        </p>
+      )}
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gray-700/70 backdrop-blur-sm flex items-center justify-center z-50">
         {content}
       </div>
     );
   }
 
-  return <div className="flex items-center justify-center p-8">{content}</div>;
+  return (
+    <div className="min-h-screen bg-gray-700/70 flex items-center justify-center">
+      {content}
+    </div>
+  );
 }

@@ -18,6 +18,7 @@ import {
   Building,
   AtSign,
 } from "lucide-react";
+import Loading from "@/components/Loading";
 
 interface Loan {
   id: number;
@@ -187,11 +188,7 @@ function AdminLoansContent() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
@@ -638,13 +635,7 @@ function StatCard({
 
 export default function AdminLoansPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          กำลังโหลด...
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading />}>
       <AdminLoansContent />
     </Suspense>
   );
