@@ -793,15 +793,15 @@ export default function RepairDetailPage() {
             </section>
 
             {/* Operation History Timeline */}
-            <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
-                <h2 className="text-base font-bold text-gray-900">
-                  ประวัติดำเนินการ
-                </h2>
-              </div>
+            {data.assignmentHistory && data.assignmentHistory.length > 0 && (
+              <section className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+                  <h2 className="text-base font-bold text-gray-900">
+                    ประวัติดำเนินการ
+                  </h2>
+                </div>
 
-              <div className="pl-3 py-2">
-                {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
+                <div className="pl-3 py-2">
                   <div className="space-y-8 relative before:absolute before:inset-0 before:left-[11px] before:-ml-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gray-200 before:via-gray-200 before:to-transparent">
                     {data.assignmentHistory.map((log) => {
                       const { text, images } = parseHistoryNote(log.note);
@@ -880,17 +880,9 @@ export default function RepairDetailPage() {
                       );
                     })}
                   </div>
-                ) : (
-                  <div className="text-center py-10">
-                    <div className="inline-flex flex-col items-center justify-center p-6 bg-gray-50 border border-dashed border-gray-300 rounded-2xl w-full max-w-sm mx-auto">
-                      <p className="text-sm font-medium text-gray-500">
-                        ยังไม่มีประวัติดำเนินการ
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
           </div>
 
           {/* ─── RIGHT: Management (1 col) ─── */}
@@ -1077,7 +1069,7 @@ export default function RepairDetailPage() {
                         กำลังบันทึก...
                       </div>
                     ) : (
-                      "บันทึกการเปลี่ยนแปลง"
+                      "บันทึก"
                     )}
                   </button>
                 </div>
