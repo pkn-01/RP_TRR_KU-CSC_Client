@@ -43,7 +43,7 @@ export default function Loading({
         />
       </svg>
       {message && (
-        <p className="text-white text-sm font-medium tracking-wide">
+        <p className="text-gray-500 text-sm font-medium tracking-wide">
           {message}
         </p>
       )}
@@ -52,14 +52,14 @@ export default function Loading({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-gray-700/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
         {content}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-700/70 flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       {content}
     </div>
   );
