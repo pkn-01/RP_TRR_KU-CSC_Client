@@ -198,6 +198,7 @@ export default function ITRepairDetailPage() {
   const [initialData, setInitialData] = useState<any>(null); // For change detection
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [error, setError] = useState("");
 
   // User states
@@ -225,6 +226,12 @@ export default function ITRepairDetailPage() {
     if (["COMPLETED", "CANCELLED"].includes(data.status)) return false;
     if (!isAssignedToMe()) return false;
     return data.status !== "PENDING";
+  }, [data, isAssignedToMe]);
+
+  const canSendMessage = useCallback(() => {
+    if (!data) return false;
+    if (["COMPLETED", "CANCELLED"].includes(data.status)) return false;
+    return isAssignedToMe();
   }, [data, isAssignedToMe]);
 
   const canPickupJob = useCallback(() => {
@@ -400,6 +407,55 @@ export default function ITRepairDetailPage() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!data || !messageToReporter.trim()) return;
+
+    const confirm = await Swal.fire({
+      title: "ส่งข้อความแจ้งเตือน",
+      text: `ส่งข้อความถึงผู้แจ้งซ่อม: "${messageToReporter.trim()}"`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#9ca3af",
+      confirmButtonText: "ส่งข้อความ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      setSendingMessage(true);
+      await apiFetch(`/api/repairs/${data.id}`, {
+        method: "PUT",
+        body: {
+          messageToReporter: messageToReporter.trim(),
+        },
+      });
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      Toast.fire({
+        icon: "success",
+        title: "ส่งข้อความแจ้งเตือนสำเร็จ",
+      });
+
+      await refetchData();
+    } catch (err: any) {
+      Swal.fire({
+        title: "เกิดข้อผิดพลาด",
+        text: err.message || "ส่งข้อความไม่สำเร็จ",
+        icon: "error",
+      });
+    } finally {
+      setSendingMessage(false);
     }
   };
 
@@ -910,16 +966,36 @@ export default function ITRepairDetailPage() {
                 {/* Message to Reporter */}
                 <div>
                   <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                    ข้อความถึงผู้แจ้งซ่อม (ถ้ามี)
+                    ข้อความถึงผู้แจ้งซ่อม
                   </label>
                   <textarea
                     value={messageToReporter}
                     onChange={(e) => setMessageToReporter(e.target.value)}
                     rows={2}
-                    disabled={!canEdit() || isLocked}
+                    disabled={!canSendMessage() || isLocked}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                    placeholder="แชท/แจ้งให้ผู้แจ้งซ่อมทราบ..."
+                    placeholder="พิมพ์ข้อความแจ้งเตือนผู้แจ้งซ่อม..."
                   />
+                  {canSendMessage() && (
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={sendingMessage || !messageToReporter.trim()}
+                      className={`mt-2 w-full py-2.5 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex justify-center items-center ${
+                        messageToReporter.trim()
+                          ? "bg-blue-600 hover:bg-blue-700 hover:shadow-md"
+                          : "bg-gray-300 cursor-not-allowed"
+                      }`}
+                    >
+                      {sendingMessage ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          กำลังส่ง...
+                        </div>
+                      ) : (
+                        "ส่งข้อความแจ้งเตือน"
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Internal Notes */}
