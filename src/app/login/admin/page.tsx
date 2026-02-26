@@ -22,7 +22,7 @@ function AdminLoginForm() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -52,13 +52,12 @@ function AdminLoginForm() {
 
     setIsLoading(true);
     setErrorMessage("");
-    setSuccessMessage("");
 
     try {
       const response = await AuthService.login({ email, password });
       const userRole = response.role || localStorage.getItem("role") || "USER";
 
-      setSuccessMessage("เข้าสู่ระบบสำเร็จ...");
+      setIsRedirecting(true);
       setTimeout(() => {
         // Priority 1: Smart redirect via ticketId (Role specific)
         if (ticketId) {
@@ -93,6 +92,7 @@ function AdminLoginForm() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-sans">
+      {isRedirecting && <Loading fullScreen message="กำลังเข้าสู่ระบบ..." />}
       {/* Logo */}
       <div className="mb-8">
         <Image
@@ -115,11 +115,6 @@ function AdminLoginForm() {
               message={errorMessage}
               onClose={() => setErrorMessage("")}
             />
-          </div>
-        )}
-        {successMessage && (
-          <div className="mb-4">
-            <Alert type="success" message={successMessage} />
           </div>
         )}
 
