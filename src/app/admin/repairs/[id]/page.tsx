@@ -908,135 +908,139 @@ export default function RepairDetailPage() {
 
               <div className="space-y-6">
                 {/* Assignment (Modern Tag Selection) */}
-                <div>
-                  <label className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
-                    <span>ผู้รับผิดชอบ</span>
-                    <span className="text-[10px] font-normal text-gray-400 normal-case">
-                      {assigneeIds.length} คนที่เลือก
-                    </span>
-                  </label>
+                {data.assignees.length === 0 && (
+                  <div>
+                    <label className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
+                      <span>ผู้รับผิดชอบ</span>
+                      <span className="text-[10px] font-normal text-gray-400 normal-case">
+                        {assigneeIds.length} คนที่เลือก
+                      </span>
+                    </label>
 
-                  <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-xl bg-gray-50/30 min-h-[50px] transition-all hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20">
-                    {/* Selected Tags */}
-                    {assigneeIds.map((id) => {
-                      const tech = technicians.find((t) => t.id === id);
-                      if (!tech) return null;
-                      return (
-                        <span
-                          key={id}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold shadow-sm animate-in fade-in zoom-in duration-200"
-                        >
-                          {tech.name}
+                    <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-xl bg-gray-50/30 min-h-[50px] transition-all hover:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20">
+                      {/* Selected Tags */}
+                      {assigneeIds.map((id) => {
+                        const tech = technicians.find((t) => t.id === id);
+                        if (!tech) return null;
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold shadow-sm animate-in fade-in zoom-in duration-200"
+                          >
+                            {tech.name}
+                            <button
+                              type="button"
+                              onClick={() => toggleAssignee(id)}
+                              disabled={!canEdit() && data.status !== "PENDING"}
+                              className="hover:bg-blue-700 rounded-full p-0.5 transition-colors"
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        );
+                      })}
+
+                      {/* Add Button */}
+                      {canEdit() || data.status === "PENDING" ? (
+                        <div className="relative">
                           <button
                             type="button"
-                            onClick={() => toggleAssignee(id)}
-                            disabled={!canEdit() && data.status !== "PENDING"}
-                            className="hover:bg-blue-700 rounded-full p-0.5 transition-colors"
+                            onClick={() =>
+                              setShowTechDropdown(!showTechDropdown)
+                            }
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-bold"
                           >
-                            <X size={12} />
+                            <UserPlus size={14} />
+                            เพิ่มผู้รับผิดชอบ
                           </button>
-                        </span>
-                      );
-                    })}
 
-                    {/* Add Button */}
-                    {canEdit() || data.status === "PENDING" ? (
-                      <div className="relative">
-                        <button
-                          type="button"
-                          onClick={() => setShowTechDropdown(!showTechDropdown)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-bold"
-                        >
-                          <UserPlus size={14} />
-                          เพิ่มผู้รับผิดชอบ
-                        </button>
-
-                        {/* Dropdown menu */}
-                        {showTechDropdown && (
-                          <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                            <div className="p-2 border-b border-gray-100 bg-gray-50/50">
-                              <div className="relative">
-                                <Search
-                                  size={14}
-                                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="ค้นหาชื่อ..."
-                                  value={searchTerm}
-                                  onChange={(e) =>
-                                    setSearchTerm(e.target.value)
-                                  }
-                                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
-                                  autoFocus
-                                />
+                          {/* Dropdown menu */}
+                          {showTechDropdown && (
+                            <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                              <div className="p-2 border-b border-gray-100 bg-gray-50/50">
+                                <div className="relative">
+                                  <Search
+                                    size={14}
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="ค้นหาชื่อ..."
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                      setSearchTerm(e.target.value)
+                                    }
+                                    className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white"
+                                    autoFocus
+                                  />
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="max-h-60 overflow-y-auto py-1">
-                              {technicians
-                                .filter((t) =>
+                              <div className="max-h-60 overflow-y-auto py-1">
+                                {technicians
+                                  .filter((t) =>
+                                    t.name
+                                      .toLowerCase()
+                                      .includes(searchTerm.toLowerCase()),
+                                  )
+                                  .map((tech) => {
+                                    const isSelected = assigneeIds.includes(
+                                      tech.id,
+                                    );
+                                    return (
+                                      <button
+                                        key={tech.id}
+                                        type="button"
+                                        onClick={() => {
+                                          toggleAssignee(tech.id);
+                                          // Optional: close on select or keep open for multi-select
+                                          // setShowTechDropdown(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                                          isSelected
+                                            ? "bg-blue-50 text-blue-700 font-bold"
+                                            : "text-gray-700 hover:bg-gray-100"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <div
+                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${isSelected ? "bg-blue-200" : "bg-gray-100"}`}
+                                          >
+                                            {tech.name.charAt(0)}
+                                          </div>
+                                          {tech.name}
+                                        </div>
+                                        {isSelected && <Check size={16} />}
+                                      </button>
+                                    );
+                                  })}
+                                {technicians.filter((t) =>
                                   t.name
                                     .toLowerCase()
                                     .includes(searchTerm.toLowerCase()),
-                                )
-                                .map((tech) => {
-                                  const isSelected = assigneeIds.includes(
-                                    tech.id,
-                                  );
-                                  return (
-                                    <button
-                                      key={tech.id}
-                                      type="button"
-                                      onClick={() => {
-                                        toggleAssignee(tech.id);
-                                        // Optional: close on select or keep open for multi-select
-                                        // setShowTechDropdown(false);
-                                      }}
-                                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                                        isSelected
-                                          ? "bg-blue-50 text-blue-700 font-bold"
-                                          : "text-gray-700 hover:bg-gray-100"
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <div
-                                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${isSelected ? "bg-blue-200" : "bg-gray-100"}`}
-                                        >
-                                          {tech.name.charAt(0)}
-                                        </div>
-                                        {tech.name}
-                                      </div>
-                                      {isSelected && <Check size={16} />}
-                                    </button>
-                                  );
-                                })}
-                              {technicians.filter((t) =>
-                                t.name
-                                  .toLowerCase()
-                                  .includes(searchTerm.toLowerCase()),
-                              ).length === 0 && (
-                                <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                                  ไม่พบรายชื่อ
-                                </div>
-                              )}
+                                ).length === 0 && (
+                                  <div className="px-4 py-6 text-center text-gray-500 text-sm">
+                                    ไม่พบรายชื่อ
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : null}
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                    {/* Click outside overlay */}
+                    {showTechDropdown && (
+                      <div
+                        className="fixed inset-0 z-40 bg-transparent"
+                        onClick={() => {
+                          setShowTechDropdown(false);
+                          setSearchTerm("");
+                        }}
+                      />
+                    )}
                   </div>
-                  {/* Click outside overlay */}
-                  {showTechDropdown && (
-                    <div
-                      className="fixed inset-0 z-40 bg-transparent"
-                      onClick={() => {
-                        setShowTechDropdown(false);
-                        setSearchTerm("");
-                      }}
-                    />
-                  )}
-                </div>
+                )}
 
                 {/* Message to Reporter */}
                 <div>
