@@ -790,6 +790,17 @@ export default function RepairDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* Danger Zone */}
+              {!isLocked && (canEdit() || isAdmin) && (
+                <button
+                  onClick={handleCancelClick}
+                  disabled={saving}
+                  className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
+                >
+                  ยกเลิกงาน
+                </button>
+              )}
             </section>
 
             {/* Operation History Timeline */}
@@ -1092,16 +1103,7 @@ export default function RepairDetailPage() {
                 </>
               )}
 
-            {/* Danger Zone */}
-            {!isLocked && (canEdit() || isAdmin) && (
-              <button
-                onClick={handleCancelClick}
-                disabled={saving}
-                className="w-full py-3 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
-              >
-                ยกเลิกงาน
-              </button>
-            )}
+           
           </div>
         </div>
       </div>
