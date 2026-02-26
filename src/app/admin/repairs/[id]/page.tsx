@@ -791,7 +791,7 @@ export default function RepairDetailPage() {
                 </div>
               )}
 
-              {/* Danger Zone */}
+              
               {/* Danger Zone */}
               {!isLocked && (canEdit() || isAdmin) && (
                 <div className="mt-8 pt-6 border-t border-gray-100 flex justify-start">
