@@ -318,11 +318,7 @@ function AdminRepairsContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <LoadingComponent />;
   }
 
   return (
@@ -759,6 +755,56 @@ function AdminRepairsContent() {
   );
 }
 
+function LoadingComponent() {
+  return (
+    <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center gap-4">
+      <div className="relative">
+        {/* Outer Glow */}
+        <div className="absolute inset-0 bg-[#5D2E1F]/20 blur-xl rounded-full animate-pulse" />
+
+        {/* Spinner */}
+        <div className="relative bg-white p-4 rounded-2xl shadow-xl border border-[#5D2E1F]/10">
+          <RefreshCw className="w-8 h-8 text-[#5D2E1F] animate-spin-slow" />
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[#5D2E1F] font-bold text-lg animate-pulse tracking-wide">
+          กำลังโหลด...
+        </span>
+        <div className="h-1 w-24 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full bg-[#5D2E1F] w-1/2 animate-shimmer" />
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(200%);
+          }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 2s linear infinite;
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite ease-in-out;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -791,13 +837,7 @@ function StatCard({
 
 export default function AdminRepairsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          กำลังโหลด...
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingComponent />}>
       <AdminRepairsContent />
     </Suspense>
   );
