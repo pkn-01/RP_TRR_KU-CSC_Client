@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/services/api";
+import Loading from "@/components/Loading";
 import {
   Search,
   Trash2,
@@ -187,11 +188,7 @@ function AdminLoansContent() {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading fullScreen />;
   }
 
   return (
@@ -638,13 +635,7 @@ function StatCard({
 
 export default function AdminLoansPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          กำลังโหลด...
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading fullScreen />}>
       <AdminLoansContent />
     </Suspense>
   );
