@@ -942,7 +942,7 @@ export default function RepairDetailPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-dashed border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs font-bold"
                         >
                           <UserPlus size={14} />
-                          เพิ่มช่าง
+                          เพิ่มผู้รับผิดชอบ
                         </button>
 
                         {/* Dropdown menu */}
@@ -956,7 +956,7 @@ export default function RepairDetailPage() {
                                 />
                                 <input
                                   type="text"
-                                  placeholder="ค้นหาชื่อช่าง..."
+                                  placeholder="ค้นหาชื่อ..."
                                   value={searchTerm}
                                   onChange={(e) =>
                                     setSearchTerm(e.target.value)
@@ -1011,7 +1011,7 @@ export default function RepairDetailPage() {
                                   .includes(searchTerm.toLowerCase()),
                               ).length === 0 && (
                                 <div className="px-4 py-6 text-center text-gray-500 text-sm">
-                                  ไม่พบรายชื่อช่าง
+                                  ไม่พบรายชื่อ
                                 </div>
                               )}
                             </div>
@@ -1058,7 +1058,7 @@ export default function RepairDetailPage() {
                     rows={3}
                     disabled={!canEdit() || isLocked}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                    placeholder="รายละเอียด / จดบันทึกภายในสำหรับทีมช่าง..."
+                    placeholder="รายละเอียด..."
                   />
                 </div>
               </div>
