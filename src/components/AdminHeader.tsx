@@ -71,7 +71,7 @@ export default function AdminHeader() {
               </span>
             </span>
             <span className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
-              {adminProfile?.email || "admin@example.com"}
+              {adminProfile?.email || ""}
             </span>
           </div>
         </div>
