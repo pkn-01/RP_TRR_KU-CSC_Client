@@ -6,6 +6,7 @@ import { uploadData } from "@/services/uploadService";
 import Swal from "sweetalert2";
 import RepairSuccess from "@/components/repairs/RepairSuccess";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import Loading from "@/components/Loading";
 import {
   Camera,
   MapPinHouse,
@@ -369,19 +370,10 @@ function RepairFormContent() {
   return (
     <div className="min-h-screen bg-white">
       {isLoading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 animate-in fade-in zoom-in duration-200">
-            <div className="relative mb-6">
-              <div className="w-16 h-16 border-[5px] border-gray-100 border-t-[#5D3A29] rounded-full animate-spin"></div>
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              กำลังดำเนินการ
-            </h3>
-            <p className="text-gray-500 text-center">
-              กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลการแจ้งซ่อมของคุณ...
-            </p>
-          </div>
-        </div>
+        <Loading
+          fullScreen
+          message="กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลการแจ้งซ่อมของคุณ..."
+        />
       )}
 
       {/* Header */}
