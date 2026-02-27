@@ -790,7 +790,7 @@ export default function ITRepairDetailPage() {
                   <button
                     onClick={handleCancelClick}
                     disabled={saving}
-                    className="px-8 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
+                    className="px-8 py-2.5 bg-red-600 text-white text-sm font-bold rounded-full hover:bg-red-700 hover:shadow-md shadow-sm transition-all disabled:opacity-50"
                   >
                     ยกเลิกงาน
                   </button>
@@ -1010,7 +1010,7 @@ function getActionLabel(action: string, text: string): string {
     case "NOTE":
       return "บันทึกภายใน";
     case "RUSH":
-      return "⚡ เร่งงาน";
+      return "เร่งงาน";
     case "MESSAGE_TO_REPORTER":
       return "แจ้งผู้ซ่อม";
     case "STATUS_CHANGE":
