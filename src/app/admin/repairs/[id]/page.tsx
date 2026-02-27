@@ -738,7 +738,7 @@ export default function RepairDetailPage() {
                     key={a.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm"
                   >
-                    {/* {a.user.name} */}
+                    {a.user.name}
                   </span>
                 ))}
               </div>
@@ -1177,7 +1177,7 @@ export default function RepairDetailPage() {
                       rows={3}
                       disabled={!canEdit() || isLocked}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                      placeholder="พิมพ์ @ เพื่อแท็กผู้รับผิดชอบเร่งงาน..."
+                      placeholder="รายละเอียด/จดบันทึกภาย..."
                     />
 
                     {/* @mention dropdown */}
