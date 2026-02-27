@@ -310,15 +310,13 @@ export default function AdminSidebar() {
           </Link> */}
         </nav>
 
-        {/* User Profile Section */}
-        <div
-          className={`p-4 bg-white border-t border-gray-100 ${isCollapsed && !isOpen ? "flex flex-col items-center" : ""}`}
-        >
+        {/* User Profile Section (Mobile Only) */}
+        <div className="p-4 bg-white border-t border-gray-100 flex flex-col items-center">
           {/* Mobile Profile (Optional - showing only on mobile if necessary) */}
           <Link
             href="/admin/profile"
             title={isCollapsed && !isOpen ? adminProfile?.name || "admin" : ""}
-            className={`flex lg:hidden items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
+            className={`flex lg:hidden items-center gap-3 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
           >
             {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
               <Image
@@ -346,19 +344,6 @@ export default function AdminSidebar() {
               </div>
             ) : null}
           </Link>
-
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            title={isCollapsed && !isOpen ? "ออกจากระบบ" : ""}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium ${isCollapsed && !isOpen ? "px-0" : ""}`}
-          >
-            <LogOut
-              size={18}
-              className={`${isCollapsed && !isOpen ? "" : ""}`}
-            />
-            {!isCollapsed || isOpen ? <span>ออกจากระบบ</span> : null}
-          </button>
         </div>
       </aside>
     </>
