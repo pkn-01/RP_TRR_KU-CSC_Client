@@ -181,7 +181,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Stats Cards Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MainStatItem
             label={
               "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <TodayStatCard
             label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.total || 0}
@@ -382,7 +382,7 @@ export default function AdminDashboard() {
               )
             </span>
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {departmentStats.length > 0 ? (
               departmentStats.map((dept) => (
                 <DepartmentCard key={dept.department} stat={dept} />
@@ -429,12 +429,12 @@ function MainStatItem({ label, value }: { label: string; value: number }) {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
+      className={`flex flex-col items-center justify-center p-4 sm:p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
     >
-      <span className="text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
+      <span className="text-xs sm:text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-4xl font-black">{value}</span>
+      <span className="text-3xl sm:text-4xl font-black">{value}</span>
     </div>
   );
 }
@@ -465,16 +465,16 @@ function TodayStatCard({
   return (
     <Link
       href={link}
-      className={`relative border-0 p-5 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.05] transition-all group flex flex-col items-center justify-center min-h-[110px] min-w-0 w-full ${colorClass}`}
+      className={`relative border-0 p-4 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.05] transition-all group flex flex-col items-center justify-center min-h-[100px] sm:min-h-[110px] min-w-0 w-full ${colorClass}`}
     >
       <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-colors">
-        <ArrowUpRight size={18} className="text-white" />
+        <ArrowUpRight className="text-white w-4 h-4 sm:w-[18px] sm:h-[18px]" />
       </div>
 
-      <span className="text-sm mb-1 font-bold text-center whitespace-nowrap uppercase tracking-wide">
+      <span className="text-xs sm:text-sm mb-1 font-bold text-center whitespace-nowrap uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-4xl font-black">{value}</span>
+      <span className="text-3xl sm:text-4xl font-black">{value}</span>
     </Link>
   );
 }
@@ -482,16 +482,18 @@ function TodayStatCard({
 // Department Card Component
 function DepartmentCard({ stat }: { stat: DepartmentStat }) {
   return (
-    <div className="bg-white border-0 p-5 rounded-xl shadow-md hover:shadow-xl transition-all hover:scale-[1.05] border-t-4 border-blue-600">
-      <div className="text-center mb-3">
-        <span className="text-sm font-black text-slate-800 uppercase tracking-tighter">
+    <div className="bg-white border-0 p-4 sm:p-5 rounded-xl shadow-md hover:shadow-xl transition-all hover:scale-[1.05] border-t-4 border-blue-600">
+      <div className="text-center mb-2 sm:mb-3">
+        <span className="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-tighter">
           {stat.department}
         </span>
       </div>
-      <div className="text-center mb-4">
-        <span className="text-4xl font-black text-slate-900">{stat.total}</span>
+      <div className="text-center mb-3 sm:mb-4">
+        <span className="text-3xl sm:text-4xl font-black text-slate-900">
+          {stat.total}
+        </span>
       </div>
-      <div className="space-y-2.5 text-sm">
+      <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm">
         <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-400 pr-2 bg-blue-50 py-1.5 rounded-l">
           <span>
             {
