@@ -1177,7 +1177,7 @@ export default function RepairDetailPage() {
                       rows={3}
                       disabled={!canEdit() || isLocked}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                      placeholder="รายละเอียด/จดบันทึกภาย..."
+                      placeholder="รายละเอียด/จดบันทึกภายใน..."
                     />
 
                     {/* @mention dropdown */}
