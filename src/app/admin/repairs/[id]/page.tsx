@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/services/api";
 import { AuthService } from "@/lib/authService";
@@ -234,6 +234,12 @@ export default function RepairDetailPage() {
   const [showTechDropdown, setShowTechDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Mention system
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState("");
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const mentionStartPosRef = useRef<number>(-1);
+
   // Lightbox
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
@@ -265,6 +271,70 @@ export default function RepairDetailPage() {
       JSON.stringify([...assigneeIds].sort()) !==
         JSON.stringify([...initialData.assigneeIds].sort())
     );
+  };
+
+  // Parse @mentions from notes text and sync rushAssigneeIds
+  useEffect(() => {
+    if (!data) return;
+    const mentionRegex = /@(\S+)/g;
+    const mentions: string[] = [];
+    let match;
+    while ((match = mentionRegex.exec(notes)) !== null) {
+      mentions.push(match[1]);
+    }
+    const ids = data.assignees
+      .filter((a) => mentions.includes(a.user.name))
+      .map((a) => a.userId);
+    setRushAssigneeIds(ids);
+  }, [notes, data]);
+
+  // Handle notes textarea input for @mention detection
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setNotes(value);
+
+    // Find the last @ before cursor
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+      // Only show dropdown if no space after @ (still typing the mention)
+      if (!textAfterAt.includes(" ") && !textAfterAt.includes("\n")) {
+        setShowMentionDropdown(true);
+        setMentionFilter(textAfterAt.toLowerCase());
+        mentionStartPosRef.current = lastAtIndex;
+        return;
+      }
+    }
+    setShowMentionDropdown(false);
+    setMentionFilter("");
+  };
+
+  // Insert mention into text
+  const handleMentionSelect = (userName: string) => {
+    const startPos = mentionStartPosRef.current;
+    if (startPos === -1) return;
+
+    const textarea = notesTextareaRef.current;
+    const cursorPos = textarea?.selectionStart || notes.length;
+    const before = notes.slice(0, startPos);
+    const after = notes.slice(cursorPos);
+    const newText = `${before}@${userName} ${after}`;
+    setNotes(newText);
+    setShowMentionDropdown(false);
+    setMentionFilter("");
+    mentionStartPosRef.current = -1;
+
+    // Refocus textarea
+    setTimeout(() => {
+      if (textarea) {
+        const newCursor = startPos + userName.length + 2; // @name + space
+        textarea.focus();
+        textarea.setSelectionRange(newCursor, newCursor);
+      }
+    }, 0);
   };
 
   /* -------------------- Fetch Data -------------------- */
@@ -668,7 +738,7 @@ export default function RepairDetailPage() {
                     key={a.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm font-semibold text-gray-700 shadow-sm"
                   >
-                    {a.user.name}
+                    {/* {a.user.name} */}
                   </span>
                 ))}
               </div>
@@ -1073,57 +1143,89 @@ export default function RepairDetailPage() {
                   />
                 </div>
 
-                {/* Internal Notes */}
+                {/* Internal Notes with @mention */}
                 <div>
                   <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
                     บันทึกภายใน / แจ้งผู้รับผิดชอบ
                   </label>
 
-                  {/* Rush Tag Assignees */}
-                  {data.assignees.length > 0 && !isLocked && canEdit() && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-500 mb-2">
-                        แท็กเพื่อเร่งงาน (จะส่งแจ้งเตือนไปยังผู้รับผิดชอบทาง
-                        LINE)
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {data.assignees.map((a) => {
-                          const isTagged = rushAssigneeIds.includes(a.userId);
-                          return (
-                            <button
-                              key={a.userId}
-                              type="button"
-                              onClick={() => {
-                                setRushAssigneeIds((prev) =>
-                                  isTagged
-                                    ? prev.filter((id) => id !== a.userId)
-                                    : [...prev, a.userId],
-                                );
-                              }}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                                isTagged
-                                  ? "bg-red-50 text-red-700 border-red-300 ring-2 ring-red-200 shadow-sm"
-                                  : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                              }`}
-                            >
-                              <span>{isTagged ? "@" : ""}</span>
-                              {a.user.name}
-                              {isTagged && <X className="w-3 h-3 ml-0.5" />}
-                            </button>
-                          );
-                        })}
-                      </div>
+                  {/* Tagged assignees display */}
+                  {rushAssigneeIds.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {data.assignees
+                        .filter((a) => rushAssigneeIds.includes(a.userId))
+                        .map((a) => (
+                          <span
+                            key={a.userId}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200"
+                          >
+                            @{a.user.name}
+                          </span>
+                        ))}
+                      <span className="text-xs text-gray-400 self-center ml-1">
+                        จะได้รับแจ้งเตือนเร่งงาน
+                      </span>
                     </div>
                   )}
 
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                    disabled={!canEdit() || isLocked}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                    placeholder="รายละเอียด / จดบันทึกภาย..."
-                  />
+                  {/* Textarea with mention dropdown */}
+                  <div className="relative">
+                    <textarea
+                      ref={notesTextareaRef}
+                      value={notes}
+                      onChange={handleNotesChange}
+                      rows={3}
+                      disabled={!canEdit() || isLocked}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
+                      placeholder="พิมพ์ @ เพื่อแท็กผู้รับผิดชอบเร่งงาน..."
+                    />
+
+                    {/* @mention dropdown */}
+                    {showMentionDropdown && data.assignees.length > 0 && (
+                      <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto">
+                        <div className="p-2 border-b border-gray-100">
+                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider px-1">
+                            เลือกผู้รับผิดชอบ
+                          </p>
+                        </div>
+                        {data.assignees
+                          .filter((a) =>
+                            mentionFilter
+                              ? a.user.name
+                                  .toLowerCase()
+                                  .includes(mentionFilter)
+                              : true,
+                          )
+                          .map((a) => (
+                            <button
+                              key={a.userId}
+                              type="button"
+                              className="w-full text-left px-4 py-2.5 hover:bg-blue-50 flex items-center gap-2 transition-colors text-sm"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleMentionSelect(a.user.name);
+                              }}
+                            >
+                              <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                {a.user.name.charAt(0)}
+                              </span>
+                              <span className="font-medium text-gray-800">
+                                {a.user.name}
+                              </span>
+                            </button>
+                          ))}
+                        {data.assignees.filter((a) =>
+                          mentionFilter
+                            ? a.user.name.toLowerCase().includes(mentionFilter)
+                            : true,
+                        ).length === 0 && (
+                          <div className="px-4 py-3 text-xs text-gray-400 text-center">
+                            ไม่พบผู้รับผิดชอบ
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
