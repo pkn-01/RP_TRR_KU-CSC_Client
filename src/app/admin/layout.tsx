@@ -1,7 +1,6 @@
 "use client";
 
 import AdminSidebar from "@/components/AdminSidebar";
-import AdminHeader from "@/components/AdminHeader";
 import "@/app/globals.css";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 
@@ -16,7 +15,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           isCollapsed ? "lg:ml-20" : "lg:ml-56"
         }`}
       >
-        <AdminHeader />
         <main className="flex-1 w-full">{children}</main>
       </div>
     </div>
