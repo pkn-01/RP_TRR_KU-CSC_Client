@@ -58,7 +58,7 @@ export default function Loading({
   }
 
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center">
+    <div className="w-full h-full flex-1 flex items-center justify-center min-h-[60vh]">
       <div className="flex flex-col items-center justify-center gap-4">
         {spinner}
         {message && (
