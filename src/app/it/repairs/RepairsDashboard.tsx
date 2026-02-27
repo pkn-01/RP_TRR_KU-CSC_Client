@@ -287,7 +287,9 @@ export function RepairsDashboard() {
                   <tr
                     key={repair.id}
                     className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => router.push(`/it/repairs/${repair.id}`)}
+                    onClick={() =>
+                      router.push(`/it/repairs/${repair.ticketCode}`)
+                    }
                   >
                     <td className="px-6 py-4">
                       <span className="text-sm font-mono text-gray-900">
@@ -358,7 +360,7 @@ export function RepairsDashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/it/repairs/${repair.id}`);
+                          router.push(`/it/repairs/${repair.ticketCode}`);
                         }}
                         className="p-1 text-gray-400 hover:text-gray-600"
                       >
@@ -385,7 +387,7 @@ export function RepairsDashboard() {
               <div
                 key={repair.id}
                 className="bg-white rounded-lg p-4 active:bg-gray-50 transition-all cursor-pointer"
-                onClick={() => router.push(`/it/repairs/${repair.id}`)}
+                onClick={() => router.push(`/it/repairs/${repair.ticketCode}`)}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div>

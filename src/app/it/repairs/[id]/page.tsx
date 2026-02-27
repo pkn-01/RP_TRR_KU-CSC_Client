@@ -252,7 +252,8 @@ export default function ITRepairDetailPage() {
 
   const refetchData = useCallback(async () => {
     if (!id) return;
-    const res = await apiFetch(`/api/repairs/${id}`);
+    // SECURITY: Use ticketCode-based lookup instead of sequential numeric ID
+    const res = await apiFetch(`/api/repairs/code/${id}`);
     const assignees = res.assignees || [];
 
     const detailData: RepairDetail = {

@@ -17,7 +17,8 @@ function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect");
-  const ticketId = searchParams.get("ticketId");
+  const ticketCode =
+    searchParams.get("ticketCode") || searchParams.get("ticketId");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>({});
@@ -60,11 +61,11 @@ function AdminLoginForm() {
       setIsRedirecting(true);
       setTimeout(() => {
         // Priority 1: Smart redirect via ticketId (Role specific)
-        if (ticketId) {
+        if (ticketCode) {
           if (userRole === "ADMIN") {
-            router.push(`/admin/repairs/${ticketId}`);
+            router.push(`/admin/repairs/${ticketCode}`);
           } else if (userRole === "IT") {
-            router.push(`/it/repairs/${ticketId}`);
+            router.push(`/it/repairs/${ticketCode}`);
           } else {
             router.push("/tickets"); // Fallback for normal users (if any)
           }

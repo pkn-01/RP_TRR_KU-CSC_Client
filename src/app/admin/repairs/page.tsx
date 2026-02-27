@@ -553,7 +553,9 @@ function AdminRepairsContent() {
                 <tr
                   key={repair.id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => router.push(`/admin/repairs/${repair.id}`)}
+                  onClick={() =>
+                    router.push(`/admin/repairs/${repair.ticketCode}`)
+                  }
                 >
                   <td className="px-6 py-4">
                     <span className="text-sm font-mono text-gray-900">
@@ -626,7 +628,7 @@ function AdminRepairsContent() {
                     >
                       <button
                         onClick={() =>
-                          router.push(`/admin/repairs/${repair.id}`)
+                          router.push(`/admin/repairs/${repair.ticketCode}`)
                         }
                         className="p-1 text-gray-400 hover:text-gray-600"
                       >
@@ -656,7 +658,7 @@ function AdminRepairsContent() {
             <div
               key={repair.id}
               className="bg-white rounded-lg p-4"
-              onClick={() => router.push(`/admin/repairs/${repair.id}`)}
+              onClick={() => router.push(`/admin/repairs/${repair.ticketCode}`)}
             >
               <div className="flex justify-between items-start mb-2">
                 <span className="text-xs font-mono text-gray-500">

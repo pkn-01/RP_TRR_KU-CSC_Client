@@ -342,7 +342,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/admin/repairs/${repair.id}`}
+                        href={`/admin/repairs/${repair.ticketCode}`}
                         className="text-gray-400 hover:text-gray-600"
                       >
                         <ChevronRight size={20} />
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
             {stats?.recentRepairs.slice(0, 7).map((repair) => (
               <Link
                 key={repair.id}
-                href={`/admin/repairs/${repair.id}`}
+                href={`/admin/repairs/${repair.ticketCode}`}
                 className="block px-4 py-3 hover:bg-blue-50 active:bg-blue-100 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
