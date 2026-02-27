@@ -25,7 +25,7 @@ import {
   ChevronRight,
   Settings,
   UserRoundCog,
-  ClipboardClock
+  ClipboardClock,
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import { useSidebar } from "@/context/SidebarContext";
@@ -76,13 +76,12 @@ export default function AdminSidebar() {
     fetchAdminProfile();
   }, []);
 
-  
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
     // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
-        { icon:ClipboardClock,label: "รายการยืมทั้งหมด", href: "/admin/loans" },
-        // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
+    { icon: ClipboardClock, label: "รายการยืมทั้งหมด", href: "/admin/loans" },
+    // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
     {
       icon: Settings,
       label: "ตั้งค่า",
@@ -117,7 +116,6 @@ export default function AdminSidebar() {
     );
   }, []);
 
-  
   useEffect(() => {
     menuItems.forEach((item) => {
       if (item.subItems) {
@@ -145,17 +143,17 @@ export default function AdminSidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#795548] z-50 px-4 flex items-center justify-between shadow-sm">
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <span className="font-bold text-white text-lg tracking-wide">
-            TRR-RP
-          </span>
-        </Link>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
+          <span className="font-bold text-white text-lg tracking-wide">
+            TRR-RP
+          </span>
+        </Link>
       </div>
 
       {/* Overlay */}
