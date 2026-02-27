@@ -1009,6 +1009,8 @@ function getActionLabel(action: string, text: string): string {
       return "ปฏิเสธงาน";
     case "NOTE":
       return "บันทึกภายใน";
+    case "RUSH":
+      return "⚡ เร่งงาน";
     case "MESSAGE_TO_REPORTER":
       return "แจ้งผู้ซ่อม";
     case "STATUS_CHANGE":

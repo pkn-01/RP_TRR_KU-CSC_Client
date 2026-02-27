@@ -230,6 +230,7 @@ export default function RepairDetailPage() {
   const [notes, setNotes] = useState("");
   const [messageToReporter, setMessageToReporter] = useState("");
   const [assigneeIds, setAssigneeIds] = useState<number[]>([]);
+  const [rushAssigneeIds, setRushAssigneeIds] = useState<number[]>([]);
   const [showTechDropdown, setShowTechDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -260,6 +261,7 @@ export default function RepairDetailPage() {
     return (
       notes !== initialData.notes ||
       messageToReporter !== initialData.messageToReporter ||
+      rushAssigneeIds.length > 0 ||
       JSON.stringify([...assigneeIds].sort()) !==
         JSON.stringify([...initialData.assigneeIds].sort())
     );
@@ -296,6 +298,7 @@ export default function RepairDetailPage() {
     setData(detailData);
     setNotes("");
     setMessageToReporter("");
+    setRushAssigneeIds([]);
 
     const initialAssigneeIds = assignees.map((a: Assignee) => a.userId);
     setAssigneeIds(initialAssigneeIds);
@@ -401,6 +404,7 @@ export default function RepairDetailPage() {
           notes,
           messageToReporter,
           assigneeIds: assigneeIds,
+          ...(rushAssigneeIds.length > 0 && { rushAssigneeIds }),
         },
       });
 
@@ -1074,13 +1078,51 @@ export default function RepairDetailPage() {
                   <label className="flex text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">
                     บันทึกภายใน / แจ้งผู้รับผิดชอบ
                   </label>
+
+                  {/* Rush Tag Assignees */}
+                  {data.assignees.length > 0 && !isLocked && canEdit() && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 mb-2">
+                        แท็กเพื่อเร่งงาน (จะส่งแจ้งเตือนไปยังผู้รับผิดชอบทาง
+                        LINE)
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {data.assignees.map((a) => {
+                          const isTagged = rushAssigneeIds.includes(a.userId);
+                          return (
+                            <button
+                              key={a.userId}
+                              type="button"
+                              onClick={() => {
+                                setRushAssigneeIds((prev) =>
+                                  isTagged
+                                    ? prev.filter((id) => id !== a.userId)
+                                    : [...prev, a.userId],
+                                );
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                                isTagged
+                                  ? "bg-red-50 text-red-700 border-red-300 ring-2 ring-red-200 shadow-sm"
+                                  : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                              }`}
+                            >
+                              <span>{isTagged ? "@" : ""}</span>
+                              {a.user.name}
+                              {isTagged && <X className="w-3 h-3 ml-0.5" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
                     disabled={!canEdit() || isLocked}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none disabled:opacity-70 disabled:bg-gray-50 shadow-sm transition-shadow hover:border-blue-400"
-                    placeholder="รายละเอียด..."
+                    placeholder="รายละเอียด / จดบันทึกภาย..."
                   />
                 </div>
               </div>
@@ -1162,6 +1204,8 @@ function getActionLabel(action: string, text: string): string {
       return "ปฏิเสธงาน";
     case "NOTE":
       return "บันทึกภายใน";
+    case "RUSH":
+      return "เร่งงาน";
     case "MESSAGE_TO_REPORTER":
       return "แจ้งผู้ซ่อม";
     case "STATUS_CHANGE":
