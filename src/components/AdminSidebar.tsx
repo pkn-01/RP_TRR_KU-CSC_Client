@@ -25,7 +25,7 @@ import {
   ChevronRight,
   Settings,
   UserRoundCog,
-  ClipboardClock,
+  ClipboardClock
 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import { useSidebar } from "@/context/SidebarContext";
@@ -76,12 +76,13 @@ export default function AdminSidebar() {
     fetchAdminProfile();
   }, []);
 
+  // Menu items with dropdowns based on design
   const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: "แดชบอร์ด", href: "/admin/dashboard" },
     { icon: Wrench, label: "รายการซ่อมทั้งหมด", href: "/admin/repairs" },
     // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
-    { icon: ClipboardClock, label: "รายการยืมทั้งหมด", href: "/admin/loans" },
-    // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
+        { icon:ClipboardClock,label: "รายการยืมทั้งหมด", href: "/admin/loans" },
+        // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
     {
       icon: Settings,
       label: "ตั้งค่า",
@@ -116,6 +117,7 @@ export default function AdminSidebar() {
     );
   }, []);
 
+  
   useEffect(() => {
     menuItems.forEach((item) => {
       if (item.subItems) {
@@ -143,34 +145,17 @@ export default function AdminSidebar() {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#795548] z-50 px-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center">
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-2 -ml-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        <Link
-          href="/admin/dashboard"
-          className="flex items-center justify-center flex-1"
-        >
-          <span className="font-bold text-white text-lg tracking-wide font-sans">
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
+          <span className="font-bold text-white text-lg tracking-wide">
             TRR-RP
           </span>
         </Link>
-
-        <div className="flex items-center justify-end">
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="p-2 -mr-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-            title="ออกจากระบบ"
-          >
-            <LogOut size={20} />
-          </button>
-        </div>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Overlay */}
@@ -189,7 +174,7 @@ export default function AdminSidebar() {
       >
         {/* Logo Header */}
         <div
-          className={`h-16 flex items-center bg-[#795548] px-4 transition-all duration-300 ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
+          className={`h-20 flex items-center bg-[#795548] px-4 transition-all duration-300 ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
         >
           <Link
             href="/admin/dashboard"
@@ -327,11 +312,14 @@ export default function AdminSidebar() {
           </Link> */}
         </nav>
 
-        <div className="p-4 bg-white border-t border-gray-100 flex flex-col items-center gap-2">
-          {/* Mobile Profile */}
+        {/* User Profile Section */}
+        <div
+          className={`p-4 bg-white border-t border-gray-100 ${isCollapsed && !isOpen ? "flex flex-col items-center" : ""}`}
+        >
           <Link
             href="/admin/profile"
-            className="flex lg:hidden items-center gap-3 w-full hover:bg-gray-50 p-2 rounded-lg transition-colors group justify-center"
+            title={isCollapsed && !isOpen ? adminProfile?.name || "admin" : ""}
+            className={`flex items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
           >
             {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
               <Image
@@ -348,8 +336,7 @@ export default function AdminSidebar() {
                 <User size={20} className="text-white" />
               </div>
             )}
-            {/* Show details if sidebar is open */}
-            {isOpen && (
+            {!isCollapsed || isOpen ? (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-[#795548] transition-colors">
                   {adminProfile?.name || "admin"}
@@ -358,17 +345,20 @@ export default function AdminSidebar() {
                   {adminProfile?.email || "admin@trr.com"}
                 </p>
               </div>
-            )}
+            ) : null}
           </Link>
 
-          {/* Mobile Logout Button */}
           <button
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="flex lg:hidden w-full items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium"
+            title={isCollapsed && !isOpen ? "ออกจากระบบ" : ""}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium ${isCollapsed && !isOpen ? "px-0" : ""}`}
           >
-            <LogOut size={18} />
-            {isOpen && <span>ออกจากระบบ</span>}
+            <LogOut
+              size={18}
+              className={`${isCollapsed && !isOpen ? "" : ""}`}
+            />
+            {!isCollapsed || isOpen ? <span>ออกจากระบบ</span> : null}
           </button>
         </div>
       </aside>
