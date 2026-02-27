@@ -9,6 +9,7 @@ import { userService, User as UserType } from "@/services/userService";
 
 export default function AdminHeader() {
   const [adminProfile, setAdminProfile] = useState<UserType | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
@@ -20,6 +21,8 @@ export default function AdminHeader() {
         }
       } catch (error) {
         console.error("Failed to fetch admin profile:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchAdminProfile();
@@ -63,16 +66,27 @@ export default function AdminHeader() {
             </div>
           )}
 
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors">
-              {adminProfile?.name || ""}{" "}
-              <span className="text-xs font-normal text-gray-600">
-                ({adminProfile?.role || ""})
-              </span>
-            </span>
-            <span className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
-              {adminProfile?.email || ""}
-            </span>
+          <div className="flex flex-col items-start transition-opacity duration-300">
+            {!isLoading ? (
+              <>
+                <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors">
+                  {adminProfile?.name || ""}{" "}
+                  {adminProfile?.role && (
+                    <span className="text-xs font-normal text-gray-600">
+                      ({adminProfile.role})
+                    </span>
+                  )}
+                </span>
+                <span className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
+                  {adminProfile?.email || ""}
+                </span>
+              </>
+            ) : (
+              <div className="h-10 flex flex-col justify-center gap-2">
+                <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-2 w-32 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            )}
           </div>
         </div>
 
