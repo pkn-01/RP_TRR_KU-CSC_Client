@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import AdminUserModal from "@/components/modals/AdminUserModal";
 import Swal from "sweetalert2";
 import { userService, User } from "@/services/userService";
+import Loading from "@/components/Loading";
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -123,11 +124,7 @@ export default function AdminUsersPage() {
   };
 
   if (isLoading && users.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

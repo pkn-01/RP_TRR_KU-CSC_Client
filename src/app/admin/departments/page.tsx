@@ -5,6 +5,7 @@ import { Search, Plus, Trash2, Edit2 } from "lucide-react";
 import AdminDepartmentModal from "@/components/modals/AdminDepartmentModal";
 import Swal from "sweetalert2";
 import { departmentService, Department } from "@/services/department.service";
+import Loading from "@/components/Loading";
 
 export default function AdminDepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -87,11 +88,7 @@ export default function AdminDepartmentsPage() {
   };
 
   if (isLoading && departments.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Eye, EyeOff, Save, ChevronLeft, Loader2 } from "lucide-react";
 import { userService, User as UserType } from "@/services/userService";
 import Swal from "sweetalert2";
+import Loading from "@/components/Loading";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -90,11 +91,7 @@ export default function EditUserPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-gray-500">กำลังโหลด...</div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
