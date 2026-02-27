@@ -172,7 +172,7 @@ export default function AdminSidebar() {
       >
         {/* Logo Header */}
         <div
-          className={`h-20 flex items-center bg-[#795548] px-4 transition-all duration-300 ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
+          className={`h-16 flex items-center bg-[#795548] px-4 transition-all duration-300 ${isCollapsed && !isOpen ? "justify-center" : "justify-between"}`}
         >
           <Link
             href="/admin/dashboard"
