@@ -65,9 +65,9 @@ export default function AdminHeader() {
 
           <div className="flex flex-col items-start">
             <span className="text-sm font-bold text-gray-800 group-hover:text-gray-900 transition-colors">
-              {adminProfile?.name || "Admin Name"}{" "}
+              {adminProfile?.name || ""}{" "}
               <span className="text-xs font-normal text-gray-600">
-                ({adminProfile?.role || "Admin"})
+                ({adminProfile?.role || ""})
               </span>
             </span>
             <span className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
