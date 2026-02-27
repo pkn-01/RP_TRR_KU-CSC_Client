@@ -314,10 +314,11 @@ export default function AdminSidebar() {
         <div
           className={`p-4 bg-white border-t border-gray-100 ${isCollapsed && !isOpen ? "flex flex-col items-center" : ""}`}
         >
+          {/* Mobile Profile (Optional - showing only on mobile if necessary) */}
           <Link
             href="/admin/profile"
             title={isCollapsed && !isOpen ? adminProfile?.name || "admin" : ""}
-            className={`flex items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
+            className={`flex lg:hidden items-center gap-3 mb-4 hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group ${isCollapsed && !isOpen ? "justify-center" : ""}`}
           >
             {adminProfile?.profilePicture || adminProfile?.pictureUrl ? (
               <Image
