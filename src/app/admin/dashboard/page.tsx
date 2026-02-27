@@ -133,13 +133,38 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 px-3 py-4 sm:p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-              {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
-            </h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+            {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
+          </h1>
 
-            {/* Date Picker - always visible next to title */}
+          <div className="flex items-center gap-3">
+            {/* Filter Tabs */}
+            <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+              {(["day", "week", "month"] as FilterType[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+                    filter === f
+                      ? "text-white shadow-sm"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                  style={{
+                    backgroundColor: filter === f ? "#5D2E1E" : undefined,
+                    color: filter === f ? "#ffffff" : undefined,
+                  }}
+                >
+                  {f === "day"
+                    ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
+                    : f === "week"
+                      ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
+                      : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
+                </button>
+              ))}
+            </div>
+
+            {/* Date Picker */}
             <CalendarPop
               selectedDate={(() => {
                 const [y, m, d] = selectedDate.split("-").map(Number);
@@ -152,31 +177,6 @@ export default function AdminDashboard() {
                 setSelectedDate(`${year}-${month}-${day}`);
               }}
             />
-          </div>
-
-          {/* Filter Tabs - full width on mobile */}
-          <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm w-full sm:w-auto self-start">
-            {(["day", "week", "month"] as FilterType[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 ${
-                  filter === f
-                    ? "text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-                style={{
-                  backgroundColor: filter === f ? "#5D2E1E" : undefined,
-                  color: filter === f ? "#ffffff" : undefined,
-                }}
-              >
-                {f === "day"
-                  ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
-                  : f === "week"
-                    ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
-                    : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -439,13 +439,11 @@ export default function AdminDashboard() {
 
         {/* Department Statistics */}
         <div>
-          <div className="mb-3 sm:mb-4">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-              {
-                "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
-              }
-            </h2>
-            <span className="text-xs sm:text-sm font-normal text-gray-500">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+            {
+              "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
+            }
+            <span className="text-xs sm:text-sm font-normal text-gray-500 ml-2">
               (
               {filter === "day"
                 ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
@@ -454,7 +452,7 @@ export default function AdminDashboard() {
                   : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
               )
             </span>
-          </div>
+          </h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
             {departmentStats.length > 0 ? (
               departmentStats.map((dept) => (
