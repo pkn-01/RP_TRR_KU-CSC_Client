@@ -130,41 +130,16 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gray-50 px-3 py-4 sm:p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
-          </h1>
+        <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
+            </h1>
 
-          <div className="flex items-center gap-3">
-            {/* Filter Tabs */}
-            <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
-              {(["day", "week", "month"] as FilterType[]).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
-                    filter === f
-                      ? "text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                  style={{
-                    backgroundColor: filter === f ? "#5D2E1E" : undefined,
-                    color: filter === f ? "#ffffff" : undefined,
-                  }}
-                >
-                  {f === "day"
-                    ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
-                    : f === "week"
-                      ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
-                      : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
-                </button>
-              ))}
-            </div>
-
-            {/* Date Picker */}
+            {/* Date Picker - always visible next to title */}
             <CalendarPop
               selectedDate={(() => {
                 const [y, m, d] = selectedDate.split("-").map(Number);
@@ -178,10 +153,35 @@ export default function AdminDashboard() {
               }}
             />
           </div>
+
+          {/* Filter Tabs - full width on mobile */}
+          <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm w-full sm:w-auto self-start">
+            {(["day", "week", "month"] as FilterType[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 ${
+                  filter === f
+                    ? "text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+                style={{
+                  backgroundColor: filter === f ? "#5D2E1E" : undefined,
+                  color: filter === f ? "#ffffff" : undefined,
+                }}
+              >
+                {f === "day"
+                  ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
+                  : f === "week"
+                    ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
+                    : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Main Stats Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <MainStatItem
             label={
               "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <TodayStatCard
             label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.total || 0}
@@ -227,10 +227,10 @@ export default function AdminDashboard() {
           />
         </div>
 
-        {/* Repairs Table */}
+        {/* Repairs Table (Desktop) & Cards (Mobile) */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 flex items-center justify-between border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
               {
                 "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14"
               }
@@ -242,7 +242,9 @@ export default function AdminDashboard() {
               {"\u0E14\u0E39\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"}
             </Link>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop Table - hidden on mobile */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
@@ -364,15 +366,86 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card Layout - visible only on mobile */}
+          <div className="md:hidden divide-y divide-gray-100">
+            {stats?.recentRepairs.slice(0, 7).map((repair) => (
+              <Link
+                key={repair.id}
+                href={`/admin/repairs/${repair.id}`}
+                className="block px-4 py-3 hover:bg-blue-50 active:bg-blue-100 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-mono text-gray-500">
+                        {repair.ticketCode}
+                      </span>
+                      {repair.status === "PENDING" && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-sky-100 text-sky-700 rounded-full">
+                          {
+                            "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
+                          }
+                        </span>
+                      )}
+                      {repair.status === "IN_PROGRESS" && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">
+                          {
+                            "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
+                          }
+                        </span>
+                      )}
+                      {repair.status === "COMPLETED" && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">
+                          {
+                            "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"
+                          }
+                        </span>
+                      )}
+                      {repair.status === "CANCELLED" && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">
+                          {"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {repair.problemTitle}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                      <span>{repair.location}</span>
+                      <span>•</span>
+                      <span>
+                        {formatDate(repair.createdAt)}{" "}
+                        {formatTime(repair.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={18}
+                    className="text-gray-400 mt-1 flex-shrink-0"
+                  />
+                </div>
+              </Link>
+            ))}
+            {(!stats?.recentRepairs || stats.recentRepairs.length === 0) && (
+              <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                {
+                  "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23"
+                }
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Department Statistics */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            {
-              "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
-            }
-            <span className="text-sm font-normal text-gray-500 ml-2">
+          <div className="mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+              {
+                "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
+              }
+            </h2>
+            <span className="text-xs sm:text-sm font-normal text-gray-500">
               (
               {filter === "day"
                 ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
@@ -381,8 +454,8 @@ export default function AdminDashboard() {
                   : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
               )
             </span>
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
             {departmentStats.length > 0 ? (
               departmentStats.map((dept) => (
                 <DepartmentCard key={dept.department} stat={dept} />
@@ -429,12 +502,12 @@ function MainStatItem({ label, value }: { label: string; value: number }) {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center p-4 sm:p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
+      className={`flex flex-col items-center justify-center p-3 sm:p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
     >
-      <span className="text-xs sm:text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
+      <span className="text-[10px] sm:text-sm mb-1 text-center font-bold uppercase tracking-wider leading-tight">
         {label}
       </span>
-      <span className="text-3xl sm:text-4xl font-black">{value}</span>
+      <span className="text-2xl sm:text-4xl font-black">{value}</span>
     </div>
   );
 }
@@ -465,16 +538,16 @@ function TodayStatCard({
   return (
     <Link
       href={link}
-      className={`relative border-0 p-4 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.05] transition-all group flex flex-col items-center justify-center min-h-[100px] sm:min-h-[110px] min-w-0 w-full ${colorClass}`}
+      className={`relative border-0 p-3 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.05] transition-all group flex flex-col items-center justify-center min-h-[90px] sm:min-h-[110px] min-w-0 w-full ${colorClass}`}
     >
-      <div className="absolute top-2 right-2 p-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-colors">
-        <ArrowUpRight className="text-white w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+      <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 p-1 sm:p-1.5 rounded-full bg-white/20 group-hover:bg-white/40 transition-colors">
+        <ArrowUpRight className="text-white w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" />
       </div>
 
-      <span className="text-xs sm:text-sm mb-1 font-bold text-center whitespace-nowrap uppercase tracking-wide">
+      <span className="text-[10px] sm:text-sm mb-1 font-bold text-center leading-tight uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-3xl sm:text-4xl font-black">{value}</span>
+      <span className="text-2xl sm:text-4xl font-black">{value}</span>
     </Link>
   );
 }
