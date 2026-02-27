@@ -25,8 +25,10 @@ interface FetchOptions extends RequestInit {
 }
 
 export async function apiFetch(url: string, options?: string | FetchOptions | "GET" | "POST" | "PUT" | "DELETE", body?: any) {
-  // Support both 'access_token' (LINE Login) and 'token' (normal login)
-  const token = localStorage.getItem("access_token") || localStorage.getItem("token");
+  // SECURITY/SSR: Guard against server-side rendering where localStorage is undefined
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem("access_token") || localStorage.getItem("token"))
+    : null;
 
   let method = "GET";
   let requestBody: any = undefined;
