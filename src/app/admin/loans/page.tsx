@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/services/api";
 import {
@@ -49,6 +49,7 @@ const statusConfig: Record<
 };
 
 function AdminLoansContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -299,7 +300,10 @@ function AdminLoansContent() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600">
+                      <button
+                        onClick={() => router.push(`/admin/loans/${loan.id}`)}
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                      >
                         <ChevronRight size={18} />
                       </button>
                       <button
@@ -360,7 +364,10 @@ function AdminLoansContent() {
                 >
                   <Trash2 size={16} />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={() => router.push(`/admin/loans/${loan.id}`)}
+                  className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                >
                   <ChevronRight size={16} />
                 </button>
               </div>
