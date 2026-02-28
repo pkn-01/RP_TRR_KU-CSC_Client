@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
