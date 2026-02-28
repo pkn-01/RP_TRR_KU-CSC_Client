@@ -284,11 +284,10 @@ function AdminLoansContent() {
 
         {/* List Header (Desktop) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-y border-gray-200 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-          <div className="col-span-6 ml-1">อุปกรณ์</div>
+          <div className="col-span-5 ml-1">อุปกรณ์</div>
           <div className="col-span-2 text-center">ผู้รับผิดชอบ</div>
           <div className="col-span-2 text-center">กำหนดคืน</div>
-          <div className="col-span-1 text-center">สถานะ</div>
-          <div className="col-span-1"></div>
+          <div className="col-span-3 text-right pr-4">สถานะการจัดการ</div>
         </div>
 
         {/* List Content */}
@@ -296,31 +295,41 @@ function AdminLoansContent() {
           {paginatedLoans.map((loan) => (
             <div
               key={loan.id}
-              className="bg-white border border-gray-100 rounded-xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group"
+              className="bg-white border border-gray-100 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
             >
+              {/* Decorative accent border */}
+              <div
+                className={`absolute left-0 top-0 bottom-0 w-1 ${loan.status === "BORROWED" ? "bg-amber-400" : "bg-green-400"}`}
+              ></div>
+
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                 {/* Device Info */}
-                <div className="col-span-1 md:col-span-6 space-y-1">
-                  <h3 className="text-[15px] font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {loan.itemName}
-                  </h3>
+                <div className="col-span-1 md:col-span-5 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-blue-500/50 uppercase tracking-tighter">
+                      # {loan.id}
+                    </span>
+                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {loan.itemName}
+                    </h3>
+                  </div>
                   {loan.description && (
-                    <p className="text-xs text-gray-500 line-clamp-2 max-w-xl">
+                    <p className="text-xs text-gray-500 line-clamp-2 max-w-xl font-medium leading-relaxed">
                       {loan.description}
                     </p>
                   )}
                 </div>
 
                 {/* Responsible Person */}
-                <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center space-y-1 text-center">
-                  <div className="flex items-center gap-1.5 text-[13px] text-gray-600 font-medium">
+                <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center space-y-1.5 text-center px-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full text-[13px] text-gray-700 font-bold border border-gray-100/50">
                     <User size={14} className="text-gray-400" />
-                    <span>
+                    <span className="truncate max-w-[120px]">
                       {loan.borrowerName || loan.borrowedBy?.name || "-"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                    <Building size={12} />
+                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
+                    <Building size={12} className="opacity-70" />
                     <span>
                       {loan.department || loan.borrowedBy?.department || "-"}
                     </span>
@@ -329,8 +338,8 @@ function AdminLoansContent() {
 
                 {/* Dates */}
                 <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center space-y-1 text-center">
-                  <div className="flex flex-col items-center">
-                    <span className="text-[13px] font-bold text-gray-700">
+                  <div className="flex flex-col items-center bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100/50">
+                    <span className="text-[13px] font-black text-gray-800">
                       {new Date(loan.expectedReturnDate).toLocaleDateString(
                         "th-TH",
                         {
@@ -339,76 +348,85 @@ function AdminLoansContent() {
                         },
                       )}
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-gray-400 font-bold">
                       {new Date(loan.expectedReturnDate).getFullYear() + 543}
                     </span>
                   </div>
-                  <div className="text-[10px] text-gray-400 flex flex-col items-center">
-                    <span>ยืมเมื่อ:</span>
+                  <div className="text-[10px] text-gray-400 flex items-center gap-1 font-bold mt-1">
+                    <Clock size={10} />
                     <span>
+                      ยืมเมื่อ{" "}
                       {new Date(loan.borrowDate).toLocaleDateString("th-TH", {
                         day: "2-digit",
-                        month: "short",
+                        month: "2-digit",
                         year: "2-digit",
                       })}
                     </span>
                   </div>
                 </div>
 
-                {/* Status */}
-                <div className="col-span-1 md:col-span-1 flex justify-center">
+                {/* Status and Actions Combined for better spacing */}
+                <div className="col-span-1 md:col-span-3 flex items-center justify-end gap-3 pr-2">
+                  {/* Status Badge */}
                   <div
-                    className={`flex flex-col items-center justify-center gap-1.5 min-w-[70px] py-2 px-3 rounded-lg border transition-colors ${
+                    className={`flex flex-col items-center justify-center gap-1 min-w-[85px] py-1.5 px-3 rounded-xl border transition-all ${
                       loan.status === "BORROWED"
-                        ? "bg-gray-900 border-gray-800 text-white"
+                        ? "bg-gray-900 border-gray-800 text-white shadow-lg shadow-gray-200"
                         : "bg-green-50 border-green-100 text-green-700"
                     }`}
                   >
                     {loan.status === "BORROWED" ? (
                       <>
                         <Clock
-                          size={14}
+                          size={12}
                           className="animate-pulse text-amber-500"
                         />
-                        <span className="text-[10px] font-bold">กำลังยืม</span>
+                        <span className="text-[10px] font-black tracking-wide">
+                          กำลังยืม
+                        </span>
                       </>
                     ) : (
                       <>
-                        <Check size={14} />
-                        <span className="text-[10px] font-bold">คืนแล้ว</span>
+                        <Check size={12} />
+                        <span className="text-[10px] font-black tracking-wide">
+                          คืนแล้ว
+                        </span>
                       </>
                     )}
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="col-span-1 md:col-span-1 flex items-center justify-end gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedLoan(loan);
-                      setShowDetailModal(true);
-                    }}
-                    className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors shadow-sm"
-                    title="ดูรายละเอียด"
-                  >
-                    <FileText size={16} />
-                  </button>
-                  {loan.status === "BORROWED" && (
+                  {/* Vertical Divider */}
+                  <div className="w-px h-8 bg-gray-100 mx-1 hidden md:block"></div>
+
+                  {/* Button Group */}
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleReturnLoan(loan.id)}
-                      className="p-2 bg-white border border-gray-200 hover:bg-green-600 hover:text-white text-gray-400 rounded-lg transition-all shadow-sm group/return"
-                      title="รับคืน"
+                      onClick={() => {
+                        setSelectedLoan(loan);
+                        setShowDetailModal(true);
+                      }}
+                      className="w-10 h-10 flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                      title="ดูรายละเอียด"
                     >
-                      <Check size={16} />
+                      <FileText size={18} />
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(loan.id)}
-                    className="p-2 bg-white border border-gray-200 hover:bg-red-500 hover:text-white text-gray-400 rounded-lg transition-all shadow-sm"
-                    title="ลบ"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                    {loan.status === "BORROWED" && (
+                      <button
+                        onClick={() => handleReturnLoan(loan.id)}
+                        className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 hover:border-green-500 hover:text-green-600 text-gray-400 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+                        title="รับคืน"
+                      >
+                        <Check size={18} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(loan.id)}
+                      className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 hover:border-red-500 hover:text-red-500 text-gray-400 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
+                      title="ลบ"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
