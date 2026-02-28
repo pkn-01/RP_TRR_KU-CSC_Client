@@ -182,6 +182,8 @@ export default function ITLoansPage() {
   };
 
   const handleAddLoan = async () => {
+    // Validation removed as per user request
+    /*
     if (
       !formData.itemName ||
       !formData.expectedReturnDate ||
@@ -190,6 +192,7 @@ export default function ITLoansPage() {
       alert("กรุณากรอกข้อมูลจำเป็น: ชื่ออุปกรณ์, วันกำหนดคืน, ชื่อผู้ยืม");
       return;
     }
+    */
 
     try {
       setSubmitting(true);
@@ -666,7 +669,6 @@ export default function ITLoansPage() {
                   <div className="space-y-4">
                     <FormInput
                       label="ชื่ออุปกรณ์"
-                      required
                       value={formData.itemName}
                       onChange={(v) =>
                         setFormData({ ...formData, itemName: v })
@@ -705,7 +707,6 @@ export default function ITLoansPage() {
                   <div className="space-y-4">
                     <FormInput
                       label="ชื่อผู้ยืม"
-                      required
                       value={formData.borrowerName}
                       onChange={(v) =>
                         setFormData({ ...formData, borrowerName: v })
