@@ -4,20 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { apiFetch } from "@/services/api";
 import Swal from "sweetalert2";
-import {
-  ChevronLeft,
-  Clock,
-  CheckCircle2,
-  User,
-  Building2,
-  Phone,
-  Calendar,
-  Package,
-  Trash2,
-  AlertCircle,
-  Hash,
-  FileText,
-} from "lucide-react";
 import Loading from "@/components/Loading";
 import { safeFormat } from "@/lib/date-utils";
 
@@ -45,34 +31,11 @@ interface Loan {
 }
 
 /* --- Constants --- */
-const statusConfig: Record<
-  string,
-  { label: string; color: string; bg: string; icon: any }
-> = {
-  BORROWED: {
-    label: "กำลังยืม",
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200",
-    icon: Clock,
-  },
-  RETURNED: {
-    label: "คืนสำเร็จ",
-    color: "text-emerald-700",
-    bg: "bg-emerald-50 border-emerald-200",
-    icon: CheckCircle2,
-  },
-  OVERDUE: {
-    label: "เกินกำหนด",
-    color: "text-red-700",
-    bg: "bg-red-50 border-red-200",
-    icon: AlertCircle,
-  },
-  PENDING: {
-    label: "รออนุมัติ",
-    color: "text-blue-700",
-    bg: "bg-blue-50 border-blue-200",
-    icon: Clock,
-  },
+const statusConfig: Record<string, { label: string; color: string }> = {
+  BORROWED: { label: "กำลังยืม", color: "text-amber-600" },
+  RETURNED: { label: "คืนสำเร็จ", color: "text-emerald-600" },
+  OVERDUE: { label: "เกินกำหนด", color: "text-red-500" },
+  PENDING: { label: "รออนุมัติ", color: "text-blue-500" },
 };
 
 /* --- Main Page --- */
@@ -111,11 +74,11 @@ export default function LoanDetailPage() {
     if (!loan) return;
 
     const result = await Swal.fire({
-      title: "ยืนยันการรับคืน?",
-      text: "คุณต้องการบันทึกว่าได้รับคืนอุปกรณ์นี้แล้วใช่หรือไม่?",
+      title: "รับคืนอุปกรณ์",
+      text: "ยืนยันการรับคืนอุปกรณ์ชิ้นนี้",
       icon: "question",
       showCancelButton: true,
-      confirmButtonText: "ยืนยันการคืน",
+      confirmButtonText: "ยืนยัน",
       cancelButtonText: "ยกเลิก",
       confirmButtonColor: "#10b981",
     });
@@ -133,8 +96,7 @@ export default function LoanDetailPage() {
       });
 
       await Swal.fire({
-        title: "สำเร็จ!",
-        text: "บันทึกการรับคืนอุปกรณ์เรียบร้อยแล้ว",
+        title: "สำเร็จ",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
@@ -142,11 +104,7 @@ export default function LoanDetailPage() {
 
       fetchLoanDetail();
     } catch (err: any) {
-      Swal.fire(
-        "เกิดข้อผิดพลาด",
-        err.message || "ไม่สามารถอัปเดตสถานะได้",
-        "error",
-      );
+      Swal.fire("ผิดพลาด", err.message || "ไม่สามารถทำรายการได้", "error");
     } finally {
       setSaving(false);
     }
@@ -156,13 +114,13 @@ export default function LoanDetailPage() {
     if (!loan) return;
 
     const result = await Swal.fire({
-      title: "ลบรายการยืม?",
-      text: "คุณต้องการลบรายการยืมนี้ใช่หรือไม่? การที่นี้ไม่สามารถย้อนกลับได้",
+      title: "ลบรายการ",
+      text: "คุณต้องการลบรายการยืมนี้ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "ลบรายการ",
+      confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
-      confirmButtonColor: "#ef4444",
+      confirmButtonColor: "#f43f5e",
     });
 
     if (!result.isConfirmed) return;
@@ -172,7 +130,7 @@ export default function LoanDetailPage() {
       await apiFetch(`/api/loans/${loan.id}`, { method: "DELETE" });
 
       await Swal.fire({
-        title: "ลบสำเร็จ!",
+        title: "ลบเรียบร้อยแล้ว",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
@@ -180,11 +138,7 @@ export default function LoanDetailPage() {
 
       router.push("/admin/loans");
     } catch (err: any) {
-      Swal.fire(
-        "เกิดข้อผิดพลาด",
-        err.message || "ไม่สามารถลบรายการได้",
-        "error",
-      );
+      Swal.fire("ผิดพลาด", err.message || "ไม่สามารถลบได้", "error");
     } finally {
       setSaving(false);
     }
@@ -195,254 +149,168 @@ export default function LoanDetailPage() {
 
   const currentStatus = statusConfig[loan.status] || {
     label: loan.status,
-    color: "text-gray-700",
-    bg: "bg-gray-50 border-gray-200",
-    icon: Clock,
+    color: "text-gray-600",
   };
-  const StatusIcon = currentStatus.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-12">
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
-          <div>
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors mb-4 group"
-            >
-              <ChevronLeft
-                size={18}
-                className="group-hover:-translate-x-1 transition-transform"
-              />
-              กลับไปหน้าจัดการ
-            </button>
+    <div className="min-h-screen bg-white text-gray-900 pb-20">
+      {/* Loading Overlay */}
+      {saving && (
+        <div className="fixed inset-0 bg-white/80 z-50 flex items-center justify-center">
+          <div className="text-sm font-medium">กำลังประมวลผล...</div>
+        </div>
+      )}
 
-            <div className="flex flex-wrap items-center gap-4">
-              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-                รายละเอียดการยืมอุปกรณ์
+      <div className="max-w-3xl mx-auto px-6 pt-10">
+        {/* Simple Header */}
+        <div className="mb-12">
+          <button
+            onClick={() => router.back()}
+            className="text-gray-400 hover:text-black transition-colors mb-6 text-sm flex items-center gap-1"
+          >
+            &larr; ย้อนกลับ
+          </button>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-gray-400 mb-1 uppercase tracking-tight">
+                รายการยืมอุปกรณ์
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                {loan.itemName}
               </h1>
-              <span
-                className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold border shadow-sm ${currentStatus.bg} ${currentStatus.color}`}
-              >
-                <StatusIcon size={16} />
-                {currentStatus.label}
-              </span>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 font-medium">
-              <Hash size={14} />
-              <span>รหัสรายการ: {loan.id}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {loan.status !== "RETURNED" && (
+            <div className="flex gap-4">
+              {loan.status !== "RETURNED" && (
+                <button
+                  onClick={handleReturnItem}
+                  disabled={saving}
+                  className="text-sm font-semibold text-emerald-600 hover:underline disabled:opacity-50"
+                >
+                  บันทึกคืนอุปกรณ์
+                </button>
+              )}
               <button
-                onClick={handleReturnItem}
+                onClick={handleDeleteLoan}
                 disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md shadow-emerald-100 transition-all active:scale-95 disabled:opacity-50"
+                className="text-sm font-semibold text-red-500 hover:underline disabled:opacity-50"
               >
-                <CheckCircle2 size={18} />
-                รับคืนอุปกรณ์
+                ลบรายการ
               </button>
-            )}
-            <button
-              onClick={handleDeleteLoan}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-red-50 text-red-600 hover:bg-red-50 rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50"
-            >
-              <Trash2 size={18} />
-              ลบรายการ
-            </button>
+            </div>
           </div>
         </div>
 
-        {/* content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Device Information Card */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                  <Package size={22} />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  ข้อมูลอุปกรณ์
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    ชื่ออุปกรณ์
-                  </label>
-                  <p className="text-lg font-bold text-gray-900">
-                    {loan.itemName || "-"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    จำนวน
-                  </label>
-                  <p className="text-lg font-bold text-gray-900">
-                    {loan.quantity} ชิ้น
-                  </p>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    รายละเอียดเพิ่มเติม / Serial
-                  </label>
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {loan.description || "ไม่มีรายละเอียดเพิ่มเติม"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Borrower Information Card */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
-                  <User size={22} />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  ข้อมูลผู้ยืม
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    ชื่อผู้ยืม
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <p className="text-lg font-bold text-gray-900">
-                      {loan.borrowerName || loan.borrowedBy.name}
-                    </p>
-                    {loan.borrowerName &&
-                      loan.borrowerName !== loan.borrowedBy.name && (
-                        <span className="text-xs text-gray-400 font-medium">
-                          (ลงบันทึกโดย: {loan.borrowedBy.name})
-                        </span>
-                      )}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    แผนก
-                  </label>
-                  <div className="flex items-center gap-2 text-gray-800 font-medium">
-                    <Building2 size={16} className="text-gray-400" />
-                    <span>{loan.borrowerDepartment || "-"}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    เบอร์โทรศัพท์
-                  </label>
-                  <div className="flex items-center gap-2 text-gray-800 font-medium">
-                    <Phone size={16} className="text-gray-400" />
-                    <span>{loan.borrowerPhone || "-"}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                    Line ID
-                  </label>
-                  <div className="flex items-center gap-2 text-gray-800 font-medium font-mono">
-                    <span className="text-gray-400 font-bold">@</span>
-                    <span>{loan.borrowerLineId || "-"}</span>
-                  </div>
-                </div>
-              </div>
-            </section>
+        {/* Content Section */}
+        <div className="space-y-12">
+          {/* Status & ID */}
+          <div className="flex gap-8 border-b border-gray-100 pb-8 mt-4">
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
+                สถานะ
+              </p>
+              <p className={`text-sm font-bold ${currentStatus.color}`}>
+                {currentStatus.label}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
+                รหัสรายการ
+              </p>
+              <p className="text-sm font-bold">#{loan.id}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">
+                จำนวน
+              </p>
+              <p className="text-sm font-bold">{loan.quantity} ชิ้น</p>
+            </div>
           </div>
 
-          {/* Sidebar Column */}
-          <div className="space-y-6">
-            {/* Timeline Card */}
-            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
-                  <Calendar size={22} />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">กำหนดเวลา</h2>
-              </div>
-
-              <div className="space-y-6">
-                <div className="relative pl-6 border-l-2 border-gray-100 space-y-8">
-                  <div className="relative">
-                    <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                        วันที่ยืม
-                      </label>
-                      <p className="text-base font-bold text-gray-900">
-                        {safeFormat(loan.borrowDate, "dd MMMM yyyy")}
-                      </p>
-                      <p className="text-xs text-gray-500 font-medium">
-                        {safeFormat(loan.borrowDate, "HH:mm น.")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-amber-500 border-4 border-white shadow-sm"></div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                        กำหนดคืน
-                      </label>
-                      <p className="text-base font-bold text-gray-900">
-                        {safeFormat(loan.expectedReturnDate, "dd MMMM yyyy")}
-                      </p>
-                      <p className="text-xs text-gray-500 font-medium">
-                        ภายในเวลา 17:00 น.
-                      </p>
-                    </div>
-                  </div>
-
-                  {loan.returnDate && (
-                    <div className="relative">
-                      <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm"></div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                          วันที่ส่งคืนจริง
-                        </label>
-                        <p className="text-base font-bold text-emerald-600">
-                          {safeFormat(loan.returnDate, "dd MMMM yyyy")}
-                        </p>
-                        <p className="text-xs text-emerald-500 font-medium">
-                          {safeFormat(loan.returnDate, "HH:mm น.")}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            {/* Quick Actions / Tips */}
-            <div className="bg-gray-900 rounded-2xl p-6 md:p-8 text-white shadow-xl shadow-gray-200">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText size={20} className="text-blue-400" />
-                <h3 className="font-bold">ระบบบันทึกการยืม</h3>
-              </div>
-              <p className="text-sm text-gray-400 leading-relaxed font-medium">
-                การบันทึกข้อมูลที่ครบถ้วนจะช่วยให้การติดตามอุปกรณ์ทำได้ง่ายขึ้น
-                และช่วยรวบรวมสถิติการใช้งานได้อย่างแม่นยำ
-              </p>
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="flex items-center justify-between text-xs text-gray-500 font-bold uppercase tracking-wider">
-                  <span>ข้อมูลอัปเดตล่าสุด</span>
-                  <span className="text-gray-300">
-                    {safeFormat(loan.borrowDate, "dd/MM/yyyy")}
-                  </span>
-                </div>
+          {/* Device Detail */}
+          <section>
+            <h2 className="text-sm font-bold text-gray-900 mb-4">
+              ข้อมูลอุปกรณ์
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-gray-400 mb-1">
+                  รายละเอียดเพิ่มเติม / Serial
+                </p>
+                <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                  {loan.description || "—"}
+                </p>
               </div>
             </div>
+          </section>
+
+          {/* Borrower Detail */}
+          <section className="pt-8 border-t border-gray-100">
+            <h2 className="text-sm font-bold text-gray-900 mb-6">
+              ข้อมูลผู้ยืม
+            </h2>
+            <div className="grid grid-cols-2 gap-y-6 gap-x-12">
+              <div>
+                <p className="text-xs text-gray-400 mb-1">ชื่อผู้ยืม</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {loan.borrowerName || loan.borrowedBy.name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">แผนก</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {loan.borrowerDepartment || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">เบอร์ติดต่อ</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {loan.borrowerPhone || "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Line ID</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {loan.borrowerLineId ? `@${loan.borrowerLineId}` : "—"}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Timeline */}
+          <section className="pt-8 border-t border-gray-100 pb-10">
+            <h2 className="text-sm font-bold text-gray-900 mb-6">บันทึกเวลา</h2>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">วันที่ยืม</span>
+                <span className="font-medium text-gray-900">
+                  {safeFormat(loan.borrowDate, "dd MMM yyyy HH:mm น.")}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-400">กำหนดคืน</span>
+                <span className="font-medium text-gray-900">
+                  {safeFormat(loan.expectedReturnDate, "dd MMM yyyy")}
+                </span>
+              </div>
+              {loan.returnDate && (
+                <div className="flex justify-between items-center text-sm pt-4 border-t border-gray-50 border-dashed">
+                  <span className="text-emerald-600 font-semibold">
+                    คืนอุปกรณ์แล้วเมื่อ
+                  </span>
+                  <span className="font-bold text-emerald-600">
+                    {safeFormat(loan.returnDate, "dd MMM yyyy HH:mm น.")}
+                  </span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Footer Info */}
+          <div className="pt-10 border-t border-gray-100">
+            <p className="text-[10px] text-gray-300 font-medium uppercase tracking-widest text-center">
+              Last updated by {loan.borrowedBy.name}
+            </p>
           </div>
         </div>
       </div>
