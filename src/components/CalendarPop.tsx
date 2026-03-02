@@ -26,13 +26,19 @@ import {
 
 interface CalendarPopProps {
   selectedDate: Date | null;
-  onChange: (date: Date) => void;
+  onChange?: (date: Date) => void;
+  onDateSelect?: (date: Date) => void;
 }
 
 export default function CalendarPop({
   selectedDate,
   onChange,
+  onDateSelect,
 }: CalendarPopProps) {
+  const handleChange = (date: Date) => {
+    onChange?.(date);
+    onDateSelect?.(date);
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"days" | "months" | "years">("days");
@@ -64,7 +70,7 @@ export default function CalendarPop({
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   const handleDateClick = (day: Date) => {
-    onChange(day);
+    handleChange(day);
     setIsOpen(false);
   };
 
@@ -277,7 +283,7 @@ export default function CalendarPop({
             <button
               onClick={() => {
                 const today = new Date();
-                onChange(today);
+                handleChange(today);
                 setIsOpen(false);
               }}
               className="text-xs font-semibold text-[#5D2E1E] hover:underline"

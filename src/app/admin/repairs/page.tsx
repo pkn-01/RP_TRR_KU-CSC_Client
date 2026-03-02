@@ -13,9 +13,12 @@ import {
 } from "lucide-react";
 import { apiFetch } from "@/services/api";
 import { userService, User as UserType } from "@/services/userService";
-import * as XLSX from "xlsx";
-import Swal from "sweetalert2";
+import CalendarPop from "../../../components/CalendarPop";
 import Loading from "@/components/Loading";
+import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import Swal from "sweetalert2";
 
 interface Repair {
   id: string;
@@ -60,6 +63,12 @@ function AdminRepairsContent() {
   const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Date Filtering State
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+  const [filter, setFilter] = useState("all");
 
   // Stats
   const today = new Date();
@@ -143,6 +152,47 @@ function AdminRepairsContent() {
     return () => clearInterval(timer);
   }, [autoRefreshEnabled, fetchRepairs]);
 
+  const getDateRangeInfo = () => {
+    const target = new Date(selectedDate);
+    const formatThai = (d: Date) =>
+      d.toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+    if (filter === "day" || filter === "all") {
+      return {
+        periodLabel: filter === "all" ? "ทั้งหมด" : "รายวัน",
+        rangeText: formatThai(target),
+      };
+    } else if (filter === "week") {
+      const start = new Date(target);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return {
+        periodLabel: "รายสัปดาห์",
+        rangeText: formatThai(start) + " ถึง " + formatThai(end),
+      };
+    } else {
+      const firstDay = new Date(target.getFullYear(), target.getMonth(), 1);
+      const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0);
+      return {
+        periodLabel: "รายเดือน",
+        rangeText: formatThai(firstDay) + " ถึง " + formatThai(lastDay),
+      };
+    }
+  };
+
+  const getUrgencyLabel = (u: string) => {
+    const labels: any = {
+      NORMAL: "ปกติ",
+      URGENT: "ด่วน",
+      CRITICAL: "ด่วนที่สุด",
+    };
+    return labels[u] || u;
+  };
+
   const isSameWeek = (date1: Date, date2: Date) => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -183,17 +233,24 @@ function AdminRepairsContent() {
             new Date().toDateString()
           : item.status === filterStatus;
 
-    // Date filtering from dashboard
+    // Date filtering
     let matchesDate = true;
-    if (filterDate && filterType !== "all") {
+    if (filter !== "all") {
       const createdAt = new Date(item.createdAt);
-      const targetDate = new Date(filterDate);
+      const targetDate = new Date(selectedDate);
 
-      if (filterType === "day") {
+      if (filter === "day") {
         matchesDate = createdAt.toDateString() === targetDate.toDateString();
-      } else if (filterType === "week") {
-        matchesDate = isSameWeek(createdAt, targetDate);
-      } else if (filterType === "month") {
+      } else if (filter === "week") {
+        // Start from selectedDate and go +6 days
+        const start = new Date(targetDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+
+        matchesDate = createdAt >= start && createdAt <= end;
+      } else if (filter === "month") {
         matchesDate =
           createdAt.getMonth() === targetDate.getMonth() &&
           createdAt.getFullYear() === targetDate.getFullYear();
@@ -223,98 +280,164 @@ function AdminRepairsContent() {
     currentPage * itemsPerPage,
   );
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (repairs.length === 0) {
-      alert("ไม่มีข้อมูลสำหรับส่งออก");
+      Swal.fire({ icon: "info", title: "ไม่มีข้อมูลสำหรับส่งออก" });
       return;
     }
 
     try {
-      // Apply export limit based on rows per page
-      const dataToExport = filteredRepairs.slice(0, itemsPerPage);
+      Swal.fire({
+        title: "กำลังเตรียมรายงาน...",
+        text: "ระบบกำลังจัดรูปแบบไฟล์ Excel ให้สวยงาม",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
-      // 1. Prepare and format data for export
-      const exportData = dataToExport.map((repair) => ({
-        เลขใบงาน: repair.ticketCode,
-        วันที่แจ้ง: new Date(repair.createdAt).toLocaleDateString("th-TH"),
-        เวลาที่แจ้ง: new Date(repair.createdAt).toLocaleTimeString("th-TH", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        "ปัญหา/รายการ": repair.problemTitle,
-        สถานที่: repair.location,
-        ความสำคัญ:
-          repair.urgency === "CRITICAL"
-            ? "ด่วนมาก"
-            : repair.urgency === "URGENT"
-              ? "ด่วน"
-              : "ปกติ",
-        ชื่อผู้แจ้ง: repair.reporterName || "-",
-        แผนก: repair.reporterDepartment || "-",
-        เบอร์โทรศัพท์: repair.reporterPhone || "-",
-        สถานะ: statusLabels[repair.status] || repair.status,
-        ผู้รับผิดชอบ:
-          repair.assignees && repair.assignees.length > 0
-            ? repair.assignees.map((a) => a.user.name).join(", ")
-            : "ยังไม่มีผู้รับงาน",
-      }));
+      const { periodLabel, rangeText } = getDateRangeInfo();
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("รายการแจ้งซ่อม");
 
-      // 2. Create Workbook and Worksheet
-      const wb = XLSX.utils.book_new();
+      // --- Styles ---
+      const headerFill: ExcelJS.Fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1E3A8A" },
+      };
+      const subHeaderFill: ExcelJS.Fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFF1F5F9" },
+      };
+      const whiteText: Partial<ExcelJS.Font> = {
+        color: { argb: "FFFFFFFF" },
+        bold: true,
+      };
+      const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
 
-      // Create Worksheet with professional headers
-      const ws = XLSX.utils.aoa_to_sheet([
-        ["รายงานการแจ้งซ่อม (Repair Management Report)"],
-        [
-          `วันที่พิมพ์: ${new Date().toLocaleDateString("th-TH")} ${new Date().toLocaleTimeString("th-TH")}`,
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          `จำนวนทั้งหมด: ${dataToExport.length} รายการ`,
-        ],
-        [""], // Spacer
+      // --- Content ---
+      // Title & Meta
+      const titleRow = sheet.addRow([
+        "รายงานสรุปรายการแจ้งซ่อม (Repair Management Report)",
       ]);
+      titleRow.font = { size: 16, bold: true, color: { argb: "FF1E3A8A" } };
+      sheet.mergeCells(1, 1, 1, 6);
+      sheet.addRow([]);
 
-      // Add actual data starting from row 4
-      XLSX.utils.sheet_add_json(ws, exportData, { origin: "A4" });
+      const addMetaRow = (label: string, value: any) => {
+        const row = sheet.addRow([label, value]);
+        row.getCell(1).font = { bold: true };
+        row.getCell(1).fill = subHeaderFill;
+      };
 
-      // 3. Set Styles and Layout
-      // Set Column Widths
-      ws["!cols"] = [
-        { wch: 20 }, // เลขใบงาน
-        { wch: 15 }, // วันที่แจ้ง
-        { wch: 10 }, // เวลาที่แจ้ง
-        { wch: 30 }, // ปัญหา/รายการ
-        { wch: 20 }, // สถานที่
-        { wch: 12 }, // ความสำคัญ
-        { wch: 20 }, // ชื่อผู้แจ้ง
-        { wch: 15 }, // แผนก
-        { wch: 15 }, // เบอร์โทรศัพท์
-        { wch: 15 }, // สถานะ
-        { wch: 20 }, // ผู้รับผิดชอบ
+      addMetaRow("ประเภทรายงาน", periodLabel);
+      addMetaRow("ช่วงเวลาของข้อมูล", rangeText);
+      addMetaRow("วันที่ส่งออก", new Date().toLocaleString("th-TH"));
+      addMetaRow("จำนวนทั้งหมด", filteredRepairs.length + " รายการ");
+      sheet.addRow([]);
+
+      // Table Header
+      const headers = [
+        "รหัส",
+        "วันที่/เวลา",
+        "ปัญหา",
+        "สถานที่",
+        "ความเร่งด่วน",
+        "สถานะ",
+      ];
+      const headerRow = sheet.addRow(headers);
+      headerRow.eachCell((cell) => {
+        cell.fill = headerFill;
+        cell.font = whiteText;
+        cell.border = borderStyle;
+        cell.alignment = { horizontal: "center" };
+      });
+
+      sheet.columns = [
+        { key: "id", width: 18 },
+        { key: "date", width: 22 },
+        { key: "title", width: 35 },
+        { key: "loc", width: 25 },
+        { key: "urgency", width: 18 },
+        { key: "status", width: 15 },
       ];
 
-      // Merge Title Cells
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }, // Main Title
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // Date info
-        { s: { r: 1, c: 5 }, e: { r: 1, c: 10 } }, // Summary info
-      ];
+      // Data Rows
+      filteredRepairs.forEach((repair, index) => {
+        const row = sheet.addRow([
+          repair.ticketCode,
+          new Date(repair.createdAt).toLocaleDateString("th-TH") +
+            " " +
+            new Date(repair.createdAt).toLocaleTimeString("th-TH", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          repair.problemTitle,
+          repair.location,
+          getUrgencyLabel(repair.urgency),
+          statusLabels[repair.status] || repair.status,
+        ]);
 
-      // 4. Download File
-      XLSX.utils.book_append_sheet(wb, ws, "รายละเอียดการแจ้งซ่อม");
-      const fileName = `รายละเอียดการแจ้งซ่อม_${new Date().toISOString().split("T")[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+        if (index % 2 === 1) {
+          row.eachCell((cell) => {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFF9FAFB" },
+            };
+          });
+        }
+
+        row.eachCell((cell) => {
+          cell.border = borderStyle;
+        });
+
+        // Urgency Color
+        const uCell = row.getCell(5);
+        if (repair.urgency === "CRITICAL")
+          uCell.font = { color: { argb: "FFEF4444" }, bold: true };
+        else if (repair.urgency === "URGENT")
+          uCell.font = { color: { argb: "FFF59E0B" }, bold: true };
+
+        // Status Color
+        const sCell = row.getCell(6);
+        if (repair.status === "COMPLETED")
+          sCell.font = { color: { argb: "FF10B981" }, bold: true };
+        else if (repair.status === "IN_PROGRESS")
+          sCell.font = { color: { argb: "FFF59E0B" }, bold: true };
+        else if (repair.status === "CANCELLED")
+          sCell.font = { color: { argb: "FFEF4444" }, bold: true };
+      });
+
+      // --- Export ---
+      const buffer = await workbook.xlsx.writeBuffer();
+      const dateSuffix = new Date().toISOString().split("T")[0];
+      saveAs(
+        new Blob([buffer]),
+        `RepairReport_${periodLabel}_${dateSuffix}.xlsx`,
+      );
+
+      Swal.close();
+      Swal.fire({
+        icon: "success",
+        title: "ส่งออกข้อมูลสำเร็จ",
+        text: "ไฟล์รายงานถูกสร้างและจัดรูปแบบเรียบร้อยแล้ว",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Export error:", error);
-      alert("เกิดข้อผิดพลาดในการส่งออกไฟล์ Excel");
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาดในการส่งออกไฟล์ Excel",
+      });
     }
   };
 
@@ -428,6 +551,49 @@ function AdminRepairsContent() {
               </div>
               งานของฉัน
             </button>
+
+            {/* Date Filtering UI */}
+            <div className="flex items-center gap-2">
+              <div className="inline-flex bg-white border border-gray-300 rounded-lg p-1 shadow-sm h-10">
+                {(["all", "day", "week", "month"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => {
+                      setFilter(f);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                      filter === f
+                        ? "bg-gray-800 text-white shadow-sm"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {f === "all"
+                      ? "ทั้งหมด"
+                      : f === "day"
+                        ? "รายวัน"
+                        : f === "week"
+                          ? "รายสัปดาห์"
+                          : "รายเดือน"}
+                  </button>
+                ))}
+              </div>
+
+              {filter !== "all" && (
+                <CalendarPop
+                  selectedDate={(() => {
+                    const [y, m, d] = selectedDate.split("-").map(Number);
+                    return new Date(y, m - 1, d);
+                  })()}
+                  onDateSelect={(date: Date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    setSelectedDate(`${year}-${month}-${day}`);
+                  }}
+                />
+              )}
+            </div>
 
             {/* Status Filter */}
             <select
