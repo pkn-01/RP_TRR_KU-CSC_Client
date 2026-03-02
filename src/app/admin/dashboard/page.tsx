@@ -34,6 +34,10 @@ interface DashboardStats {
     cancelled: number;
   };
   recentRepairs: RepairItem[];
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
 interface DepartmentStat {
@@ -127,57 +131,68 @@ export default function AdminDashboard() {
     });
   };
 
+  // Helper: compute date range for export metadata
+  const getDateRangeInfo = () => {
+    const target = new Date(selectedDate);
+
+    const formatThai = (d: Date) =>
+      d.toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+    if (filter === "day") {
+      return {
+        periodLabel: "รายวัน",
+        rangeText: formatThai(target),
+      };
+    } else if (filter === "week") {
+      const dayOfWeek = target.getDay();
+      const start = new Date(target);
+      start.setDate(target.getDate() - dayOfWeek);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      return {
+        periodLabel: "รายสัปดาห์",
+        rangeText: `${formatThai(start)} ถึง ${formatThai(end)}`,
+      };
+    } else {
+      const firstDay = new Date(target.getFullYear(), target.getMonth(), 1);
+      const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0);
+      return {
+        periodLabel: "รายเดือน",
+        rangeText: `${formatThai(firstDay)} ถึง ${formatThai(lastDay)}`,
+      };
+    }
+  };
+
   const handleExportDashboard = () => {
     if (!stats || !departmentStats) return;
 
     try {
-      const periodLabel =
-        filter === "day"
-          ? "รายวัน"
-          : filter === "week"
-            ? "รายสัปดาห์"
-            : "รายเดือน";
-
-      const selectedDateThai = new Date(selectedDate).toLocaleDateString(
-        "th-TH",
-        {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        },
-      );
+      const { periodLabel, rangeText } = getDateRangeInfo();
 
       const summaryData = [
+        { หัวข้อ: "รายงาน", จำนวน: "Dashboard Report (" + periodLabel + ")" },
+        { หัวข้อ: "ช่วงเวลาของข้อมูล", จำนวน: rangeText },
         {
-          หัวข้อ: "ข้อมูลรายงานสำหรับ",
-          จำนวน: `${periodLabel} (${selectedDateThai})`,
-        },
-        {
-          หัวข้อ: "วันที่ส่งออกรายการ",
+          หัวข้อ: "วันที่ส่งออก",
           จำนวน: new Date().toLocaleString("th-TH"),
         },
-        { หัวข้อ: "", จำนวน: "" }, // Spacer
-        { หัวข้อ: "รายการซ่อมทั้งหมด (สะสม)", จำนวน: stats.all.total },
-        { หัวข้อ: "กำลังดำเนินการ (สะสม)", จำนวน: stats.all.inProgress },
-        { หัวข้อ: "เสร็จสิ้น (สะสม)", จำนวน: stats.all.completed },
-        { หัวข้อ: "ยกเลิก (สะสม)", จำนวน: stats.all.cancelled },
-        { หัวข้อ: "", จำนวน: "" }, // Spacer
-        {
-          หัวข้อ: `รายการซ่อม (${periodLabel})`,
-          จำนวน: stats.filtered.total,
-        },
-        {
-          หัวข้อ: `กำลังดำเนินการ (${periodLabel})`,
-          จำนวน: stats.filtered.inProgress,
-        },
-        {
-          หัวข้อ: `เสร็จสิ้น (${periodLabel})`,
-          จำนวน: stats.filtered.completed,
-        },
-        {
-          หัวข้อ: `ยกเลิก (${periodLabel})`,
-          จำนวน: stats.filtered.cancelled,
-        },
+        { หัวข้อ: "", จำนวน: "" },
+        { หัวข้อ: "=== สถิติสะสมทั้งหมด ===", จำนวน: "" },
+        { หัวข้อ: "รายการซ่อมทั้งหมด", จำนวน: stats.all.total },
+        { หัวข้อ: "กำลังดำเนินการ", จำนวน: stats.all.inProgress },
+        { หัวข้อ: "เสร็จสิ้น", จำนวน: stats.all.completed },
+        { หัวข้อ: "ยกเลิก", จำนวน: stats.all.cancelled },
+        { หัวข้อ: "", จำนวน: "" },
+        { หัวข้อ: "=== สถิติ: " + rangeText + " ===", จำนวน: "" },
+        { หัวข้อ: "รายการซ่อม", จำนวน: stats.filtered.total },
+        { หัวข้อ: "รอดำเนินการ", จำนวน: stats.filtered.pending },
+        { หัวข้อ: "กำลังดำเนินการ", จำนวน: stats.filtered.inProgress },
+        { หัวข้อ: "เสร็จสิ้น", จำนวน: stats.filtered.completed },
+        { หัวข้อ: "ยกเลิก", จำนวน: stats.filtered.cancelled },
       ];
 
       // 2. Prepare Department Stats Data (Matching UI Labels)
@@ -221,11 +236,11 @@ export default function AdminDashboard() {
 
       // Add Repair Sheet
       const wsRepair = XLSX.utils.json_to_sheet(repairData);
-      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อมล่าสุด");
+      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อม");
 
-      // Generate Filename
+      // Generate Filename with period info
       const dateSuffix = new Date().toISOString().split("T")[0];
-      const filename = `Dashboard_Report_${dateSuffix}.xlsx`;
+      const filename = "Dashboard_" + periodLabel + "_" + dateSuffix + ".xlsx";
 
       // Write and Download
       XLSX.writeFile(wb, filename);
