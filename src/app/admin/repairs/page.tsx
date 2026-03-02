@@ -76,15 +76,38 @@ function AdminRepairsContent() {
 
   const stats = {
     total: repairs.length,
-    today: repairs.filter((r) => {
-      const createdAt = new Date(r.createdAt);
-      createdAt.setHours(0, 0, 0, 0);
-      return createdAt.getTime() === today.getTime();
-    }).length,
     pending: repairs.filter((r) => r.status === "PENDING").length,
     inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
     completed: repairs.filter((r) => r.status === "COMPLETED").length,
     cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
+
+    // Today Stats
+    todayTotal: repairs.filter((r) => {
+      const createdAt = new Date(r.createdAt);
+      createdAt.setHours(0, 0, 0, 0);
+      return createdAt.getTime() === today.getTime();
+    }).length,
+    todayInProgress: repairs.filter((r) => {
+      const createdAt = new Date(r.createdAt);
+      createdAt.setHours(0, 0, 0, 0);
+      return (
+        createdAt.getTime() === today.getTime() && r.status === "IN_PROGRESS"
+      );
+    }).length,
+    todayCompleted: repairs.filter((r) => {
+      const createdAt = new Date(r.createdAt);
+      createdAt.setHours(0, 0, 0, 0);
+      return (
+        createdAt.getTime() === today.getTime() && r.status === "COMPLETED"
+      );
+    }).length,
+    todayCancelled: repairs.filter((r) => {
+      const createdAt = new Date(r.createdAt);
+      createdAt.setHours(0, 0, 0, 0);
+      return (
+        createdAt.getTime() === today.getTime() && r.status === "CANCELLED"
+      );
+    }).length,
   };
 
   const [filterDate, setFilterDate] = useState<string | null>(null);
@@ -449,13 +472,54 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="รายการวันนี้" value={stats.today} />
-          <StatCard label="รายการทั้งหมด" value={stats.total} />
-          <StatCard label="รอดำเนินการ" value={stats.pending} />
-          <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
-          <StatCard label="เสร็จสิ้น" value={stats.completed} />
-          <StatCard label="ยกเลิก" value={stats.cancelled} />
+        <div className="space-y-4">
+          {/* Total Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="รายการซ่อมทั้งหมด"
+              value={stats.total}
+              type="all"
+            />
+            <StatCard
+              label="กำลังดำเนินการ"
+              value={stats.inProgress}
+              type="in_progress"
+            />
+            <StatCard
+              label="เสร็จสิ้น"
+              value={stats.completed}
+              type="completed"
+            />
+            <StatCard label="ยกเลิก" value={stats.cancelled} type="cancelled" />
+          </div>
+
+          {/* Today Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="รายการซ่อม(วันนี้)"
+              value={stats.todayTotal}
+              type="all"
+              isToday
+            />
+            <StatCard
+              label="กำลังดำเนินการ(วันนี้)"
+              value={stats.todayInProgress}
+              type="in_progress"
+              isToday
+            />
+            <StatCard
+              label="เสร็จสิ้น(วันนี้)"
+              value={stats.todayCompleted}
+              type="completed"
+              isToday
+            />
+            <StatCard
+              label="ยกเลิก(วันนี้)"
+              value={stats.todayCancelled}
+              type="cancelled"
+              isToday
+            />
+          </div>
         </div>
 
         {/* Filter Row Indicator */}
@@ -879,58 +943,64 @@ function AdminRepairsContent() {
 function StatCard({
   label,
   value,
+  type,
+  isToday = false,
   className = "",
 }: {
   label: string;
   value: number;
+  type: "all" | "in_progress" | "completed" | "cancelled";
+  isToday?: boolean;
   className?: string;
 }) {
-  const styleMap: Record<string, { bg: string; border: string; text: string }> =
-    {
-      รายการวันนี้: {
-        bg: "bg-purple-50",
-        border: "border-l-purple-500",
-        text: "text-purple-700",
-      },
-      รายการทั้งหมด: {
-        bg: "bg-blue-50",
-        border: "border-l-blue-500",
-        text: "text-blue-700",
-      },
-      รอดำเนินการ: {
-        bg: "bg-sky-50",
-        border: "border-l-sky-500",
-        text: "text-sky-700",
-      },
-      กำลังดำเนินการ: {
-        bg: "bg-amber-50",
-        border: "border-l-amber-500",
-        text: "text-amber-700",
-      },
-      เสร็จสิ้น: {
-        bg: "bg-emerald-50",
-        border: "border-l-emerald-500",
-        text: "text-emerald-700",
-      },
-      ยกเลิก: {
-        bg: "bg-rose-50",
-        border: "border-l-rose-500",
-        text: "text-rose-700",
-      },
-    };
-
-  const style = styleMap[label] || {
-    bg: "bg-gray-50",
-    border: "border-l-gray-500",
-    text: "text-gray-700",
+  const styleMap: Record<string, { bg: string; iconBg: string }> = {
+    all: {
+      bg: "bg-[#4F00FF]", // Vibrant Purple
+      iconBg: "bg-[#6B46FF]",
+    },
+    in_progress: {
+      bg: "bg-[#FF9F00]", // Vibrant Orange
+      iconBg: "bg-[#FFB733]",
+    },
+    completed: {
+      bg: "bg-[#00A661]", // Vibrant Green
+      iconBg: "bg-[#33B881]",
+    },
+    cancelled: {
+      bg: "bg-[#FF0032]", // Vibrant Red
+      iconBg: "bg-[#FF335B]",
+    },
   };
+
+  const style = styleMap[type];
 
   return (
     <div
-      className={`rounded-xl p-4 border-l-4 ${style.bg} ${style.border} shadow-sm flex flex-col items-center justify-center ${className}`}
+      className={`relative rounded-2xl p-6 ${style.bg} shadow-lg flex flex-col items-center justify-center min-h-[140px] transition-transform hover:scale-[1.02] cursor-default ${className}`}
     >
-      <span className="text-xs font-medium text-gray-500 mb-1">{label}</span>
-      <span className={`text-3xl font-bold ${style.text}`}>{value}</span>
+      {isToday && (
+        <div
+          className={`absolute top-4 right-4 p-1.5 rounded-full ${style.iconBg} text-white`}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2.5}
+              d="M7 17L17 7M17 7H7M17 7V17"
+            />
+          </svg>
+        </div>
+      )}
+      <span className="text-sm font-semibold text-white/90 mb-2">{label}</span>
+      <span className="text-5xl font-extrabold text-white tracking-tight">
+        {value}
+      </span>
     </div>
   );
 }
