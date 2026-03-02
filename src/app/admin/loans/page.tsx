@@ -479,71 +479,49 @@ function AdminLoansContent() {
             </div>
 
             <div className="p-8 space-y-8">
-              {/* Item Info Card */}
-              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex gap-5 items-start">
-                <div className="w-14 h-14 bg-white rounded-2xl border border-gray-200 flex items-center justify-center text-gray-900 shadow-sm flex-shrink-0">
-                  <Package size={28} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start gap-4">
-                    <h3 className="text-xl font-bold text-gray-900 leading-tight truncate">
-                      {selectedLoan.itemName}
-                    </h3>
-                    <div className="px-3 py-1 bg-gray-900 text-white rounded-lg text-xs font-bold whitespace-nowrap">
-                      จำนวน {selectedLoan.quantity}
-                    </div>
-                  </div>
+              {/* Item Info */}
+              <div className="flex gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                    {selectedLoan.itemName}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    จำนวน: {selectedLoan.quantity} รายการ
+                  </p>
                   {selectedLoan.description && (
-                    <div className="mt-3 text-sm text-gray-600 leading-relaxed break-words">
-                      <span className="font-semibold text-gray-400 text-[10px] uppercase block mb-1">
-                        รายละเอียดเพิ่มเติม
-                      </span>
+                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
                       {selectedLoan.description}
-                    </div>
+                    </p>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Borrower Info Section */}
-                <div className="space-y-5">
-                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-                    <User size={16} className="text-gray-400" />
-                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                      ข้อมูลผู้ยืม
-                    </h4>
-                  </div>
-                  <div className="space-y-4 px-1">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
-                        <User size={14} />
-                      </div>
-                      <span className="text-sm font-bold text-gray-800">
+              <div className="grid grid-cols-2 gap-8">
+                {/* Borrower Info */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    ข้อมูลผู้ยืม
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-gray-700">
+                      <span>
                         {selectedLoan.borrowerName ||
                           selectedLoan.borrowedBy?.name}
                       </span>
                     </div>
-
                     {(selectedLoan.department ||
                       selectedLoan.borrowedBy?.department) && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
-                          <Building size={14} />
-                        </div>
-                        <span className="text-sm text-gray-600">
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
+                        <span>
                           {selectedLoan.department ||
                             selectedLoan.borrowedBy?.department}
                         </span>
                       </div>
                     )}
-
                     {(selectedLoan.phoneNumber ||
                       selectedLoan.borrowedBy?.phoneNumber) && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
-                          <Phone size={14} />
-                        </div>
-                        <span className="text-sm text-gray-600 font-medium">
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
+                        <span>
                           {selectedLoan.phoneNumber ||
                             selectedLoan.borrowedBy?.phoneNumber}
                         </span>
@@ -552,57 +530,44 @@ function AdminLoansContent() {
                   </div>
                 </div>
 
-                {/* Status & Timeline Section */}
-                <div className="space-y-5">
-                  <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-                    <FileText size={16} className="text-gray-400" />
-                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                      ระยะเวลาการยืม
-                    </h4>
-                  </div>
-                  <div className="space-y-4 px-1">
-                    <div className="flex gap-4">
-                      <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
-                        <Check size={14} />
-                      </div>
+                {/* Date Info */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    ระยะเวลาการยืม
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase">
+                        วันที่ยืม
+                      </p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {new Date(selectedLoan.borrowDate).toLocaleDateString(
+                          "th-TH",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </p>
+                    </div>
+                    {selectedLoan.returnDate && (
                       <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                          วันที่ยืม
+                        <p className="text-[10px] text-green-500 uppercase">
+                          คืนเมื่อ
                         </p>
-                        <p className="text-sm text-gray-800 font-bold">
-                          {new Date(selectedLoan.borrowDate).toLocaleDateString(
+                        <p className="text-sm text-green-700 font-medium">
+                          {new Date(selectedLoan.returnDate).toLocaleDateString(
                             "th-TH",
                             {
                               day: "numeric",
                               month: "long",
                               year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
                             },
                           )}
                         </p>
-                      </div>
-                    </div>
-
-                    {selectedLoan.returnDate && (
-                      <div className="flex gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 flex-shrink-0">
-                          <Check size={14} />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">
-                            คืนเมื่อ
-                          </p>
-                          <p className="text-sm text-emerald-700 font-bold">
-                            {new Date(
-                              selectedLoan.returnDate,
-                            ).toLocaleDateString("th-TH", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </p>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -610,10 +575,10 @@ function AdminLoansContent() {
               </div>
             </div>
 
-            <div className="p-8 border-t border-gray-50 flex gap-4">
+            <div className="p-6 border-t border-gray-100 flex gap-3">
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="flex-1 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all shadow-sm"
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
               >
                 ปิดหน้าต่าง
               </button>
@@ -655,18 +620,14 @@ function AdminLoansContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Left Column: Device Info */}
                 <div className="space-y-6">
-                  <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
-                    <Package size={16} className="text-gray-400" />
-                    <h3 className="font-bold text-gray-700 uppercase tracking-wider text-[11px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-700">
                       ข้อมูลอุปกรณ์
                     </h3>
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <FileText size={14} />
-                      </span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       ชื่ออุปกรณ์ <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -675,17 +636,14 @@ function AdminLoansContent() {
                       onChange={(e) =>
                         setFormData({ ...formData, itemName: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold"
-                      placeholder="เช่น คอมพิวเตอร์, โปรเจคเตอร์"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400"
+                      placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
                     />
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <FileText size={14} />
-                      </span>
-                      รายละเอียดเพิ่มเติม
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      รายละเอียด
                     </label>
                     <textarea
                       value={formData.description}
@@ -696,8 +654,8 @@ function AdminLoansContent() {
                         })
                       }
                       rows={3}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold resize-none"
-                      placeholder="Serial No., ยี่ห้อ หรือข้อมูลอื่นๆ"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400 resize-none"
+                      placeholder="ระบุรายละเอียดเพิ่มเติม"
                     />
                   </div>
 
@@ -722,18 +680,14 @@ function AdminLoansContent() {
 
                 {/* Right Column: Borrower Info */}
                 <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 space-y-6">
-                  <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
-                    <User size={16} className="text-gray-400" />
-                    <h3 className="font-bold text-gray-700 uppercase tracking-wider text-[11px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-700">
                       ข้อมูลผู้ยืม
                     </h3>
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <User size={14} />
-                      </span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       ชื่อผู้ยืม <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -745,22 +699,18 @@ function AdminLoansContent() {
                           borrowerName: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold"
-                      placeholder="ระบุชื่อ-นามสกุล ผู้ยืม"
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                      placeholder="ระบุชื่อผู้ยืม"
                     />
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <Building size={14} />
-                      </span>
-                      แผนก / ฝ่าย
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      แผนก
                     </label>
                     <div className="relative">
                       <input
                         type="text"
-                        list="department-list"
                         value={formData.department}
                         onChange={(e) =>
                           setFormData({
@@ -768,29 +718,14 @@ function AdminLoansContent() {
                             department: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold"
-                        placeholder="ระบุชื่อภาควิชา / หน่วยงาน"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        placeholder="ระบุแผนก"
                       />
-                      <datalist id="department-list">
-                        <option value="สำนักงานเลขานุการ" />
-                        <option value="ภาควิชาวิศวกรรมคอมพิวเตอร์" />
-                        <option value="ภาควิชาวิศวกรรมโยธา" />
-                        <option value="ภาควิชาวิศวกรรมไฟฟ้า" />
-                        <option value="ภาควิชาวิศวกรรมเครื่องกล" />
-                        <option value="ภาควิชาวิศวกรรมอุตสาหการ" />
-                        <option value="ภาควิชาวิศวกรรมเคมี" />
-                        <option value="ภาควิชาวิศวกรรมวัสดุ" />
-                        <option value="ภาควิชาวิศวกรรมสิ่งแวดล้อม" />
-                        <option value="ภาควิชาวิทยาศาสตร์และเทคโนโลยี" />
-                      </datalist>
                     </div>
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <Phone size={14} />
-                      </span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       เบอร์โทรศัพท์
                     </label>
                     <div className="relative">
@@ -803,17 +738,14 @@ function AdminLoansContent() {
                             phoneNumber: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-400 font-semibold"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="0xx-xxx-xxxx"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 mb-2">
-                      <span className="text-gray-400">
-                        <AtSign size={14} />
-                      </span>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Line ID
                     </label>
                     <div className="relative">
@@ -823,7 +755,7 @@ function AdminLoansContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, lineId: e.target.value })
                         }
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="@username"
                       />
                     </div>
