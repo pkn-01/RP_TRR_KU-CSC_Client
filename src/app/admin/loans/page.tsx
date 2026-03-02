@@ -64,7 +64,7 @@ function AdminLoansContent() {
   const [formData, setFormData] = useState({
     itemName: "",
     description: "",
-    quantity: 1,
+    quantity: 1 as number | string,
     borrowerName: "",
     borrowerDepartment: "",
     borrowerPhone: "",
@@ -198,7 +198,7 @@ function AdminLoansContent() {
       setFormData({
         itemName: "",
         description: "",
-        quantity: 1,
+        quantity: 1 as number | string,
         borrowerName: "",
         borrowerDepartment: "",
         borrowerPhone: "",
@@ -664,15 +664,19 @@ function AdminLoansContent() {
                       จำนวน
                     </label>
                     <input
-                      type="number"
-                      min="1"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={formData.quantity}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          quantity: parseInt(e.target.value) || 1,
-                        })
-                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || /^[0-9]+$/.test(val)) {
+                          setFormData({
+                            ...formData,
+                            quantity: val === "" ? "" : parseInt(val),
+                          });
+                        }
+                      }}
                       className="w-32 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-center"
                     />
                   </div>
