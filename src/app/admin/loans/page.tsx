@@ -4,21 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/services/api";
-import {
-  Search,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  X as XIcon,
-  Package,
-  User,
-  Check,
-  Phone,
-  Building,
-  AtSign,
-  FileText,
-} from "lucide-react";
+import { X as XIcon } from "lucide-react";
 import Loading from "@/components/Loading";
 
 interface Loan {
@@ -180,8 +166,6 @@ function AdminLoansContent() {
     try {
       setIsSaving(true);
       const today = new Date();
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7);
 
       await apiFetch("/api/loans", {
         method: "POST",
@@ -190,7 +174,6 @@ function AdminLoansContent() {
           description: formData.description || "",
           quantity: formData.quantity || 1,
           borrowDate: today.toISOString(),
-          expectedReturnDate: nextWeek.toISOString(),
           borrowerName: formData.borrowerName,
           department: formData.department,
           phoneNumber: formData.phoneNumber,
@@ -279,7 +262,6 @@ function AdminLoansContent() {
               onClick={() => setShowModal(true)}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 flex items-center gap-1"
             >
-              <Plus size={16} />
               เพิ่มรายการยืม
             </button>
             <button className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50">
@@ -342,28 +324,28 @@ function AdminLoansContent() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2 text-xs">
                       <button
                         onClick={() => handleViewDetail(loan)}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
+                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-[#C700FF] text-white shadow-sm hover:bg-[#B000E6] transition-all"
                         title="ดูรายละเอียด"
                       >
-                        <FileText size={20} />
+                        ดูรายละเอียด
                       </button>
                       <button
                         onClick={() => handleMarkAsReturned(loan.id)}
                         disabled={loan.status === "RETURNED"}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
+                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-sm hover:text-green-600 transition-all disabled:opacity-50"
                         title="คืนอุปกรณ์"
                       >
-                        <Check size={20} />
+                        คืน
                       </button>
                       <button
                         onClick={() => handleDelete(loan.id)}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
+                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-sm hover:text-red-500 transition-all"
                         title="ลบ"
                       >
-                        <Trash2 size={20} />
+                        ลบ
                       </button>
                     </div>
                   </td>
@@ -410,25 +392,25 @@ function AdminLoansContent() {
                   year: "numeric",
                 })}
               </p>
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 text-xs">
                 <button
                   onClick={() => handleViewDetail(loan)}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-md"
+                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-[#C700FF] text-white shadow-md font-medium"
                 >
-                  <FileText size={20} />
+                  ดูรายละเอียด
                 </button>
                 <button
                   onClick={() => handleMarkAsReturned(loan.id)}
                   disabled={loan.status === "RETURNED"}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md disabled:opacity-50"
+                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-md disabled:opacity-50 font-medium"
                 >
-                  <Check size={20} />
+                  คืน
                 </button>
                 <button
                   onClick={() => handleDelete(loan.id)}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md"
+                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-md font-medium"
                 >
-                  <Trash2 size={20} />
+                  ลบ
                 </button>
               </div>
             </div>
@@ -446,19 +428,19 @@ function AdminLoansContent() {
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
+              className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
             >
-              <ChevronLeft size={18} />
+              ก่อนหน้า
             </button>
-            <span className="text-sm text-gray-700">
-              {currentPage}/{totalPages}
+            <span className="text-sm font-medium text-gray-700 min-w-[3rem] text-center">
+              {currentPage} / {totalPages}
             </span>
             <button
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
+              className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
             >
-              <ChevronRight size={18} />
+              ถัดไป
             </button>
           </div>
         )}
@@ -477,26 +459,24 @@ function AdminLoansContent() {
                 onClick={() => setShowDetailModal(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
               >
-                
+                <XIcon size={20} />
               </button>
             </div>
 
             <div className="p-8 space-y-8">
               {/* Item Info */}
-              <div className="flex gap-4">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
-                    {selectedLoan.itemName}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    จำนวน: {selectedLoan.quantity} รายการ
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                  {selectedLoan.itemName}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  จำนวน: {selectedLoan.quantity} รายการ
+                </p>
+                {selectedLoan.description && (
+                  <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    {selectedLoan.description}
                   </p>
-                  {selectedLoan.description && (
-                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      {selectedLoan.description}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-8">
@@ -506,8 +486,7 @@ function AdminLoansContent() {
                     ข้อมูลผู้ยืม
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm text-gray-700">
-                      
+                    <div className="text-sm text-gray-700">
                       <span>
                         {selectedLoan.borrowerName ||
                           selectedLoan.borrowedBy?.name}
@@ -515,8 +494,7 @@ function AdminLoansContent() {
                     </div>
                     {(selectedLoan.department ||
                       selectedLoan.borrowedBy?.department) && (
-                      <div className="flex items-center gap-3 text-sm text-gray-700">
-                    
+                      <div className="text-sm text-gray-700">
                         <span>
                           {selectedLoan.department ||
                             selectedLoan.borrowedBy?.department}
@@ -525,8 +503,7 @@ function AdminLoansContent() {
                     )}
                     {(selectedLoan.phoneNumber ||
                       selectedLoan.borrowedBy?.phoneNumber) && (
-                      <div className="flex items-center gap-3 text-sm text-gray-700">
-                       
+                      <div className="text-sm text-gray-700">
                         <span>
                           {selectedLoan.phoneNumber ||
                             selectedLoan.borrowedBy?.phoneNumber}
@@ -557,20 +534,6 @@ function AdminLoansContent() {
                             minute: "2-digit",
                           },
                         )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-400 uppercase">
-                        กำหนดคืน
-                      </p>
-                      <p className="text-sm text-gray-700 font-medium">
-                        {new Date(
-                          selectedLoan.expectedReturnDate,
-                        ).toLocaleDateString("th-TH", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
                       </p>
                     </div>
                     {selectedLoan.returnDate && (
@@ -608,9 +571,8 @@ function AdminLoansContent() {
                     handleMarkAsReturned(selectedLoan.id);
                     setShowDetailModal(false);
                   }}
-                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 flex items-center justify-center"
                 >
-                  <Check size={18} />
                   ยืนยันการคืนอุปกรณ์
                 </button>
               )}
@@ -632,7 +594,7 @@ function AdminLoansContent() {
                 onClick={() => setShowModal(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
               >
-                
+                <XIcon size={20} />
               </button>
             </div>
 
@@ -729,7 +691,6 @@ function AdminLoansContent() {
                       แผนก
                     </label>
                     <div className="relative">
-
                       <input
                         type="text"
                         value={formData.department}
@@ -739,7 +700,7 @@ function AdminLoansContent() {
                             department: e.target.value,
                           })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="ระบุแผนก"
                       />
                     </div>
@@ -750,7 +711,6 @@ function AdminLoansContent() {
                       เบอร์โทรศัพท์
                     </label>
                     <div className="relative">
-                     
                       <input
                         type="text"
                         value={formData.phoneNumber}
@@ -760,7 +720,7 @@ function AdminLoansContent() {
                             phoneNumber: e.target.value,
                           })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="0xx-xxx-xxxx"
                       />
                     </div>
@@ -771,14 +731,13 @@ function AdminLoansContent() {
                       Line ID
                     </label>
                     <div className="relative">
-                    
                       <input
                         type="text"
                         value={formData.lineId}
                         onChange={(e) =>
                           setFormData({ ...formData, lineId: e.target.value })
                         }
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="@username"
                       />
                     </div>
@@ -808,10 +767,7 @@ function AdminLoansContent() {
                     กำลังบันทึก...
                   </>
                 ) : (
-                  <>
-                    <Check size={18} />
-                    ยืนยันการบันทึก
-                  </>
+                  <>ยืนยันการบันทึก</>
                 )}
               </button>
             </div>
