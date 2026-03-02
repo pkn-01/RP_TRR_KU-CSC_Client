@@ -325,7 +325,7 @@ function AdminRepairsContent() {
       // --- Content ---
       // Title & Meta
       const titleRow = sheet.addRow([
-        "รายงานสรุปรายการแจ้งซ่อม (Repair Management Report)",
+        "รายงานสรุปรายการแจ้งซ่อม",
       ]);
       titleRow.font = { size: 16, bold: true, color: { argb: "FF1E3A8A" } };
       sheet.mergeCells(1, 1, 1, 6);
