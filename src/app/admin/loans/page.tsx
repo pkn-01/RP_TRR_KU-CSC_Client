@@ -477,16 +477,13 @@ function AdminLoansContent() {
                 onClick={() => setShowDetailModal(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
               >
-                <XIcon size={20} />
+                
               </button>
             </div>
 
             <div className="p-8 space-y-8">
               {/* Item Info */}
               <div className="flex gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 shrink-0">
-                  <Package size={24} />
-                </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 leading-tight">
                     {selectedLoan.itemName}
@@ -510,7 +507,7 @@ function AdminLoansContent() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm text-gray-700">
-                      <User size={16} className="text-gray-400" />
+                      
                       <span>
                         {selectedLoan.borrowerName ||
                           selectedLoan.borrowedBy?.name}
@@ -519,7 +516,7 @@ function AdminLoansContent() {
                     {(selectedLoan.department ||
                       selectedLoan.borrowedBy?.department) && (
                       <div className="flex items-center gap-3 text-sm text-gray-700">
-                        <Building size={16} className="text-gray-400" />
+                    
                         <span>
                           {selectedLoan.department ||
                             selectedLoan.borrowedBy?.department}
@@ -529,7 +526,7 @@ function AdminLoansContent() {
                     {(selectedLoan.phoneNumber ||
                       selectedLoan.borrowedBy?.phoneNumber) && (
                       <div className="flex items-center gap-3 text-sm text-gray-700">
-                        <Phone size={16} className="text-gray-400" />
+                       
                         <span>
                           {selectedLoan.phoneNumber ||
                             selectedLoan.borrowedBy?.phoneNumber}
@@ -635,7 +632,7 @@ function AdminLoansContent() {
                 onClick={() => setShowModal(false)}
                 className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
               >
-                <XIcon size={20} />
+                
               </button>
             </div>
 
@@ -732,9 +729,7 @@ function AdminLoansContent() {
                       แผนก
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <Building size={16} />
-                      </div>
+
                       <input
                         type="text"
                         value={formData.department}
@@ -755,9 +750,7 @@ function AdminLoansContent() {
                       เบอร์โทรศัพท์
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <Phone size={16} />
-                      </div>
+                     
                       <input
                         type="text"
                         value={formData.phoneNumber}
@@ -778,9 +771,7 @@ function AdminLoansContent() {
                       Line ID
                     </label>
                     <div className="relative">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        <AtSign size={16} />
-                      </div>
+                    
                       <input
                         type="text"
                         value={formData.lineId}
