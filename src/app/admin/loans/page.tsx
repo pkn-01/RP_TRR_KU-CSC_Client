@@ -149,7 +149,13 @@ function AdminLoansContent() {
     if (!result.isConfirmed) return;
 
     try {
-      await apiFetch(`/api/loans/${loanId}/return`, { method: "POST" });
+      await apiFetch(`/api/loans/${loanId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status: "RETURNED",
+          returnDate: new Date().toISOString(),
+        }),
+      });
       await Swal.fire("สำเร็จ!", "บันทึกการคืนเรียบร้อยแล้ว", "success");
       fetchLoans();
     } catch (err: any) {
@@ -339,7 +345,7 @@ function AdminLoansContent() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleViewDetail(loan)}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-lg hover:bg-[#B000E6] transition-all"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="ดูรายละเอียด"
                       >
                         <FileText size={20} />
@@ -347,14 +353,14 @@ function AdminLoansContent() {
                       <button
                         onClick={() => handleMarkAsReturned(loan.id)}
                         disabled={loan.status === "RETURNED"}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-lg hover:text-green-500 transition-all disabled:opacity-50"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="คืนอุปกรณ์"
                       >
                         <Check size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(loan.id)}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-lg hover:text-red-500 transition-all"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="ลบ"
                       >
                         <Trash2 size={20} />
