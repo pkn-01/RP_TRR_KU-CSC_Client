@@ -17,12 +17,6 @@ import {
   Phone,
   Building,
   AtSign,
-  Clock,
-  Calendar,
-  FileText,
-  Briefcase,
-  Hash,
-  RefreshCw,
 } from "lucide-react";
 import Loading from "@/components/Loading";
 
@@ -43,9 +37,6 @@ interface Loan {
     lineId?: string;
   };
   borrowerName?: string;
-  department?: string;
-  phoneNumber?: string;
-  lineId?: string;
 }
 
 const statusConfig: Record<
@@ -64,10 +55,8 @@ function AdminLoansContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     itemName: "",
     description: "",
@@ -122,8 +111,8 @@ function AdminLoansContent() {
       text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#EF4444",
-      cancelButtonColor: "#6B7280",
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     });
@@ -136,33 +125,6 @@ function AdminLoansContent() {
       fetchLoans();
     } catch {
       Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการลบ", "error");
-    }
-  };
-
-  const handleReturnLoan = async (loanId: number) => {
-    const result = await Swal.fire({
-      title: "ยืนยันการรับคืน?",
-      text: "อุปกรณ์นี้ถูกส่งคืนเรียบร้อยแล้วใช่หรือไม่",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#10B981",
-      cancelButtonColor: "#6B7280",
-      confirmButtonText: "ใช่, รับคืนแล้ว",
-      cancelButtonText: "ยกเลิก",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setIsSaving(true);
-      await apiFetch(`/api/loans/${loanId}/return`, { method: "PUT" });
-      await Swal.fire("สำเร็จ!", "บันทึกการรับคืนเรียบร้อย", "success");
-      setShowDetailModal(false);
-      fetchLoans();
-    } catch (err: any) {
-      Swal.fire("ข้อผิดพลาด", err.message || "ไม่สามารถทำรายการได้", "error");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -282,160 +244,131 @@ function AdminLoansContent() {
           </div>
         </div>
 
-        {/* List Header (Desktop) */}
-        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-y border-gray-200 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-          <div className="col-span-5 ml-1">อุปกรณ์</div>
-          <div className="col-span-2 text-center">ผู้รับผิดชอบ</div>
-          <div className="col-span-2 text-center">กำหนดคืน</div>
-          <div className="col-span-3 text-right pr-4">สถานะการจัดการ</div>
-        </div>
-
-        {/* List Content */}
-        <div className="space-y-3">
-          {paginatedLoans.map((loan) => (
-            <div
-              key={loan.id}
-              className="bg-white border border-gray-100 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
-            >
-              {/* Decorative accent border */}
-              <div
-                className={`absolute left-0 top-0 bottom-0 w-1 ${loan.status === "BORROWED" ? "bg-amber-400" : "bg-green-400"}`}
-              ></div>
-
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                {/* Device Info */}
-                <div className="col-span-1 md:col-span-5 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black text-blue-500/50 uppercase tracking-tighter">
-                      # {loan.id}
-                    </span>
-                    <h3 className="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+        {/* Desktop Table */}
+        <div className="hidden md:block bg-white rounded-lg overflow-hidden">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  อุปกรณ์
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  ชื่อผู้ยืม
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  วันที่ยืม
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  สถานะ
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
+                  จัดการ
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {paginatedLoans.map((loan) => (
+                <tr key={loan.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-900">
                       {loan.itemName}
-                    </h3>
-                  </div>
-                  {loan.description && (
-                    <p className="text-xs text-gray-500 line-clamp-2 max-w-xl font-medium leading-relaxed">
-                      {loan.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Responsible Person */}
-                <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center space-y-1.5 text-center px-2">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full text-[13px] text-gray-700 font-bold border border-gray-100/50">
-                    <User size={14} className="text-gray-400" />
-                    <span className="truncate max-w-[120px]">
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700">
                       {loan.borrowerName || loan.borrowedBy?.name || "-"}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
-                    <Building size={12} className="opacity-70" />
-                    <span>
-                      {loan.department || loan.borrowedBy?.department || "-"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Dates */}
-                <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center space-y-1 text-center">
-                  <div className="flex flex-col items-center bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100/50">
-                    <span className="text-[13px] font-black text-gray-800">
-                      {new Date(loan.expectedReturnDate).toLocaleDateString(
-                        "th-TH",
-                        {
-                          day: "2-digit",
-                          month: "short",
-                        },
-                      )}
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-bold">
-                      {new Date(loan.expectedReturnDate).getFullYear() + 543}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-gray-400 flex items-center gap-1 font-bold mt-1">
-                    <Clock size={10} />
-                    <span>
-                      ยืมเมื่อ{" "}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700">
                       {new Date(loan.borrowDate).toLocaleDateString("th-TH", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
                     </span>
-                  </div>
-                </div>
-
-                {/* Status and Actions Combined for better spacing */}
-                <div className="col-span-1 md:col-span-3 flex items-center justify-end gap-3 pr-2">
-                  {/* Status Badge */}
-                  <div
-                    className={`flex flex-col items-center justify-center gap-1 min-w-[85px] py-1.5 px-3 rounded-xl border transition-all ${
-                      loan.status === "BORROWED"
-                        ? "bg-gray-900 border-gray-800 text-white shadow-lg shadow-gray-200"
-                        : "bg-green-50 border-green-100 text-green-700"
-                    }`}
-                  >
-                    {loan.status === "BORROWED" ? (
-                      <>
-                        <Clock
-                          size={12}
-                          className="animate-pulse text-amber-500"
-                        />
-                        <span className="text-[10px] font-black tracking-wide">
-                          กำลังยืม
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Check size={12} />
-                        <span className="text-[10px] font-black tracking-wide">
-                          คืนแล้ว
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Vertical Divider */}
-                  <div className="w-px h-8 bg-gray-100 mx-1 hidden md:block"></div>
-
-                  {/* Button Group */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedLoan(loan);
-                        setShowDetailModal(true);
-                      }}
-                      className="w-10 h-10 flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-                      title="ดูรายละเอียด"
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusConfig[loan.status]?.bg} ${statusConfig[loan.status]?.color}`}
                     >
-                      <FileText size={18} />
-                    </button>
-                    {loan.status === "BORROWED" && (
-                      <button
-                        onClick={() => handleReturnLoan(loan.id)}
-                        className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 hover:border-green-500 hover:text-green-600 text-gray-400 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
-                        title="รับคืน"
-                      >
-                        <Check size={18} />
+                      {statusConfig[loan.status]?.label || loan.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="p-1 text-gray-400 hover:text-gray-600">
+                        <ChevronRight size={18} />
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(loan.id)}
-                      className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 hover:border-red-500 hover:text-red-500 text-gray-400 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
-                      title="ลบ"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
+                      <button
+                        onClick={() => handleDelete(loan.id)}
+                        className="p-1 text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {paginatedLoans.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-gray-500"
+                  >
+                    ไม่พบรายการ
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-3">
+          {paginatedLoans.map((loan) => (
+            <div key={loan.id} className="bg-white rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-sm font-medium text-gray-900">
+                  {loan.itemName}
+                </span>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusConfig[loan.status]?.bg} ${statusConfig[loan.status]?.color}`}
+                >
+                  {statusConfig[loan.status]?.label || loan.status}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mb-1">
+                ผู้ยืม: {loan.borrowerName || loan.borrowedBy?.name || "-"}
+              </p>
+              <p className="text-xs text-gray-500">
+                วันที่ยืม:{" "}
+                {new Date(loan.borrowDate).toLocaleDateString("th-TH", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+              <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-100">
+                <button
+                  onClick={() => handleDelete(loan.id)}
+                  className="p-2 text-gray-400 hover:text-red-600"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button className="p-2 text-gray-400 hover:text-gray-600">
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           ))}
-
           {paginatedLoans.length === 0 && (
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-100 p-12 text-center text-gray-400 space-y-2">
-              <Package size={32} className="mx-auto opacity-20" />
-              <p className="text-sm">ไม่พบรายการยืมในขณะนี้</p>
+            <div className="bg-white rounded-lg p-8 text-center text-gray-500">
+              ไม่พบรายการ
             </div>
           )}
         </div>
@@ -466,44 +399,33 @@ function AdminLoansContent() {
 
       {/* Add Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-0 max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-0 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
-            <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
-                  <Plus size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 leading-tight">
-                    บันทึกการยืมใหม่
-                  </h2>
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                    New Borrowing Entry
-                  </p>
-                </div>
-              </div>
+            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">
+                บันทึกการยืมใหม่
+              </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2.5 rounded-xl"
+                className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
               >
                 <XIcon size={20} />
               </button>
             </div>
 
-            <div className="p-8 overflow-y-auto custom-scrollbar">
+            <div className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Left Column: Device Info */}
                 <div className="space-y-6">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                    <Package size={16} className="text-gray-400" />
-                    <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-700">
                       ข้อมูลอุปกรณ์
                     </h3>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       ชื่ออุปกรณ์ <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -512,13 +434,13 @@ function AdminLoansContent() {
                       onChange={(e) =>
                         setFormData({ ...formData, itemName: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/50 transition-all placeholder:text-gray-300 font-medium"
-                      placeholder="ระบุชื่ออุปกรณ์ที่ต้องการยืม"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400"
+                      placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       รายละเอียด/Serial No.
                     </label>
                     <textarea
@@ -529,72 +451,64 @@ function AdminLoansContent() {
                           description: e.target.value,
                         })
                       }
-                      rows={4}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/50 transition-all placeholder:text-gray-300 font-medium resize-none"
-                      placeholder="ระบุเลข Serial หรือรายละเอียดทางเทคนิคเพิ่มเติม"
+                      rows={3}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400 resize-none"
+                      placeholder="ระบุเลข Serial หรือรายละเอียดเพิ่มเติม"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
-                      จำนวน (อัตราหน่วย)
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      จำนวน
                     </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.quantity}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            quantity: parseInt(e.target.value) || 1,
-                          })
-                        }
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/50 transition-all font-bold text-left"
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.quantity}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          quantity: parseInt(e.target.value) || 1,
+                        })
+                      }
+                      className="w-32 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-center"
+                    />
                   </div>
                 </div>
 
                 {/* Right Column: Borrower Info */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                    <User size={16} className="text-gray-400" />
-                    <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
+                <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 space-y-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-700">
                       ข้อมูลผู้ยืม
                     </h3>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       ชื่อผู้ยืม <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors">
-                        <User size={18} />
-                      </div>
-                      <input
-                        type="text"
-                        value={formData.borrowerName}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            borrowerName: e.target.value,
-                          })
-                        }
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500/50 transition-all font-medium"
-                        placeholder="ระบุชื่อจริง-นามสกุล"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      value={formData.borrowerName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          borrowerName: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                      placeholder="ระบุชื่อผู้ยืม"
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
-                      หน่วยงาน/แผนก
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      แผนก
                     </label>
-                    <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors">
-                        <Building size={18} />
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <Building size={16} />
                       </div>
                       <input
                         type="text"
@@ -605,56 +519,52 @@ function AdminLoansContent() {
                             department: e.target.value,
                           })
                         }
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500/50 transition-all font-medium"
-                        placeholder="สังกัดหน่วยงาน"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        placeholder="ระบุแผนก"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
-                        เบอร์ติดต่อ
-                      </label>
-                      <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors">
-                          <Phone size={18} />
-                        </div>
-                        <input
-                          type="text"
-                          value={formData.phoneNumber}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              phoneNumber: e.target.value,
-                            })
-                          }
-                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500/50 transition-all font-medium"
-                          placeholder="0xx-xxx-xxxx"
-                        />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      เบอร์โทรศัพท์
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <Phone size={16} />
                       </div>
+                      <input
+                        type="text"
+                        value={formData.phoneNumber}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            phoneNumber: e.target.value,
+                          })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        placeholder="0xx-xxx-xxxx"
+                      />
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-tight">
-                        LINE ID
-                      </label>
-                      <div className="relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors">
-                          <AtSign size={18} />
-                        </div>
-                        <input
-                          type="text"
-                          value={formData.lineId}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              lineId: e.target.value,
-                            })
-                          }
-                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500/50 transition-all font-medium"
-                          placeholder="ID / Username"
-                        />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Line ID
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        <AtSign size={16} />
                       </div>
+                      <input
+                        type="text"
+                        value={formData.lineId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, lineId: e.target.value })
+                        }
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        placeholder="@username"
+                      />
                     </div>
                   </div>
                 </div>
@@ -662,10 +572,10 @@ function AdminLoansContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-8 border-t border-gray-100 bg-gray-50/30 flex justify-end gap-4 mt-auto">
+            <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex justify-between gap-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-8 py-3.5 bg-white border border-gray-200 text-gray-500 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all"
+                className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
               >
                 ยกเลิก
               </button>
@@ -674,214 +584,19 @@ function AdminLoansContent() {
                 disabled={
                   isSaving || !formData.itemName || !formData.borrowerName
                 }
-                className="px-10 py-3.5 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl shadow-gray-200 flex items-center gap-3"
+                className="flex-1 py-3 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-gray-200 flex items-center justify-center gap-2"
               >
                 {isSaving ? (
                   <>
-                    <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
-                    กำลังประมวลผล...
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    กำลังบันทึก...
                   </>
                 ) : (
                   <>
-                    <Check size={20} />
-                    บันทึกข้อมูล
+                    <Check size={18} />
+                    ยืนยันการบันทึก
                   </>
                 )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {showDetailModal && selectedLoan && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-0 max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="flex justify-between items-center px-8 py-6 border-b border-gray-100">
-              <div>
-                <h2 className="text-[22px] font-bold text-gray-900">
-                  รายละเอียดการยืม
-                </h2>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                    Tracking Number:
-                  </span>
-                  <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                    # {selectedLoan.id}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="p-2 transition-all hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-900"
-              >
-                <XIcon size={24} />
-              </button>
-            </div>
-
-            <div className="p-8 space-y-10">
-              {/* Item Info Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-gray-900 mb-1">
-                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
-                    <Package size={18} />
-                  </div>
-                  <h3 className="font-bold text-lg uppercase tracking-tight">
-                    ข้อมูลอุปกรณ์
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 gap-8 pl-11">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      ชื่ออุปกรณ์
-                    </label>
-                    <p className="text-[15px] font-bold text-gray-800 leading-tight">
-                      {selectedLoan.itemName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      จำนวน
-                    </label>
-                    <p className="text-[15px] font-bold text-gray-800">
-                      {selectedLoan.quantity} ชิ้น
-                    </p>
-                  </div>
-                  {selectedLoan.description && (
-                    <div className="col-span-2">
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                        รายละเอียด
-                      </label>
-                      <p className="text-[13px] font-medium text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        {selectedLoan.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Borrower Info Section */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-gray-900 mb-1">
-                  <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center text-purple-600">
-                    <User size={18} />
-                  </div>
-                  <h3 className="font-bold text-lg uppercase tracking-tight">
-                    ผู้ยืม
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 gap-8 pl-11">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      ชื่อ-นามสกุล
-                    </label>
-                    <p className="text-[15px] font-bold text-gray-800">
-                      {selectedLoan.borrowerName ||
-                        selectedLoan.borrowedBy?.name ||
-                        "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      แผนก
-                    </label>
-                    <p className="text-[15px] font-bold text-gray-800">
-                      {selectedLoan.department ||
-                        selectedLoan.borrowedBy?.department ||
-                        "-"}
-                    </p>
-                  </div>
-                  {selectedLoan.phoneNumber && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                        เบอร์โทรศัพท์
-                      </label>
-                      <p className="text-[13px] font-bold text-gray-700">
-                        {selectedLoan.phoneNumber}
-                      </p>
-                    </div>
-                  )}
-                  {selectedLoan.lineId && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                        Line ID
-                      </label>
-                      <p className="text-[13px] font-bold text-gray-700">
-                        {selectedLoan.lineId}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Timeline Section */}
-              <div className="space-y-4 border-t border-gray-100 pt-8">
-                <div className="flex items-center gap-3 text-gray-900 mb-1">
-                  <div className="w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
-                    <Calendar size={18} />
-                  </div>
-                  <h3 className="font-bold text-lg uppercase tracking-tight">
-                    วันที่ทำรายการ
-                  </h3>
-                </div>
-                <div className="grid grid-cols-2 gap-8 pl-11">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      วันที่ยืม
-                    </label>
-                    <p className="text-[14px] font-bold text-gray-800">
-                      {new Date(selectedLoan.borrowDate).toLocaleDateString(
-                        "th-TH",
-                        {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      วันคืนพัสดุ
-                    </label>
-                    <p className="text-[14px] font-bold text-gray-800">
-                      {new Date(
-                        selectedLoan.expectedReturnDate,
-                      ).toLocaleDateString("th-TH", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="px-8 py-6 bg-gray-50/50 flex flex-col sm:flex-row gap-3">
-              {selectedLoan.status === "BORROWED" && (
-                <button
-                  onClick={() => handleReturnLoan(selectedLoan.id)}
-                  disabled={isSaving}
-                  className="flex-1 py-4 bg-gray-900 text-white rounded-2xl text-[14px] font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-3 shadow-xl shadow-gray-200"
-                >
-                  {isSaving ? (
-                    <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    <Check size={20} />
-                  )}
-                  บันทึกการคืน
-                </button>
-              )}
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="flex-1 py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl text-[14px] font-bold hover:bg-gray-50 transition-all text-center"
-              >
-                ปิด
               </button>
             </div>
           </div>
