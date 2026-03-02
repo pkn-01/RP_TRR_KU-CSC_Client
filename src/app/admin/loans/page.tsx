@@ -12,12 +12,8 @@ import {
   ChevronRight,
   Plus,
   X as XIcon,
-  Package,
-  User,
   Check,
-  Phone,
-  Building,
-  AtSign,
+  Download,
   FileText,
 } from "lucide-react";
 import Loading from "@/components/Loading";
@@ -329,8 +325,8 @@ function AdminLoansContent() {
               onClick={handleExport}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 flex items-center gap-2"
             >
-              <FileText size={16} />
-              Export report
+              <Download size={16} />
+              Export
             </button>
           </div>
         </div>
