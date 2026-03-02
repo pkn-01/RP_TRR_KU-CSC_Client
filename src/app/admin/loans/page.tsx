@@ -601,34 +601,42 @@ function AdminLoansContent() {
 
       {/* Add Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-[2rem] p-0 max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md flex items-center justify-center z-50 p-6 animate-in fade-in duration-300">
+          <div className="bg-white/95 rounded-[2.5rem] p-0 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] border border-white/20">
             {/* Header */}
-            <div className="flex justify-between items-center px-10 py-8">
-              <h2 className="text-2xl font-bold text-gray-800">
-                บันทึกการยืมใหม่
-              </h2>
+            <div className="flex justify-between items-center px-12 py-10">
+              <div>
+                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                  บันทึกการยืมใหม่
+                </h2>
+                <p className="text-gray-400 text-sm mt-1 font-medium">
+                  กรอกข้อมูลเพื่อสร้างรายการยืมอุปกรณ์ใหม่
+                </p>
+              </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-100/80 hover:bg-gray-200 p-2.5 rounded-full"
+                className="text-gray-400 hover:text-gray-900 transition-all bg-gray-50 hover:bg-gray-100 p-3 rounded-2xl border border-gray-100"
               >
-                <XIcon size={24} />
+                <XIcon size={24} strokeWidth={2.5} />
               </button>
             </div>
 
-            <div className="px-10 pb-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                {/* Left Column: Device Info */}
-                <div className="space-y-8">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-700 mb-6">
+            <div className="px-12 pb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                {/* Left Column: Device Info Card */}
+                <div className="bg-gray-50/40 p-10 rounded-[2rem] border border-gray-100/80 space-y-8">
+                  <div className="flex items-center gap-3 pb-4 border-b border-gray-200/50">
+                    <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center text-white">
+                      <Package size={18} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800">
                       ข้อมูลอุปกรณ์
                     </h3>
                   </div>
 
                   <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
                         ชื่ออุปกรณ์ <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -637,14 +645,14 @@ function AdminLoansContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, itemName: e.target.value })
                         }
-                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700"
-                        placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800 shadow-sm"
+                        placeholder="ชื่ออุปกรณ์ที่ต้องการยืม"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
-                        รายละเอียด
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
+                        รายละเอียดเพิ่มเติม
                       </label>
                       <textarea
                         value={formData.description}
@@ -655,42 +663,50 @@ function AdminLoansContent() {
                           })
                         }
                         rows={4}
-                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 resize-none"
-                        placeholder="รายละเอียดเพิ่มเติม"
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800 shadow-sm resize-none"
+                        placeholder="Serial No. หรือข้อมูลอื่นๆ"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
                         จำนวน
                       </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.quantity}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            quantity: parseInt(e.target.value) || 1,
-                          })
-                        }
-                        className="w-40 px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all font-bold text-center text-gray-700"
-                      />
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.quantity}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              quantity: parseInt(e.target.value) || 1,
+                            })
+                          }
+                          className="w-full px-5 py-4 bg-white border border-gray-200 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all font-bold text-center text-gray-800 shadow-sm"
+                        />
+                        <div className="text-gray-400 font-bold text-sm px-4 whitespace-nowrap">
+                          ชิ้น / เครื่อง
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Right Column: Borrower Info */}
-                <div className="bg-gray-50/30 p-8 rounded-[2rem] border border-gray-100/50 space-y-8">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-700 mb-6">
+                {/* Right Column: Borrower Info Card */}
+                <div className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.03)] space-y-8">
+                  <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                      <User size={18} />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800">
                       ข้อมูลผู้ยืม
                     </h3>
                   </div>
 
                   <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
                         ชื่อผู้ยืม <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -702,14 +718,14 @@ function AdminLoansContent() {
                             borrowerName: e.target.value,
                           })
                         }
-                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
-                        placeholder="ระบุชื่อผู้ยืม"
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800"
+                        placeholder="นามระบุชื่อ-นามสกุล"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
-                        แผนก
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
+                        แผนก / ฝ่าย
                       </label>
                       <input
                         type="text"
@@ -720,13 +736,13 @@ function AdminLoansContent() {
                             department: e.target.value,
                           })
                         }
-                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
-                        placeholder="ระบุแผนก"
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800"
+                        placeholder="ระบุชื่อหน่วยงาน"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
                         เบอร์โทรศัพท์
                       </label>
                       <input
@@ -738,13 +754,13 @@ function AdminLoansContent() {
                             phoneNumber: e.target.value,
                           })
                         }
-                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800"
                         placeholder="0xx-xxx-xxxx"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                    <div className="group">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1 group-focus-within:text-gray-700 transition-colors">
                         Line ID
                       </label>
                       <input
@@ -753,36 +769,36 @@ function AdminLoansContent() {
                         onChange={(e) =>
                           setFormData({ ...formData, lineId: e.target.value })
                         }
-                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-base focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all placeholder:text-gray-300 font-semibold text-gray-800"
                         placeholder="@username"
                       />
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="mt-12 pt-8 border-t border-gray-50 flex gap-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-8 py-5 bg-white border-2 border-gray-100 text-gray-500 rounded-2xl text-lg font-bold hover:bg-gray-50 hover:text-gray-700 transition-all shadow-sm flex-1"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={handleAddLoan}
-                disabled={
-                  isSaving || !formData.itemName || !formData.borrowerName
-                }
-                className="px-10 py-5 bg-gray-500 text-white rounded-2xl text-lg font-bold hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-gray-200 flex items-center justify-center flex-1"
-              >
-                {isSaving ? (
-                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  "ยืนยันการบันทึก"
-                )}
-              </button>
+              {/* Footer */}
+              <div className="mt-12 pt-10 border-t border-gray-100 flex gap-6">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-10 py-5 bg-white border-2 border-gray-100 text-gray-500 rounded-[1.5rem] text-lg font-extrabold hover:bg-gray-50 hover:text-gray-700 hover:border-gray-200 transition-all shadow-sm flex-1"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  onClick={handleAddLoan}
+                  disabled={
+                    isSaving || !formData.itemName || !formData.borrowerName
+                  }
+                  className="px-12 py-5 bg-gray-900 text-white rounded-[1.5rem] text-lg font-extrabold hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] flex items-center justify-center flex-[1.5]"
+                >
+                  {isSaving ? (
+                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    "ยืนยันการบันทึก"
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
