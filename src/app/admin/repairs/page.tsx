@@ -449,25 +449,13 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="flex flex-col gap-3">
-            <StatCard label="รายการวันนี้" value={stats.today} />
-            <StatCard label="รายการทั้งหมด" value={stats.total} />
-          </div>
-          <StatCard
-            label="รอดำเนินการ"
-            value={stats.pending}
-            className="h-full min-h-[140px]"
-          />
-          <StatCard
-            label="กำลังดำเนินการ"
-            value={stats.inProgress}
-            className="h-full min-h-[140px]"
-          />
-          <div className="flex flex-col gap-3">
-            <StatCard label="เสร็จสิ้น" value={stats.completed} />
-            <StatCard label="ยกเลิก" value={stats.cancelled} />
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <StatCard label="รายการวันนี้" value={stats.today} />
+          <StatCard label="รายการทั้งหมด" value={stats.total} />
+          <StatCard label="รอดำเนินการ" value={stats.pending} />
+          <StatCard label="กำลังดำเนินการ" value={stats.inProgress} />
+          <StatCard label="เสร็จสิ้น" value={stats.completed} />
+          <StatCard label="ยกเลิก" value={stats.cancelled} />
         </div>
 
         {/* Filter Row Indicator */}
@@ -500,61 +488,79 @@ function AdminRepairsContent() {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <input
-                type="text"
-                placeholder="ค้นหาชื่อผู้แจ้ง/เลขรหัส"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300">
-                ค้นหา
+        {/* Filters Card */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+          {/* Row 1: Search + My Tasks + Export */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+              {/* Search */}
+              <div className="relative flex-1 max-w-sm w-full">
+                <input
+                  type="text"
+                  placeholder="ค้นหาชื่อผู้แจ้ง/เลขรหัส"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-4 pr-20 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 focus:bg-white transition-all"
+                />
+                <button className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded hover:bg-gray-300">
+                  ค้นหา
+                </button>
+              </div>
+
+              {/* My Tasks Toggle */}
+              <button
+                onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
+                className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  showMyTasksOnly
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    showMyTasksOnly
+                      ? "bg-amber-500 border-amber-500"
+                      : "border-gray-400"
+                  }`}
+                >
+                  {showMyTasksOnly && (
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </div>
+                งานของฉัน
               </button>
             </div>
 
-            {/* My Tasks Toggle */}
+            {/* Export Button */}
             <button
-              onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-              className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                showMyTasksOnly
-                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                  : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
-              }`}
+              onClick={handleExportExcel}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 font-medium flex items-center gap-2 whitespace-nowrap"
             >
-              <div
-                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                  showMyTasksOnly
-                    ? "bg-amber-500 border-amber-500"
-                    : "border-gray-400"
-                }`}
-              >
-                {showMyTasksOnly && (
-                  <svg
-                    className="w-3 h-3 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </div>
-              งานของฉัน
+              <Download size={16} className="text-gray-500" />
+              Export
             </button>
+          </div>
 
-            {/* Date Filtering UI */}
+          {/* Divider */}
+          <div className="border-t border-gray-100" />
+
+          {/* Row 2: Date Filters + Status/Priority Dropdowns */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            {/* Date Filtering Tabs */}
             <div className="flex items-center gap-2">
-              <div className="inline-flex bg-white border border-gray-300 rounded-lg p-1 shadow-sm h-10">
+              <div className="inline-flex bg-gray-100 rounded-lg p-1 h-9">
                 {(["all", "day", "week", "month"] as const).map((f) => (
                   <button
                     key={f}
@@ -564,8 +570,8 @@ function AdminRepairsContent() {
                     }}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
                       filter === f
-                        ? "bg-gray-800 text-white shadow-sm"
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
                     {f === "all"
@@ -595,6 +601,9 @@ function AdminRepairsContent() {
               )}
             </div>
 
+            {/* Spacer */}
+            <div className="flex-1" />
+
             {/* Status Filter */}
             <select
               value={filterStatus}
@@ -602,7 +611,7 @@ function AdminRepairsContent() {
                 setFilterStatus(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               <option value="all">ทุกสถานะ</option>
               <option value="TODAY">งานวันนี้</option>
@@ -619,7 +628,7 @@ function AdminRepairsContent() {
                 setFilterPriority(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               <option value="all">ทุกความสำคัญ</option>
               <option value="NORMAL">ปกติ</option>
@@ -627,70 +636,13 @@ function AdminRepairsContent() {
               <option value="CRITICAL">ด่วนมาก</option>
             </select>
           </div>
-
-          {/* Export Button & Real-time Info */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-100 text-xs font-medium">
-              <span className="relative flex h-2 w-2">
-                {autoRefreshEnabled && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                )}
-                <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${autoRefreshEnabled ? "bg-green-500" : "bg-gray-400"}`}
-                ></span>
-              </span>
-              {autoRefreshEnabled ? "เรียลไทม์" : "ปิดเรียลไทม์"}
-              <span className="text-green-300 mx-1">|</span>
-              <span className="font-mono">{countdown}s</span>
-              <span className="text-green-300 mx-1">|</span>
-              <Clock size={12} className="inline mr-1" />
-              {lastUpdated.toLocaleTimeString("th-TH")}
-            </div>
-
-            <button
-              onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-              className={`p-2 border border-gray-300 rounded-lg transition-colors ${
-                autoRefreshEnabled
-                  ? "bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200"
-                  : "bg-white text-gray-600 hover:bg-gray-50"
-              }`}
-              title={
-                autoRefreshEnabled ? "ปิด Auto Refresh" : "เปิด Auto Refresh"
-              }
-            >
-              {autoRefreshEnabled ? <Pause size={18} /> : <Play size={18} />}
-            </button>
-
-            <button
-              onClick={() => {
-                fetchRepairs(false);
-                setCountdown(15);
-              }}
-              disabled={isRefreshing}
-              className="p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              title="รีเฟรชข้อมูล"
-            >
-              <RefreshCw
-                size={18}
-                className={`text-gray-600 ${isRefreshing ? "animate-spin" : ""}`}
-              />
-            </button>
-
-            <button
-              onClick={handleExportExcel}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 font-medium flex items-center gap-2"
-            >
-              <Download size={16} className="text-gray-500" />
-              Export
-            </button>
-          </div>
         </div>
 
         {/* Desktop Table */}
-        <div className="hidden md:block bg-white rounded-lg overflow-hidden">
+        <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-gray-200 bg-gray-50/80">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   รหัส
                 </th>
@@ -933,23 +885,52 @@ function StatCard({
   value: number;
   className?: string;
 }) {
-  const colorMap: Record<string, string> = {
-    รายการวันนี้: "bg-purple-600 text-white",
-    รายการทั้งหมด: "bg-blue-600 text-white",
-    รอการดำเนินการ: "bg-sky-500 text-white",
-    กำลังดำเนินการ: "bg-amber-500 text-white",
-    เสร็จสิ้น: "bg-emerald-600 text-white",
-    ยกเลิก: "bg-rose-600 text-white",
-  };
+  const styleMap: Record<string, { bg: string; border: string; text: string }> =
+    {
+      รายการวันนี้: {
+        bg: "bg-purple-50",
+        border: "border-l-purple-500",
+        text: "text-purple-700",
+      },
+      รายการทั้งหมด: {
+        bg: "bg-blue-50",
+        border: "border-l-blue-500",
+        text: "text-blue-700",
+      },
+      รอดำเนินการ: {
+        bg: "bg-sky-50",
+        border: "border-l-sky-500",
+        text: "text-sky-700",
+      },
+      กำลังดำเนินการ: {
+        bg: "bg-amber-50",
+        border: "border-l-amber-500",
+        text: "text-amber-700",
+      },
+      เสร็จสิ้น: {
+        bg: "bg-emerald-50",
+        border: "border-l-emerald-500",
+        text: "text-emerald-700",
+      },
+      ยกเลิก: {
+        bg: "bg-rose-50",
+        border: "border-l-rose-500",
+        text: "text-rose-700",
+      },
+    };
 
-  const colorClass = colorMap[label] || "bg-blue-600 text-white";
+  const style = styleMap[label] || {
+    bg: "bg-gray-50",
+    border: "border-l-gray-500",
+    text: "text-gray-700",
+  };
 
   return (
     <div
-      className={`rounded-xl p-4 flex flex-col items-center justify-center shadow-md ${colorClass} ${className}`}
+      className={`rounded-xl p-4 border-l-4 ${style.bg} ${style.border} shadow-sm flex flex-col items-center justify-center ${className}`}
     >
-      <span className="text-sm font-bold mb-1">{label}</span>
-      <span className="text-2xl font-bold">{value}</span>
+      <span className="text-xs font-medium text-gray-500 mb-1">{label}</span>
+      <span className={`text-3xl font-bold ${style.text}`}>{value}</span>
     </div>
   );
 }
