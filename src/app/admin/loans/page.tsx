@@ -213,15 +213,25 @@ function AdminLoansContent() {
     }
   };
 
+  const filteredLoans = loans.filter((loan) => {
+    const matchesSearch =
+      loan.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.borrowedBy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      loan.borrowerName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      filterStatus === "all" || loan.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
   const handleExport = () => {
-    if (loans.length === 0) {
-      Swal.fire("ไม่มีข้อมูล", "ไม่พบรายการที่สามารถส่งออกได้", "info");
+    if (filteredLoans.length === 0) {
+      Swal.fire("ไม่มีข้อมูล", "ไม่พบรายการที่ตรงตามตัวกรอง", "info");
       return;
     }
 
     try {
       // Prepare data for export with Thai headers
-      const exportData = loans.map((loan) => ({
+      const exportData = filteredLoans.map((loan) => ({
         อุปกรณ์: loan.itemName,
         รายละเอียด: loan.description || "-",
         จำนวน: loan.quantity,
@@ -257,16 +267,6 @@ function AdminLoansContent() {
       Swal.fire("ผิดพลาด", "ไม่สามารถส่งออกรายงานได้", "error");
     }
   };
-
-  const filteredLoans = loans.filter((loan) => {
-    const matchesSearch =
-      loan.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.borrowedBy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.borrowerName?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === "all" || loan.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
 
   const totalPages = Math.ceil(filteredLoans.length / itemsPerPage);
   const paginatedLoans = filteredLoans.slice(
