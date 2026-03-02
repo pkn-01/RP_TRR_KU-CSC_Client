@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/services/api";
+import * as XLSX from "xlsx";
 import {
   Search,
   Trash2,
@@ -212,6 +213,50 @@ function AdminLoansContent() {
     }
   };
 
+  const handleExport = () => {
+    if (loans.length === 0) {
+      Swal.fire("ไม่มีข้อมูล", "ไม่พบรายการที่สามารถส่งออกได้", "info");
+      return;
+    }
+
+    try {
+      // Prepare data for export with Thai headers
+      const exportData = loans.map((loan) => ({
+        อุปกรณ์: loan.itemName,
+        จำนวน: loan.quantity,
+        ชื่อผู้ยืม: loan.borrowerName || loan.borrowedBy?.name || "-",
+        แผนก: loan.borrowerDepartment || loan.borrowedBy?.department || "-",
+        เบอร์โทรศัพท์:
+          loan.borrowerPhone || loan.borrowedBy?.phoneNumber || "-",
+        LineID: loan.borrowerLineId || loan.borrowedBy?.lineId || "-",
+        สถานะ: statusConfig[loan.status]?.label || loan.status,
+        วันที่ยืม: new Date(loan.borrowDate).toLocaleString("th-TH"),
+        วันที่คืน: loan.returnDate
+          ? new Date(loan.returnDate).toLocaleString("th-TH")
+          : "-",
+      }));
+
+      // Create Worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Create Workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Loan Report");
+
+      // Generate Filename with date
+      const date = new Date().toISOString().split("T")[0];
+      const filename = `รายงานการยืม-${date}.xlsx`;
+
+      // Download File
+      XLSX.writeFile(workbook, filename);
+
+      Swal.fire("สำเร็จ!", "ส่งออกรายงานเรียบร้อยแล้ว", "success");
+    } catch (err) {
+      console.error("Export failed:", err);
+      Swal.fire("ผิดพลาด", "ไม่สามารถส่งออกรายงานได้", "error");
+    }
+  };
+
   const filteredLoans = loans.filter((loan) => {
     const matchesSearch =
       loan.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -279,8 +324,12 @@ function AdminLoansContent() {
               <Plus size={16} />
               เพิ่มรายการยืม
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50">
-              Export reprot
+            <button
+              onClick={handleExport}
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <FileText size={16} />
+              Export report
             </button>
           </div>
         </div>
