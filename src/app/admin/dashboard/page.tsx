@@ -131,7 +131,48 @@ export default function AdminDashboard() {
     if (!stats || !departmentStats) return;
 
     try {
-      // 1. Prepare Recent Repairs Data
+      // 1. Prepare Overview Summary Data (Matching Cards)
+      const periodLabel =
+        filter === "day"
+          ? "วันนี้"
+          : filter === "week"
+            ? "สัปดาห์นี้"
+            : "เดือนนี้";
+      const summaryData = [
+        { หัวข้อ: "รายการซ่อมทั้งหมด (สะสม)", จำนวน: stats.all.total },
+        { หัวข้อ: "กำลังดำเนินการ (สะสม)", จำนวน: stats.all.inProgress },
+        { หัวข้อ: "เสร็จสิ้น (สะสม)", จำนวน: stats.all.completed },
+        { หัวข้อ: "ยกเลิก (สะสม)", จำนวน: stats.all.cancelled },
+        { หัวข้อ: "", จำนวน: "" }, // Spacer
+        {
+          หัวข้อ: `รายการซ่อม (${periodLabel})`,
+          จำนวน: stats.filtered.total,
+        },
+        {
+          หัวข้อ: `กำลังดำเนินการ (${periodLabel})`,
+          จำนวน: stats.filtered.inProgress,
+        },
+        {
+          หัวข้อ: `เสร็จสิ้น (${periodLabel})`,
+          จำนวน: stats.filtered.completed,
+        },
+        {
+          หัวข้อ: `ยกเลิก (${periodLabel})`,
+          จำนวน: stats.filtered.cancelled,
+        },
+      ];
+
+      // 2. Prepare Department Stats Data (Matching UI Labels)
+      const deptData = departmentStats.map((dept) => ({
+        แผนก: dept.department,
+        รอดำเนินการ: dept.pending,
+        กำลังดำเนินการ: dept.inProgress,
+        เสร็จสิ้น: dept.completed,
+        ยกเลิก: dept.cancelled,
+        รวมทั้งหมด: dept.total,
+      }));
+
+      // 3. Prepare Recent Repairs Data
       const repairData = stats.recentRepairs.map((repair) => ({
         รหัส: repair.ticketCode,
         วันที่:
@@ -141,7 +182,7 @@ export default function AdminDashboard() {
         ความเร่งด่วน: getUrgencyLabel(repair.urgency),
         สถานะ:
           repair.status === "PENDING"
-            ? "รอหมวดงาน"
+            ? "รอดำเนินการ"
             : repair.status === "IN_PROGRESS"
               ? "กำลังดำเนินการ"
               : repair.status === "COMPLETED"
@@ -149,26 +190,20 @@ export default function AdminDashboard() {
                 : "ยกเลิก",
       }));
 
-      // 2. Prepare Department Stats Data
-      const deptData = departmentStats.map((dept) => ({
-        แผนก: dept.department,
-        ทั้งหมด: dept.total,
-        รอหมวดงาน: dept.pending,
-        กำลังดำเนินการ: dept.inProgress,
-        เสร็จสิ้น: dept.completed,
-        ยกเลิก: dept.cancelled,
-      }));
-
       // Create Workbook
       const wb = XLSX.utils.book_new();
 
-      // Add Repair Sheet
-      const wsRepair = XLSX.utils.json_to_sheet(repairData);
-      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อมล่าสุด");
+      // Add Summary Sheet
+      const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, wsSummary, "สรุปภาพรวม");
 
       // Add Department Sheet
       const wsDept = XLSX.utils.json_to_sheet(deptData);
       XLSX.utils.book_append_sheet(wb, wsDept, "สถิติรายแผนก");
+
+      // Add Repair Sheet
+      const wsRepair = XLSX.utils.json_to_sheet(repairData);
+      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อมล่าสุด");
 
       // Generate Filename
       const dateSuffix = new Date().toISOString().split("T")[0];
