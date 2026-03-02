@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { apiFetch } from "../../../../services/api";
-import { ChevronRight, Calendar, ArrowUpRight } from "lucide-react";
+import { ChevronRight, Calendar, ArrowUpRight, Download } from "lucide-react";
 import CalendarPop from "../../../components/CalendarPop";
 import Loading from "@/components/Loading";
+import * as XLSX from "xlsx";
+import Swal from "sweetalert2";
 
 interface RepairItem {
   id: number;
@@ -125,6 +127,69 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleExportDashboard = () => {
+    if (!stats || !departmentStats) return;
+
+    try {
+      // 1. Prepare Recent Repairs Data
+      const repairData = stats.recentRepairs.map((repair) => ({
+        รหัส: repair.ticketCode,
+        วันที่:
+          formatDate(repair.createdAt) + " " + formatTime(repair.createdAt),
+        ปัญหา: repair.problemTitle,
+        สถานที่: repair.location,
+        ความเร่งด่วน: getUrgencyLabel(repair.urgency),
+        สถานะ:
+          repair.status === "PENDING"
+            ? "รอหมวดงาน"
+            : repair.status === "IN_PROGRESS"
+              ? "กำลังดำเนินการ"
+              : repair.status === "COMPLETED"
+                ? "เสร็จสิ้น"
+                : "ยกเลิก",
+      }));
+
+      // 2. Prepare Department Stats Data
+      const deptData = departmentStats.map((dept) => ({
+        แผนก: dept.department,
+        ทั้งหมด: dept.total,
+        รอหมวดงาน: dept.pending,
+        กำลังดำเนินการ: dept.inProgress,
+        เสร็จสิ้น: dept.completed,
+        ยกเลิก: dept.cancelled,
+      }));
+
+      // Create Workbook
+      const wb = XLSX.utils.book_new();
+
+      // Add Repair Sheet
+      const wsRepair = XLSX.utils.json_to_sheet(repairData);
+      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อมล่าสุด");
+
+      // Add Department Sheet
+      const wsDept = XLSX.utils.json_to_sheet(deptData);
+      XLSX.utils.book_append_sheet(wb, wsDept, "สถิติรายแผนก");
+
+      // Generate Filename
+      const dateSuffix = new Date().toISOString().split("T")[0];
+      const filename = `Dashboard_Report_${dateSuffix}.xlsx`;
+
+      // Write and Download
+      XLSX.writeFile(wb, filename);
+
+      Swal.fire({
+        icon: "success",
+        title: "ส่งออกสำเร็จ",
+        text: "ดาวน์โหลดรายงาน Dashboard เรียบร้อยแล้ว",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Export failed:", error);
+      Swal.fire("ผิดพลาด", "ไม่สามารถส่งออกข้อมูลได้", "error");
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -177,6 +242,14 @@ export default function AdminDashboard() {
                 setSelectedDate(`${year}-${month}-${day}`);
               }}
             />
+
+            <button
+              onClick={handleExportDashboard}
+              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-full shadow-sm hover:bg-gray-50 transition-all text-sm font-medium"
+            >
+              <Download size={16} />
+              <span>Export</span>
+            </button>
           </div>
         </div>
 
