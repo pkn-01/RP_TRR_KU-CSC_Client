@@ -38,9 +38,9 @@ interface Loan {
     lineId?: string;
   };
   borrowerName?: string;
-  department?: string;
-  phoneNumber?: string;
-  lineId?: string;
+  borrowerDepartment?: string;
+  borrowerPhone?: string;
+  borrowerLineId?: string;
 }
 
 const statusConfig: Record<
@@ -66,9 +66,9 @@ function AdminLoansContent() {
     description: "",
     quantity: 1,
     borrowerName: "",
-    department: "",
-    phoneNumber: "",
-    lineId: "",
+    borrowerDepartment: "",
+    borrowerPhone: "",
+    borrowerLineId: "",
   });
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
@@ -189,9 +189,9 @@ function AdminLoansContent() {
           quantity: formData.quantity || 1,
           borrowDate: today.toISOString(),
           borrowerName: formData.borrowerName,
-          department: formData.department,
-          phoneNumber: formData.phoneNumber,
-          lineId: formData.lineId,
+          borrowerDepartment: formData.borrowerDepartment,
+          borrowerPhone: formData.borrowerPhone,
+          borrowerLineId: formData.borrowerLineId,
         }),
       });
       setShowModal(false);
@@ -200,9 +200,9 @@ function AdminLoansContent() {
         description: "",
         quantity: 1,
         borrowerName: "",
-        department: "",
-        phoneNumber: "",
-        lineId: "",
+        borrowerDepartment: "",
+        borrowerPhone: "",
+        borrowerLineId: "",
       });
       fetchLoans();
     } catch (err: any) {
@@ -509,20 +509,20 @@ function AdminLoansContent() {
                           selectedLoan.borrowedBy?.name}
                       </span>
                     </div>
-                    {(selectedLoan.department ||
+                    {(selectedLoan.borrowerDepartment ||
                       selectedLoan.borrowedBy?.department) && (
                       <div className="flex items-center gap-3 text-sm text-gray-700">
                         <span>
-                          {selectedLoan.department ||
+                          {selectedLoan.borrowerDepartment ||
                             selectedLoan.borrowedBy?.department}
                         </span>
                       </div>
                     )}
-                    {(selectedLoan.phoneNumber ||
+                    {(selectedLoan.borrowerPhone ||
                       selectedLoan.borrowedBy?.phoneNumber) && (
                       <div className="flex items-center gap-3 text-sm text-gray-700">
                         <span>
-                          {selectedLoan.phoneNumber ||
+                          {selectedLoan.borrowerPhone ||
                             selectedLoan.borrowedBy?.phoneNumber}
                         </span>
                       </div>
@@ -711,11 +711,11 @@ function AdminLoansContent() {
                     <div className="relative">
                       <input
                         type="text"
-                        value={formData.department}
+                        value={formData.borrowerDepartment}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            department: e.target.value,
+                            borrowerDepartment: e.target.value,
                           })
                         }
                         className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
@@ -731,11 +731,11 @@ function AdminLoansContent() {
                     <div className="relative">
                       <input
                         type="text"
-                        value={formData.phoneNumber}
+                        value={formData.borrowerPhone}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            phoneNumber: e.target.value,
+                            borrowerPhone: e.target.value,
                           })
                         }
                         className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
@@ -751,9 +751,12 @@ function AdminLoansContent() {
                     <div className="relative">
                       <input
                         type="text"
-                        value={formData.lineId}
+                        value={formData.borrowerLineId}
                         onChange={(e) =>
-                          setFormData({ ...formData, lineId: e.target.value })
+                          setFormData({
+                            ...formData,
+                            borrowerLineId: e.target.value,
+                          })
                         }
                         className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
                         placeholder="@username"
