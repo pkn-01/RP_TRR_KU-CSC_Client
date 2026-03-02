@@ -7,6 +7,8 @@ import { ChevronRight, Calendar, ArrowUpRight, Download } from "lucide-react";
 import CalendarPop from "../../../components/CalendarPop";
 import Loading from "@/components/Loading";
 import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 
 interface RepairItem {
@@ -148,14 +150,12 @@ export default function AdminDashboard() {
         rangeText: formatThai(target),
       };
     } else if (filter === "week") {
-      const dayOfWeek = target.getDay();
       const start = new Date(target);
-      start.setDate(target.getDate() - dayOfWeek);
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
       return {
         periodLabel: "รายสัปดาห์",
-        rangeText: `${formatThai(start)} ถึง ${formatThai(end)}`,
+        rangeText: formatThai(start) + " ถึง " + formatThai(end),
       };
     } else {
       const firstDay = new Date(target.getFullYear(), target.getMonth(), 1);
@@ -169,10 +169,9 @@ export default function AdminDashboard() {
 
   const handleExportDashboard = async () => {
     try {
-      // 1. Fetch full data for export (bypassing the 20-item UI limit)
       Swal.fire({
-        title: "กำลังเตรียมข้อมูล...",
-        text: "กรุณารอสักครู่ ระบบกำลังรวบรวมข้อมูลทั้งหมด",
+        title: "กำลังเตรียมรายงาน...",
+        text: "ระบบกำลังจัดรูปแบบไฟล์ Excel ให้สวยงาม",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -188,53 +187,179 @@ export default function AdminDashboard() {
         "GET",
       );
 
-      Swal.close();
-
-      if (!fullStats || !departmentStats) return;
+      if (!fullStats || !departmentStats) {
+        Swal.close();
+        return;
+      }
 
       const { periodLabel, rangeText } = getDateRangeInfo();
+      const workbook = new ExcelJS.Workbook();
 
-      const summaryData = [
-        { หัวข้อ: "รายงาน", จำนวน: "Dashboard Report (" + periodLabel + ")" },
-        { หัวข้อ: "ช่วงเวลาของข้อมูล", จำนวน: rangeText },
-        {
-          หัวข้อ: "วันที่ส่งออก",
-          จำนวน: new Date().toLocaleString("th-TH"),
-        },
-        { หัวข้อ: "", จำนวน: "" },
-        { หัวข้อ: "=== สถิติสะสมทั้งหมด ===", จำนวน: "" },
-        { หัวข้อ: "รายการซ่อมทั้งหมด", จำนวน: fullStats.all.total },
-        { หัวข้อ: "กำลังดำเนินการ", จำนวน: fullStats.all.inProgress },
-        { หัวข้อ: "เสร็จสิ้น", จำนวน: fullStats.all.completed },
-        { หัวข้อ: "ยกเลิก", จำนวน: fullStats.all.cancelled },
-        { หัวข้อ: "", จำนวน: "" },
-        { หัวข้อ: "=== สถิติ: " + rangeText + " ===", จำนวน: "" },
-        { หัวข้อ: "รายการซ่อม", จำนวน: fullStats.filtered.total },
-        { หัวข้อ: "รอดำเนินการ", จำนวน: fullStats.filtered.pending },
-        { หัวข้อ: "กำลังดำเนินการ", จำนวน: fullStats.filtered.inProgress },
-        { หัวข้อ: "เสร็จสิ้น", จำนวน: fullStats.filtered.completed },
-        { หัวข้อ: "ยกเลิก", จำนวน: fullStats.filtered.cancelled },
+      // --- Style Helpers ---
+      const headerFill: ExcelJS.Fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF1E3A8A" }, // Dark Blue (Indigo 900)
+      };
+
+      const subHeaderFill: ExcelJS.Fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFF1F5F9" }, // Light Gray (Slate 100)
+      };
+
+      const whiteText: Partial<ExcelJS.Font> = {
+        color: { argb: "FFFFFFFF" },
+        bold: true,
+      };
+
+      const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+
+      // ==========================================
+      // SHEET 1: สรุปภาพรวม (Summary)
+      // ==========================================
+      const sheet1 = workbook.addWorksheet("สรุปภาพรวม");
+      sheet1.getColumn(1).width = 30;
+      sheet1.getColumn(2).width = 45;
+
+      // Title
+      const titleRow = sheet1.addRow(["รายงานสรุปผลการแจ้งซ่อม"]);
+      titleRow.font = { size: 16, bold: true, color: { argb: "FF1E3A8A" } };
+      sheet1.mergeCells(1, 1, 1, 2);
+      sheet1.addRow([]); // Spacer
+
+      // Meta Info
+      const addDetailRow = (label: string, value: any) => {
+        const row = sheet1.addRow([label, value]);
+        row.getCell(1).font = { bold: true };
+        row.getCell(1).fill = subHeaderFill;
+      };
+
+      addDetailRow("ประเภทรายงาน", periodLabel);
+      addDetailRow("ช่วงเวลาของข้อมูล", rangeText);
+      addDetailRow("วันที่ส่งออก", new Date().toLocaleString("th-TH"));
+      sheet1.addRow([]);
+
+      // All Stats Header
+      const allHeader = sheet1.addRow(["สถิติสะสมทั้งหมด", ""]);
+      allHeader.getCell(1).fill = headerFill;
+      allHeader.getCell(1).font = whiteText;
+      sheet1.mergeCells(allHeader.number, 1, allHeader.number, 2);
+
+      addDetailRow("รายการซ่อมทั้งหมด", fullStats.all.total);
+      addDetailRow("กำลังดำเนินการ", fullStats.all.inProgress);
+      addDetailRow("เสร็จสิ้น", fullStats.all.completed);
+      addDetailRow("ยกเลิก", fullStats.all.cancelled);
+      sheet1.addRow([]);
+
+      // Filtered Stats Header
+      const filteredHeader = sheet1.addRow([
+        "สถิติในช่วงเวลา: " + rangeText,
+        "",
+      ]);
+      filteredHeader.getCell(1).fill = headerFill;
+      filteredHeader.getCell(1).font = whiteText;
+      sheet1.mergeCells(filteredHeader.number, 1, filteredHeader.number, 2);
+
+      addDetailRow("จำนวนรายการใหม่", fullStats.filtered.total);
+      addDetailRow("รอดำเนินการ", fullStats.filtered.pending);
+      addDetailRow("กำลังดำเนินการ", fullStats.filtered.inProgress);
+      addDetailRow("เสร็จสิ้น", fullStats.filtered.completed);
+      addDetailRow("ยกเลิก", fullStats.filtered.cancelled);
+
+      // ==========================================
+      // SHEET 2: สถิติรายแผนก (Department)
+      // ==========================================
+      const sheet2 = workbook.addWorksheet("สถิติรายแผนก");
+      const deptHeaders = [
+        "แผนก",
+        "รอดำเนินการ",
+        "กำลังดำเนินการ",
+        "เสร็จสิ้น",
+        "ยกเลิก",
+        "รวมทั้งหมด",
+      ];
+      const deptHeaderRow = sheet2.addRow(deptHeaders);
+
+      sheet2.columns = [
+        { header: "แผนก", key: "dept", width: 25 },
+        { header: "รอดำเนินการ", key: "p", width: 15 },
+        { header: "กำลังดำเนินการ", key: "i", width: 18 },
+        { header: "เสร็จสิ้น", key: "c", width: 12 },
+        { header: "ยกเลิก", key: "x", width: 10 },
+        { header: "รวมทั้งหมด", key: "t", width: 15 },
       ];
 
-      // 2. Prepare Department Stats Data (Matching UI Labels)
-      const deptData = departmentStats.map((dept) => ({
-        แผนก: dept.department,
-        รอดำเนินการ: dept.pending,
-        กำลังดำเนินการ: dept.inProgress,
-        เสร็จสิ้น: dept.completed,
-        ยกเลิก: dept.cancelled,
-        รวมทั้งหมด: dept.total,
-      }));
+      deptHeaderRow.eachCell((cell) => {
+        cell.fill = headerFill;
+        cell.font = whiteText;
+        cell.alignment = { horizontal: "center" };
+        cell.border = borderStyle;
+      });
 
-      // 3. Prepare Recent Repairs Data (Using the full list)
-      const repairData = fullStats.recentRepairs.map((repair: any) => ({
-        รหัส: repair.ticketCode,
-        วันที่:
+      departmentStats.forEach((dept) => {
+        const row = sheet2.addRow([
+          dept.department,
+          dept.pending,
+          dept.inProgress,
+          dept.completed,
+          dept.cancelled,
+          dept.total,
+        ]);
+        row.eachCell((cell) => {
+          cell.border = borderStyle;
+          cell.alignment = { horizontal: "center" };
+        });
+        row.getCell(1).alignment = { horizontal: "left" };
+      });
+
+      // ==========================================
+      // SHEET 3: รายการแจ้งซ่อม (Repairs)
+      // ==========================================
+      const sheet3 = workbook.addWorksheet("รายการแจ้งซ่อม");
+      const repairHeaders = [
+        "รหัส",
+        "วันที่",
+        "ปัญหา",
+        "สถานที่",
+        "ความเร่งด่วน",
+        "สถานะ",
+      ];
+      const rHeaderRow = sheet3.addRow(repairHeaders);
+
+      sheet3.columns = [
+        { header: "รหัส", key: "id", width: 20 },
+        { header: "วันที่", key: "date", width: 22 },
+        { header: "ปัญหา", key: "title", width: 40 },
+        { header: "สถานที่", key: "loc", width: 25 },
+        { header: "ความเร่งด่วน", key: "urgency", width: 18 },
+        { header: "สถานะ", key: "status", width: 15 },
+      ];
+
+      rHeaderRow.eachCell((cell) => {
+        cell.fill = headerFill;
+        cell.font = whiteText;
+        cell.border = borderStyle;
+        cell.alignment = { horizontal: "center" };
+      });
+
+      const sortedRepairs = [...fullStats.recentRepairs].sort(
+        (a: any, b: any) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+
+      sortedRepairs.forEach((repair: any, index) => {
+        const row = sheet3.addRow([
+          repair.ticketCode,
           formatDate(repair.createdAt) + " " + formatTime(repair.createdAt),
-        ปัญหา: repair.problemTitle,
-        สถานที่: repair.location,
-        ความเร่งด่วน: getUrgencyLabel(repair.urgency),
-        สถานะ:
+          repair.problemTitle,
+          repair.location,
+          getUrgencyLabel(repair.urgency),
           repair.status === "PENDING"
             ? "รอดำเนินการ"
             : repair.status === "IN_PROGRESS"
@@ -242,34 +367,50 @@ export default function AdminDashboard() {
               : repair.status === "COMPLETED"
                 ? "เสร็จสิ้น"
                 : "ยกเลิก",
-      }));
+        ]);
 
-      // Create Workbook
-      const wb = XLSX.utils.book_new();
+        // Alternating row color
+        if (index % 2 === 1) {
+          row.eachCell((cell) => {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFF9FAFB" },
+            };
+          });
+        }
 
-      // Add Summary Sheet
-      const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, wsSummary, "สรุปภาพรวม");
+        row.eachCell((cell) => {
+          cell.border = borderStyle;
+        });
 
-      // Add Department Sheet
-      const wsDept = XLSX.utils.json_to_sheet(deptData);
-      XLSX.utils.book_append_sheet(wb, wsDept, "สถิติรายแผนก");
+        // Urgency Color Coding
+        const urgencyCell = row.getCell(5);
+        if (repair.urgency === "CRITICAL" || repair.urgency === "URGENT") {
+          urgencyCell.font = { color: { argb: "FFEF4444" }, bold: true }; // Red
+        }
 
-      // Add Repair Sheet
-      const wsRepair = XLSX.utils.json_to_sheet(repairData);
-      XLSX.utils.book_append_sheet(wb, wsRepair, "รายการแจ้งซ่อม");
+        // Status Color Coding
+        const statusCell = row.getCell(6);
+        if (repair.status === "COMPLETED") {
+          statusCell.font = { color: { argb: "FF10B981" }, bold: true }; // Green
+        } else if (repair.status === "CANCELLED") {
+          statusCell.font = { color: { argb: "FF6B7280" } }; // Gray
+        }
+      });
 
-      // Generate Filename with period info
+      // --- Download ---
+      const buffer = await workbook.xlsx.writeBuffer();
       const dateSuffix = new Date().toISOString().split("T")[0];
       const filename = "Dashboard_" + periodLabel + "_" + dateSuffix + ".xlsx";
 
-      // Write and Download
-      XLSX.writeFile(wb, filename);
+      saveAs(new Blob([buffer]), filename);
 
+      Swal.close();
       Swal.fire({
         icon: "success",
         title: "ส่งออกข้อมูลสำเร็จ",
-        text: "ไฟล์รายงานถูกสร้างและดาวน์โหลดเรียบร้อยแล้ว",
+        text: "ไฟล์รายงานถูกสร้างและจัดรูปแบบเรียบร้อยแล้ว",
         timer: 2000,
         showConfirmButton: false,
       });
