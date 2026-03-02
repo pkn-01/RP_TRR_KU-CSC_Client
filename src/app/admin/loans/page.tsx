@@ -17,6 +17,7 @@ import {
   Phone,
   Building,
   AtSign,
+  FileText,
 } from "lucide-react";
 import Loading from "@/components/Loading";
 
@@ -37,6 +38,9 @@ interface Loan {
     lineId?: string;
   };
   borrowerName?: string;
+  department?: string;
+  phoneNumber?: string;
+  lineId?: string;
 }
 
 const statusConfig: Record<
@@ -66,6 +70,8 @@ function AdminLoansContent() {
     phoneNumber: "",
     lineId: "",
   });
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
 
   const itemsPerPage = 10;
 
@@ -126,6 +132,38 @@ function AdminLoansContent() {
     } catch {
       Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการลบ", "error");
     }
+  };
+
+  const handleMarkAsReturned = async (loanId: number) => {
+    const result = await Swal.fire({
+      title: "คืนอุปกรณ์ขิ้นนี้?",
+      text: "คุณยืนยันว่าได้รับอุปกรณ์คืนแล้วใช่หรือไม่?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ยืนยันการคืน",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiFetch(`/api/loans/${loanId}/return`, { method: "POST" });
+      await Swal.fire("สำเร็จ!", "บันทึกการคืนเรียบร้อยแล้ว", "success");
+      fetchLoans();
+    } catch (err: any) {
+      Swal.fire(
+        "ผิดพลาด",
+        err.message || "เกิดข้อผิดพลาดในการบันทึกการคืน",
+        "error",
+      );
+    }
+  };
+
+  const handleViewDetail = (loan: Loan) => {
+    setSelectedLoan(loan);
+    setShowDetailModal(true);
   };
 
   const handleAddLoan = async () => {
@@ -299,14 +337,27 @@ function AdminLoansContent() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-1 text-gray-400 hover:text-gray-600">
-                        <ChevronRight size={18} />
+                      <button
+                        onClick={() => handleViewDetail(loan)}
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-lg hover:bg-[#B000E6] transition-all"
+                        title="ดูรายละเอียด"
+                      >
+                        <FileText size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleMarkAsReturned(loan.id)}
+                        disabled={loan.status === "RETURNED"}
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-lg hover:text-green-500 transition-all disabled:opacity-50"
+                        title="คืนอุปกรณ์"
+                      >
+                        <Check size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(loan.id)}
-                        className="p-1 text-gray-400 hover:text-red-600"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-lg hover:text-red-500 transition-all"
+                        title="ลบ"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={20} />
                       </button>
                     </div>
                   </td>
@@ -353,15 +404,25 @@ function AdminLoansContent() {
                   year: "numeric",
                 })}
               </p>
-              <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-100">
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => handleViewDetail(loan)}
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-md"
+                >
+                  <FileText size={20} />
+                </button>
+                <button
+                  onClick={() => handleMarkAsReturned(loan.id)}
+                  disabled={loan.status === "RETURNED"}
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md disabled:opacity-50"
+                >
+                  <Check size={20} />
+                </button>
                 <button
                   onClick={() => handleDelete(loan.id)}
-                  className="p-2 text-gray-400 hover:text-red-600"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md"
                 >
-                  <Trash2 size={16} />
-                </button>
-                <button className="p-2 text-gray-400 hover:text-gray-600">
-                  <ChevronRight size={16} />
+                  <Trash2 size={20} />
                 </button>
               </div>
             </div>
@@ -396,6 +457,164 @@ function AdminLoansContent() {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedLoan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-0 max-w-2xl w-full shadow-2xl">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900">
+                รายละเอียดการยืม
+              </h2>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
+              >
+                <XIcon size={20} />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8">
+              {/* Item Info */}
+              <div className="flex gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 shrink-0">
+                  <Package size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                    {selectedLoan.itemName}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    จำนวน: {selectedLoan.quantity} รายการ
+                  </p>
+                  {selectedLoan.description && (
+                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      {selectedLoan.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                {/* Borrower Info */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    ข้อมูลผู้ยืม
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm text-gray-700">
+                      <User size={16} className="text-gray-400" />
+                      <span>
+                        {selectedLoan.borrowerName ||
+                          selectedLoan.borrowedBy?.name}
+                      </span>
+                    </div>
+                    {(selectedLoan.department ||
+                      selectedLoan.borrowedBy?.department) && (
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
+                        <Building size={16} className="text-gray-400" />
+                        <span>
+                          {selectedLoan.department ||
+                            selectedLoan.borrowedBy?.department}
+                        </span>
+                      </div>
+                    )}
+                    {(selectedLoan.phoneNumber ||
+                      selectedLoan.borrowedBy?.phoneNumber) && (
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
+                        <Phone size={16} className="text-gray-400" />
+                        <span>
+                          {selectedLoan.phoneNumber ||
+                            selectedLoan.borrowedBy?.phoneNumber}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date Info */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    ระยะเวลาการยืม
+                  </h4>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase">
+                        วันที่ยืม
+                      </p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {new Date(selectedLoan.borrowDate).toLocaleDateString(
+                          "th-TH",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase">
+                        กำหนดคืน
+                      </p>
+                      <p className="text-sm text-gray-700 font-medium">
+                        {new Date(
+                          selectedLoan.expectedReturnDate,
+                        ).toLocaleDateString("th-TH", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    {selectedLoan.returnDate && (
+                      <div>
+                        <p className="text-[10px] text-green-500 uppercase">
+                          คืนเมื่อ
+                        </p>
+                        <p className="text-sm text-green-700 font-medium">
+                          {new Date(selectedLoan.returnDate).toLocaleDateString(
+                            "th-TH",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                ปิดหน้าต่าง
+              </button>
+              {selectedLoan.status !== "RETURNED" && (
+                <button
+                  onClick={() => {
+                    handleMarkAsReturned(selectedLoan.id);
+                    setShowDetailModal(false);
+                  }}
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 flex items-center justify-center gap-2"
+                >
+                  <Check size={18} />
+                  ยืนยันการคืนอุปกรณ์
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Modal */}
       {showModal && (
