@@ -464,13 +464,7 @@ function AdminRepairsContent() {
             type="purple"
             isToday
           />
-          <StatCard
-            label="กำลังดำเนินการ(วันนี้)"
-            value={stats.today}
-            type="orange"
-            isToday
-          />{" "}
-          {/* Note: The user's original logic was stats.today for the first box, I will use stats.today for the "Today" specific boxes if needed, but the original file had specific labels. Let's stick to the 6 labels the user had before. */}
+          <StatCard label="รอดำเนินการ" value={stats.pending} type="blue" />
         </div>
 
         {/* Filter Row Indicator */}
@@ -900,7 +894,7 @@ function StatCard({
 }: {
   label: string;
   value: number;
-  type: "purple" | "orange" | "green" | "red";
+  type: "purple" | "orange" | "green" | "red" | "blue";
   isToday?: boolean;
   className?: string;
 }) {
@@ -920,6 +914,10 @@ function StatCard({
     red: {
       bg: "bg-[#FF0032]",
       iconBg: "bg-[#FF335B]",
+    },
+    blue: {
+      bg: "bg-[#2563EB]",
+      iconBg: "bg-[#3B82F6]",
     },
   };
 
