@@ -223,6 +223,7 @@ function AdminLoansContent() {
       // Prepare data for export with Thai headers
       const exportData = loans.map((loan) => ({
         อุปกรณ์: loan.itemName,
+        รายละเอียด: loan.description || "-",
         จำนวน: loan.quantity,
         ชื่อผู้ยืม: loan.borrowerName || loan.borrowedBy?.name || "-",
         แผนก: loan.borrowerDepartment || loan.borrowedBy?.department || "-",
@@ -343,6 +344,9 @@ function AdminLoansContent() {
                   อุปกรณ์
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
+                  รายละเอียด
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   ชื่อผู้ยืม
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
@@ -362,6 +366,14 @@ function AdminLoansContent() {
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-900">
                       {loan.itemName}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className="text-sm text-gray-500 line-clamp-1 max-w-[200px]"
+                      title={loan.description}
+                    >
+                      {loan.description || "-"}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -443,6 +455,11 @@ function AdminLoansContent() {
                   {statusConfig[loan.status]?.label || loan.status}
                 </span>
               </div>
+              {loan.description && (
+                <p className="text-[11px] text-gray-400 mb-2 line-clamp-1">
+                  {loan.description}
+                </p>
+              )}
               <p className="text-xs text-gray-500 mb-1">
                 ผู้ยืม: {loan.borrowerName || loan.borrowedBy?.name || "-"}
               </p>
