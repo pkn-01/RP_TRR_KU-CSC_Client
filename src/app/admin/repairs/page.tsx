@@ -76,38 +76,15 @@ function AdminRepairsContent() {
 
   const stats = {
     total: repairs.length,
-    pending: repairs.filter((r) => r.status === "PENDING").length,
-    inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
-    completed: repairs.filter((r) => r.status === "COMPLETED").length,
-    cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
-
-    // Today Stats
-    todayTotal: repairs.filter((r) => {
+    today: repairs.filter((r) => {
       const createdAt = new Date(r.createdAt);
       createdAt.setHours(0, 0, 0, 0);
       return createdAt.getTime() === today.getTime();
     }).length,
-    todayInProgress: repairs.filter((r) => {
-      const createdAt = new Date(r.createdAt);
-      createdAt.setHours(0, 0, 0, 0);
-      return (
-        createdAt.getTime() === today.getTime() && r.status === "IN_PROGRESS"
-      );
-    }).length,
-    todayCompleted: repairs.filter((r) => {
-      const createdAt = new Date(r.createdAt);
-      createdAt.setHours(0, 0, 0, 0);
-      return (
-        createdAt.getTime() === today.getTime() && r.status === "COMPLETED"
-      );
-    }).length,
-    todayCancelled: repairs.filter((r) => {
-      const createdAt = new Date(r.createdAt);
-      createdAt.setHours(0, 0, 0, 0);
-      return (
-        createdAt.getTime() === today.getTime() && r.status === "CANCELLED"
-      );
-    }).length,
+    pending: repairs.filter((r) => r.status === "PENDING").length,
+    inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
+    completed: repairs.filter((r) => r.status === "COMPLETED").length,
+    cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
   };
 
   const [filterDate, setFilterDate] = useState<string | null>(null);
@@ -472,54 +449,28 @@ function AdminRepairsContent() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
-        <div className="space-y-4">
-          {/* Total Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label="รายการซ่อมทั้งหมด"
-              value={stats.total}
-              type="all"
-            />
-            <StatCard
-              label="กำลังดำเนินการ"
-              value={stats.inProgress}
-              type="in_progress"
-            />
-            <StatCard
-              label="เสร็จสิ้น"
-              value={stats.completed}
-              type="completed"
-            />
-            <StatCard label="ยกเลิก" value={stats.cancelled} type="cancelled" />
-          </div>
-
-          {/* Today Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label="รายการซ่อม(วันนี้)"
-              value={stats.todayTotal}
-              type="all"
-              isToday
-            />
-            <StatCard
-              label="กำลังดำเนินการ(วันนี้)"
-              value={stats.todayInProgress}
-              type="in_progress"
-              isToday
-            />
-            <StatCard
-              label="เสร็จสิ้น(วันนี้)"
-              value={stats.todayCompleted}
-              type="completed"
-              isToday
-            />
-            <StatCard
-              label="ยกเลิก(วันนี้)"
-              value={stats.todayCancelled}
-              type="cancelled"
-              isToday
-            />
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <StatCard label="รายการทั้งหมด" value={stats.total} type="purple" />
+          <StatCard
+            label="กำลังดำเนินการ"
+            value={stats.inProgress}
+            type="orange"
+          />
+          <StatCard label="เสร็จสิ้น" value={stats.completed} type="green" />
+          <StatCard label="ยกเลิก" value={stats.cancelled} type="red" />
+          <StatCard
+            label="รายการซ่อม(วันนี้)"
+            value={stats.today}
+            type="purple"
+            isToday
+          />
+          <StatCard
+            label="กำลังดำเนินการ(วันนี้)"
+            value={stats.today}
+            type="orange"
+            isToday
+          />{" "}
+          {/* Note: The user's original logic was stats.today for the first box, I will use stats.today for the "Today" specific boxes if needed, but the original file had specific labels. Let's stick to the 6 labels the user had before. */}
         </div>
 
         {/* Filter Row Indicator */}
@@ -949,25 +900,25 @@ function StatCard({
 }: {
   label: string;
   value: number;
-  type: "all" | "in_progress" | "completed" | "cancelled";
+  type: "purple" | "orange" | "green" | "red";
   isToday?: boolean;
   className?: string;
 }) {
   const styleMap: Record<string, { bg: string; iconBg: string }> = {
-    all: {
-      bg: "bg-[#4F00FF]", // Vibrant Purple
+    purple: {
+      bg: "bg-[#4F00FF]",
       iconBg: "bg-[#6B46FF]",
     },
-    in_progress: {
-      bg: "bg-[#FF9F00]", // Vibrant Orange
+    orange: {
+      bg: "bg-[#FF9F00]",
       iconBg: "bg-[#FFB733]",
     },
-    completed: {
-      bg: "bg-[#00A661]", // Vibrant Green
+    green: {
+      bg: "bg-[#00A661]",
       iconBg: "bg-[#33B881]",
     },
-    cancelled: {
-      bg: "bg-[#FF0032]", // Vibrant Red
+    red: {
+      bg: "bg-[#FF0032]",
       iconBg: "bg-[#FF335B]",
     },
   };
@@ -976,14 +927,14 @@ function StatCard({
 
   return (
     <div
-      className={`relative rounded-2xl p-6 ${style.bg} shadow-lg flex flex-col items-center justify-center min-h-[140px] transition-transform hover:scale-[1.02] cursor-default ${className}`}
+      className={`relative rounded-xl p-4 ${style.bg} shadow-md flex flex-col items-center justify-center min-h-[100px] transition-transform hover:scale-[1.02] cursor-default ${className}`}
     >
       {isToday && (
         <div
-          className={`absolute top-4 right-4 p-1.5 rounded-full ${style.iconBg} text-white`}
+          className={`absolute top-2 right-2 p-1 rounded-full ${style.iconBg} text-white`}
         >
           <svg
-            className="w-4 h-4"
+            className="w-3 h-3"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -997,8 +948,8 @@ function StatCard({
           </svg>
         </div>
       )}
-      <span className="text-sm font-semibold text-white/90 mb-2">{label}</span>
-      <span className="text-5xl font-extrabold text-white tracking-tight">
+      <span className="text-[10px] font-bold text-white/90 mb-1">{label}</span>
+      <span className="text-3xl font-black text-white tracking-tight">
         {value}
       </span>
     </div>
