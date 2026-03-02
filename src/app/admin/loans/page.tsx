@@ -344,9 +344,6 @@ function AdminLoansContent() {
                   อุปกรณ์
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                  รายละเอียด
-                </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   ชื่อผู้ยืม
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
@@ -366,14 +363,6 @@ function AdminLoansContent() {
                   <td className="px-6 py-4">
                     <span className="text-sm text-gray-900">
                       {loan.itemName}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className="text-sm text-gray-500 line-clamp-1 max-w-[200px]"
-                      title={loan.description}
-                    >
-                      {loan.description || "-"}
                     </span>
                   </td>
                   <td className="px-6 py-4">
