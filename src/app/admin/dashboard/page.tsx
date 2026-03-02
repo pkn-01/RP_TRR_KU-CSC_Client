@@ -131,14 +131,32 @@ export default function AdminDashboard() {
     if (!stats || !departmentStats) return;
 
     try {
-      // 1. Prepare Overview Summary Data (Matching Cards)
       const periodLabel =
         filter === "day"
-          ? "วันนี้"
+          ? "รายวัน"
           : filter === "week"
-            ? "สัปดาห์นี้"
-            : "เดือนนี้";
+            ? "รายสัปดาห์"
+            : "รายเดือน";
+
+      const selectedDateThai = new Date(selectedDate).toLocaleDateString(
+        "th-TH",
+        {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        },
+      );
+
       const summaryData = [
+        {
+          หัวข้อ: "ข้อมูลรายงานสำหรับ",
+          จำนวน: `${periodLabel} (${selectedDateThai})`,
+        },
+        {
+          หัวข้อ: "วันที่ส่งออกรายการ",
+          จำนวน: new Date().toLocaleString("th-TH"),
+        },
+        { หัวข้อ: "", จำนวน: "" }, // Spacer
         { หัวข้อ: "รายการซ่อมทั้งหมด (สะสม)", จำนวน: stats.all.total },
         { หัวข้อ: "กำลังดำเนินการ (สะสม)", จำนวน: stats.all.inProgress },
         { หัวข้อ: "เสร็จสิ้น (สะสม)", จำนวน: stats.all.completed },

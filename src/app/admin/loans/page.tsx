@@ -226,8 +226,29 @@ function AdminLoansContent() {
     }
 
     try {
+      // Prepare Metadata
+      const metadata = [
+        { อุปกรณ์: "รายงานการยืม-คืนอุปกรณ์", รายละเอียด: "" },
+        {
+          อุปกรณ์: "วันที่ส่งออก:",
+          รายละเอียด: new Date().toLocaleString("th-TH"),
+        },
+        {
+          อุปกรณ์: "ตัวกรองปัจจุบัน:",
+          รายละเอียด: searchTerm ? `ค้นหา: ${searchTerm}` : "ทั้งหมด",
+        },
+        {
+          อุปกรณ์: "สถานะ:",
+          รายละเอียด:
+            filterStatus === "all"
+              ? "ทั้งหมด"
+              : statusConfig[filterStatus]?.label,
+        },
+        { อุปกรณ์: "", รายละเอียด: "" }, // Spacer
+      ];
+
       // Prepare data for export with Thai headers
-      const exportData = filteredLoans.map((loan) => ({
+      const loanData = filteredLoans.map((loan) => ({
         อุปกรณ์: loan.itemName,
         รายละเอียด: loan.description || "-",
         จำนวน: loan.quantity,
@@ -243,8 +264,13 @@ function AdminLoansContent() {
           : "-",
       }));
 
+      // Combine Metadata and Data
+      const exportData = [...metadata, ...loanData];
+
       // Create Worksheet
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const worksheet = XLSX.utils.json_to_sheet(exportData, {
+        skipHeader: false,
+      });
 
       // Create Workbook
       const workbook = XLSX.utils.book_new();
