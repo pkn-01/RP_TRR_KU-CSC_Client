@@ -386,16 +386,20 @@ export default function AdminDashboard() {
 
         // Urgency Color Coding
         const urgencyCell = row.getCell(5);
-        if (repair.urgency === "CRITICAL" || repair.urgency === "URGENT") {
+        if (repair.urgency === "CRITICAL") {
           urgencyCell.font = { color: { argb: "FFEF4444" }, bold: true }; // Red
+        } else if (repair.urgency === "URGENT") {
+          urgencyCell.font = { color: { argb: "FFF59E0B" }, bold: true }; // Amber
         }
 
         // Status Color Coding
         const statusCell = row.getCell(6);
         if (repair.status === "COMPLETED") {
           statusCell.font = { color: { argb: "FF10B981" }, bold: true }; // Green
+        } else if (repair.status === "IN_PROGRESS") {
+          statusCell.font = { color: { argb: "FFF59E0B" }, bold: true }; // Amber
         } else if (repair.status === "CANCELLED") {
-          statusCell.font = { color: { argb: "FF6B7280" } }; // Gray
+          statusCell.font = { color: { argb: "FFEF4444" }, bold: true }; // Red
         }
       });
 
