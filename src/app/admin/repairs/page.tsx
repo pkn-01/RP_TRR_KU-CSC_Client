@@ -450,14 +450,7 @@ function AdminRepairsContent() {
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="รายการทั้งหมด" value={stats.total} type="purple" />
-          <StatCard
-            label="กำลังดำเนินการ"
-            value={stats.inProgress}
-            type="orange"
-          />
-          <StatCard label="เสร็จสิ้น" value={stats.completed} type="green" />
-          <StatCard label="ยกเลิก" value={stats.cancelled} type="red" />
+          <StatCard label="รายการทั้งหมด" value={stats.total} type="blue" />
           <StatCard
             label="รายการซ่อม(วันนี้)"
             value={stats.today}
@@ -465,6 +458,13 @@ function AdminRepairsContent() {
             isToday
           />
           <StatCard label="รอดำเนินการ" value={stats.pending} type="blue" />
+          <StatCard
+            label="กำลังดำเนินการ"
+            value={stats.inProgress}
+            type="orange"
+          />
+          <StatCard label="เสร็จสิ้น" value={stats.completed} type="green" />
+          <StatCard label="ยกเลิก" value={stats.cancelled} type="red" />
         </div>
 
         {/* Filter Row Indicator */}
@@ -946,7 +946,7 @@ function StatCard({
           </svg>
         </div>
       )}
-      <span className="text-[10px] font-bold text-white/90 mb-1">{label}</span>
+      <span className="text-xs font-bold text-white/90 mb-1">{label}</span>
       <span className="text-3xl font-black text-white tracking-tight">
         {value}
       </span>
