@@ -601,114 +601,116 @@ function AdminLoansContent() {
 
       {/* Add Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-0 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-[2rem] p-0 max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="flex justify-between items-center px-10 py-8">
+              <h2 className="text-2xl font-bold text-gray-800">
                 บันทึกการยืมใหม่
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 p-2 rounded-full"
+                className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-100/80 hover:bg-gray-200 p-2.5 rounded-full"
               >
-                <XIcon size={20} />
+                <XIcon size={24} />
               </button>
             </div>
 
-            <div className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="px-10 pb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                 {/* Left Column: Device Info */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-700">
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-700 mb-6">
                       ข้อมูลอุปกรณ์
                     </h3>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      ชื่ออุปกรณ์ <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.itemName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, itemName: e.target.value })
-                      }
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400"
-                      placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
-                    />
-                  </div>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        ชื่ออุปกรณ์ <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.itemName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, itemName: e.target.value })
+                        }
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700"
+                        placeholder="เช่น คอมพิวเตอร์, โทรศัพท์มือถือ"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      รายละเอียด/Serial No.
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          description: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all placeholder:text-gray-400 resize-none"
-                      placeholder="ระบุเลข Serial หรือรายละเอียดเพิ่มเติม"
-                    />
-                  </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        รายละเอียด
+                      </label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        rows={4}
+                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 resize-none"
+                        placeholder="รายละเอียดเพิ่มเติม"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      จำนวน
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.quantity}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          quantity: parseInt(e.target.value) || 1,
-                        })
-                      }
-                      className="w-32 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-medium text-center"
-                    />
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        จำนวน
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.quantity}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            quantity: parseInt(e.target.value) || 1,
+                          })
+                        }
+                        className="w-40 px-5 py-4 bg-gray-50/50 border border-gray-100 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-300 transition-all font-bold text-center text-gray-700"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Right Column: Borrower Info */}
-                <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100 space-y-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-700">
+                <div className="bg-gray-50/30 p-8 rounded-[2rem] border border-gray-100/50 space-y-8">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-700 mb-6">
                       ข้อมูลผู้ยืม
                     </h3>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      ชื่อผู้ยืม <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.borrowerName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          borrowerName: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
-                      placeholder="ระบุชื่อผู้ยืม"
-                    />
-                  </div>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        ชื่อผู้ยืม <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.borrowerName}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            borrowerName: e.target.value,
+                          })
+                        }
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
+                        placeholder="ระบุชื่อผู้ยืม"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      แผนก
-                    </label>
-                    <div className="relative">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        แผนก
+                      </label>
                       <input
                         type="text"
                         value={formData.department}
@@ -718,17 +720,15 @@ function AdminLoansContent() {
                             department: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
                         placeholder="ระบุแผนก"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      เบอร์โทรศัพท์
-                    </label>
-                    <div className="relative">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        เบอร์โทรศัพท์
+                      </label>
                       <input
                         type="text"
                         value={formData.phoneNumber}
@@ -738,24 +738,22 @@ function AdminLoansContent() {
                             phoneNumber: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
                         placeholder="0xx-xxx-xxxx"
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Line ID
-                    </label>
-                    <div className="relative">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-500 mb-2">
+                        Line ID
+                      </label>
                       <input
                         type="text"
                         value={formData.lineId}
                         onChange={(e) =>
                           setFormData({ ...formData, lineId: e.target.value })
                         }
-                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-400"
+                        className="w-full px-5 py-4 bg-white border border-gray-200 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gray-100 focus:border-gray-300 transition-all placeholder:text-gray-300 font-medium text-gray-700 shadow-sm"
                         placeholder="@username"
                       />
                     </div>
@@ -765,10 +763,10 @@ function AdminLoansContent() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 border-t border-gray-100 bg-gray-50/50 rounded-b-xl flex justify-between gap-4">
+            <div className="mt-12 pt-8 border-t border-gray-50 flex gap-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                className="px-8 py-5 bg-white border-2 border-gray-100 text-gray-500 rounded-2xl text-lg font-bold hover:bg-gray-50 hover:text-gray-700 transition-all shadow-sm flex-1"
               >
                 ยกเลิก
               </button>
@@ -777,15 +775,12 @@ function AdminLoansContent() {
                 disabled={
                   isSaving || !formData.itemName || !formData.borrowerName
                 }
-                className="flex-1 py-3 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-gray-200 flex items-center justify-center gap-2"
+                className="px-10 py-5 bg-gray-500 text-white rounded-2xl text-lg font-bold hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-gray-200 flex items-center justify-center flex-1"
               >
                 {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    กำลังบันทึก...
-                  </>
+                  <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
                 ) : (
-                  <>ยืนยันการบันทึก</>
+                  "ยืนยันการบันทึก"
                 )}
               </button>
             </div>
