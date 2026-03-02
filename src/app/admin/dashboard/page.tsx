@@ -167,10 +167,31 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleExportDashboard = () => {
-    if (!stats || !departmentStats) return;
-
+  const handleExportDashboard = async () => {
     try {
+      // 1. Fetch full data for export (bypassing the 20-item UI limit)
+      Swal.fire({
+        title: "กำลังเตรียมข้อมูล...",
+        text: "กรุณารอสักครู่ ระบบกำลังรวบรวมข้อมูลทั้งหมด",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      const fullStats = await apiFetch(
+        "/api/repairs/statistics/dashboard?filter=" +
+          filter +
+          "&date=" +
+          selectedDate +
+          "&limit=500",
+        "GET",
+      );
+
+      Swal.close();
+
+      if (!fullStats || !departmentStats) return;
+
       const { periodLabel, rangeText } = getDateRangeInfo();
 
       const summaryData = [
@@ -182,17 +203,17 @@ export default function AdminDashboard() {
         },
         { หัวข้อ: "", จำนวน: "" },
         { หัวข้อ: "=== สถิติสะสมทั้งหมด ===", จำนวน: "" },
-        { หัวข้อ: "รายการซ่อมทั้งหมด", จำนวน: stats.all.total },
-        { หัวข้อ: "กำลังดำเนินการ", จำนวน: stats.all.inProgress },
-        { หัวข้อ: "เสร็จสิ้น", จำนวน: stats.all.completed },
-        { หัวข้อ: "ยกเลิก", จำนวน: stats.all.cancelled },
+        { หัวข้อ: "รายการซ่อมทั้งหมด", จำนวน: fullStats.all.total },
+        { หัวข้อ: "กำลังดำเนินการ", จำนวน: fullStats.all.inProgress },
+        { หัวข้อ: "เสร็จสิ้น", จำนวน: fullStats.all.completed },
+        { หัวข้อ: "ยกเลิก", จำนวน: fullStats.all.cancelled },
         { หัวข้อ: "", จำนวน: "" },
         { หัวข้อ: "=== สถิติ: " + rangeText + " ===", จำนวน: "" },
-        { หัวข้อ: "รายการซ่อม", จำนวน: stats.filtered.total },
-        { หัวข้อ: "รอดำเนินการ", จำนวน: stats.filtered.pending },
-        { หัวข้อ: "กำลังดำเนินการ", จำนวน: stats.filtered.inProgress },
-        { หัวข้อ: "เสร็จสิ้น", จำนวน: stats.filtered.completed },
-        { หัวข้อ: "ยกเลิก", จำนวน: stats.filtered.cancelled },
+        { หัวข้อ: "รายการซ่อม", จำนวน: fullStats.filtered.total },
+        { หัวข้อ: "รอดำเนินการ", จำนวน: fullStats.filtered.pending },
+        { หัวข้อ: "กำลังดำเนินการ", จำนวน: fullStats.filtered.inProgress },
+        { หัวข้อ: "เสร็จสิ้น", จำนวน: fullStats.filtered.completed },
+        { หัวข้อ: "ยกเลิก", จำนวน: fullStats.filtered.cancelled },
       ];
 
       // 2. Prepare Department Stats Data (Matching UI Labels)
@@ -205,8 +226,8 @@ export default function AdminDashboard() {
         รวมทั้งหมด: dept.total,
       }));
 
-      // 3. Prepare Recent Repairs Data
-      const repairData = stats.recentRepairs.map((repair) => ({
+      // 3. Prepare Recent Repairs Data (Using the full list)
+      const repairData = fullStats.recentRepairs.map((repair: any) => ({
         รหัส: repair.ticketCode,
         วันที่:
           formatDate(repair.createdAt) + " " + formatTime(repair.createdAt),
@@ -247,17 +268,20 @@ export default function AdminDashboard() {
 
       Swal.fire({
         icon: "success",
-        title: "ส่งออกสำเร็จ",
-        text: "ดาวน์โหลดรายงาน Dashboard เรียบร้อยแล้ว",
+        title: "ส่งออกข้อมูลสำเร็จ",
+        text: "ไฟล์รายงานถูกสร้างและดาวน์โหลดเรียบร้อยแล้ว",
         timer: 2000,
         showConfirmButton: false,
       });
     } catch (error) {
       console.error("Export failed:", error);
-      Swal.fire("ผิดพลาด", "ไม่สามารถส่งออกข้อมูลได้", "error");
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถส่งออกข้อมูลได้ในขณะนี้",
+      });
     }
   };
-
   if (loading) {
     return <Loading />;
   }
