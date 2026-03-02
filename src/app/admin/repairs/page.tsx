@@ -448,25 +448,6 @@ function AdminRepairsContent() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="รายการทั้งหมด" value={stats.total} type="blue" />
-          <StatCard
-            label="รายการซ่อม(วันนี้)"
-            value={stats.today}
-            type="purple"
-            isToday
-          />
-          <StatCard label="รอดำเนินการ" value={stats.pending} type="blue" />
-          <StatCard
-            label="กำลังดำเนินการ"
-            value={stats.inProgress}
-            type="orange"
-          />
-          <StatCard label="เสร็จสิ้น" value={stats.completed} type="green" />
-          <StatCard label="ยกเลิก" value={stats.cancelled} type="red" />
-        </div>
-
         {/* Filter Row Indicator */}
         {filterDate && filterType !== "all" && (
           <div className="bg-[#5D2E1F]/5 border border-[#5D2E1F]/10 px-4 py-2 rounded-lg flex items-center justify-between">
@@ -549,6 +530,53 @@ function AdminRepairsContent() {
                   )}
                 </div>
                 งานของฉัน
+              </button>
+
+              {/* Real-time Status Pill */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+                <span className="relative flex h-2 w-2">
+                  <span
+                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${autoRefreshEnabled ? "bg-green-400" : "bg-gray-400"}`}
+                  ></span>
+                  <span
+                    className={`relative inline-flex rounded-full h-2 w-2 ${autoRefreshEnabled ? "bg-green-500" : "bg-gray-500"}`}
+                  ></span>
+                </span>
+                <span className="text-xs font-medium text-green-700">
+                  {autoRefreshEnabled ? "เรียลไทม์" : "หยุดชั่วคราว"}
+                </span>
+                <span className="text-green-300">|</span>
+                <span className="text-xs text-green-600">{countdown}s</span>
+                <span className="text-green-300">|</span>
+                <Clock size={12} className="text-green-500" />
+                <span className="text-xs text-green-600">
+                  {lastUpdated.toLocaleTimeString("th-TH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
+                </span>
+              </div>
+              <button
+                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                className={`p-1.5 rounded-lg border transition-colors ${autoRefreshEnabled ? "text-orange-500 border-orange-200 hover:bg-orange-50" : "text-green-500 border-green-200 hover:bg-green-50"}`}
+                title={
+                  autoRefreshEnabled
+                    ? "หยุดรีเฟรชอัตโนมัติ"
+                    : "เปิดรีเฟรชอัตโนมัติ"
+                }
+              >
+                {autoRefreshEnabled ? <Pause size={16} /> : <Play size={16} />}
+              </button>
+              <button
+                onClick={() => {
+                  fetchRepairs(false);
+                  setCountdown(15);
+                }}
+                className={`p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 transition-colors ${isRefreshing ? "animate-spin" : ""}`}
+                title="รีเฟรชข้อมูล"
+              >
+                <RefreshCw size={16} />
               </button>
             </div>
 
@@ -644,60 +672,6 @@ function AdminRepairsContent() {
               <option value="URGENT">ด่วน</option>
               <option value="CRITICAL">ด่วนมาก</option>
             </select>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-100" />
-
-          {/* Row 3: Real-time Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span
-                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${autoRefreshEnabled ? "bg-green-400" : "bg-gray-400"}`}
-                ></span>
-                <span
-                  className={`relative inline-flex rounded-full h-2.5 w-2.5 ${autoRefreshEnabled ? "bg-green-500" : "bg-gray-500"}`}
-                ></span>
-              </span>
-              <span className="text-sm font-medium text-gray-700">
-                {autoRefreshEnabled ? "เรียลไทม์" : "หยุดชั่วคราว"}
-              </span>
-              <span className="text-gray-300">|</span>
-              <span className="text-sm text-gray-500">{countdown}s</span>
-              <span className="text-gray-300">|</span>
-              <Clock size={14} className="text-gray-400" />
-              <span className="text-sm text-gray-500">
-                {lastUpdated.toLocaleTimeString("th-TH", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                })}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                className={`p-1.5 rounded-lg transition-colors ${autoRefreshEnabled ? "text-orange-500 hover:bg-orange-50" : "text-green-500 hover:bg-green-50"}`}
-                title={
-                  autoRefreshEnabled
-                    ? "หยุดรีเฟรชอัตโนมัติ"
-                    : "เปิดรีเฟรชอัตโนมัติ"
-                }
-              >
-                {autoRefreshEnabled ? <Pause size={18} /> : <Play size={18} />}
-              </button>
-              <button
-                onClick={() => {
-                  fetchRepairs(false);
-                  setCountdown(15);
-                }}
-                className={`p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors ${isRefreshing ? "animate-spin" : ""}`}
-                title="รีเฟรชข้อมูล"
-              >
-                <RefreshCw size={18} />
-              </button>
-            </div>
           </div>
         </div>
 
