@@ -4,7 +4,21 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/services/api";
-import { X as XIcon } from "lucide-react";
+import {
+  Search,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  X as XIcon,
+  Package,
+  User,
+  Check,
+  Phone,
+  Building,
+  AtSign,
+  FileText,
+} from "lucide-react";
 import Loading from "@/components/Loading";
 
 interface Loan {
@@ -262,6 +276,7 @@ function AdminLoansContent() {
               onClick={() => setShowModal(true)}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 flex items-center gap-1"
             >
+              <Plus size={16} />
               เพิ่มรายการยืม
             </button>
             <button className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50">
@@ -324,28 +339,28 @@ function AdminLoansContent() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 text-xs">
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleViewDetail(loan)}
-                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-[#C700FF] text-white shadow-sm hover:bg-[#B000E6] transition-all"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="ดูรายละเอียด"
                       >
-                        ดูรายละเอียด
+                        <FileText size={20} />
                       </button>
                       <button
                         onClick={() => handleMarkAsReturned(loan.id)}
                         disabled={loan.status === "RETURNED"}
-                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-sm hover:text-green-600 transition-all disabled:opacity-50"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="คืนอุปกรณ์"
                       >
-                        คืน
+                        <Check size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(loan.id)}
-                        className="px-3 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-sm hover:text-red-500 transition-all"
+                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
                         title="ลบ"
                       >
-                        ลบ
+                        <Trash2 size={20} />
                       </button>
                     </div>
                   </td>
@@ -392,25 +407,25 @@ function AdminLoansContent() {
                   year: "numeric",
                 })}
               </p>
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 text-xs">
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
                 <button
                   onClick={() => handleViewDetail(loan)}
-                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-[#C700FF] text-white shadow-md font-medium"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-md"
                 >
-                  ดูรายละเอียด
+                  <FileText size={20} />
                 </button>
                 <button
                   onClick={() => handleMarkAsReturned(loan.id)}
                   disabled={loan.status === "RETURNED"}
-                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-md disabled:opacity-50 font-medium"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md disabled:opacity-50"
                 >
-                  คืน
+                  <Check size={20} />
                 </button>
                 <button
                   onClick={() => handleDelete(loan.id)}
-                  className="px-4 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-400 shadow-md font-medium"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md"
                 >
-                  ลบ
+                  <Trash2 size={20} />
                 </button>
               </div>
             </div>
@@ -428,19 +443,19 @@ function AdminLoansContent() {
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
             >
-              ก่อนหน้า
+              <ChevronLeft size={18} />
             </button>
-            <span className="text-sm font-medium text-gray-700 min-w-[3rem] text-center">
-              {currentPage} / {totalPages}
+            <span className="text-sm text-gray-700">
+              {currentPage}/{totalPages}
             </span>
             <button
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
             >
-              ถัดไป
+              <ChevronRight size={18} />
             </button>
           </div>
         )}
@@ -465,18 +480,20 @@ function AdminLoansContent() {
 
             <div className="p-8 space-y-8">
               {/* Item Info */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 leading-tight">
-                  {selectedLoan.itemName}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  จำนวน: {selectedLoan.quantity} รายการ
-                </p>
-                {selectedLoan.description && (
-                  <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    {selectedLoan.description}
+              <div className="flex gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                    {selectedLoan.itemName}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    จำนวน: {selectedLoan.quantity} รายการ
                   </p>
-                )}
+                  {selectedLoan.description && (
+                    <p className="text-sm text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      {selectedLoan.description}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-8">
@@ -486,7 +503,7 @@ function AdminLoansContent() {
                     ข้อมูลผู้ยืม
                   </h4>
                   <div className="space-y-3">
-                    <div className="text-sm text-gray-700">
+                    <div className="flex items-center gap-3 text-sm text-gray-700">
                       <span>
                         {selectedLoan.borrowerName ||
                           selectedLoan.borrowedBy?.name}
@@ -494,7 +511,7 @@ function AdminLoansContent() {
                     </div>
                     {(selectedLoan.department ||
                       selectedLoan.borrowedBy?.department) && (
-                      <div className="text-sm text-gray-700">
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
                         <span>
                           {selectedLoan.department ||
                             selectedLoan.borrowedBy?.department}
@@ -503,7 +520,7 @@ function AdminLoansContent() {
                     )}
                     {(selectedLoan.phoneNumber ||
                       selectedLoan.borrowedBy?.phoneNumber) && (
-                      <div className="text-sm text-gray-700">
+                      <div className="flex items-center gap-3 text-sm text-gray-700">
                         <span>
                           {selectedLoan.phoneNumber ||
                             selectedLoan.borrowedBy?.phoneNumber}
@@ -571,8 +588,9 @@ function AdminLoansContent() {
                     handleMarkAsReturned(selectedLoan.id);
                     setShowDetailModal(false);
                   }}
-                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 flex items-center justify-center"
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 flex items-center justify-center gap-2"
                 >
+                  <Check size={18} />
                   ยืนยันการคืนอุปกรณ์
                 </button>
               )}
