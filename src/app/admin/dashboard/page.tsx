@@ -435,19 +435,19 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 px-3 py-4 sm:p-4 md:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
             {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
           </h1>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Filter Tabs */}
-            <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm">
+            <div className="inline-flex bg-white border border-gray-200 rounded-full p-1 shadow-sm overflow-x-auto max-w-full">
               {(["day", "week", "month"] as FilterType[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
+                  className={`px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
                     filter === f
                       ? "text-white shadow-sm"
                       : "text-gray-600 hover:bg-gray-50"
@@ -466,27 +466,29 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Date Picker */}
-            <CalendarPop
-              selectedDate={(() => {
-                const [y, m, d] = selectedDate.split("-").map(Number);
-                return new Date(y, m - 1, d);
-              })()}
-              onChange={(date: Date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, "0");
-                const day = String(date.getDate()).padStart(2, "0");
-                setSelectedDate(`${year}-${month}-${day}`);
-              }}
-            />
+            <div className="flex items-center gap-2">
+              {/* Date Picker */}
+              <CalendarPop
+                selectedDate={(() => {
+                  const [y, m, d] = selectedDate.split("-").map(Number);
+                  return new Date(y, m - 1, d);
+                })()}
+                onChange={(date: Date) => {
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, "0");
+                  const day = String(date.getDate()).padStart(2, "0");
+                  setSelectedDate(`${year}-${month}-${day}`);
+                }}
+              />
 
-            <button
-              onClick={handleExportDashboard}
-              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-full shadow-sm hover:bg-gray-50 transition-all text-sm font-medium"
-            >
-              <Download size={16} />
-              <span>Export</span>
-            </button>
+              <button
+                onClick={handleExportDashboard}
+                className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-full shadow-sm hover:bg-gray-50 transition-all text-sm font-medium"
+              >
+                <Download size={14} />
+                <span className="hidden xs:inline">Export</span>
+              </button>
+            </div>
           </div>
         </div>
 

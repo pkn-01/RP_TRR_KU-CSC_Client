@@ -324,9 +324,7 @@ function AdminRepairsContent() {
 
       // --- Content ---
       // Title & Meta
-      const titleRow = sheet.addRow([
-        "รายงานสรุปรายการแจ้งซ่อม",
-      ]);
+      const titleRow = sheet.addRow(["รายงานสรุปรายการแจ้งซ่อม"]);
       titleRow.font = { size: 16, bold: true, color: { argb: "FF1E3A8A" } };
       sheet.mergeCells(1, 1, 1, 6);
       sheet.addRow([]);
@@ -479,12 +477,12 @@ function AdminRepairsContent() {
         )}
 
         {/* Filters Card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 space-y-3">
           {/* Row 1: Search + My Tasks + Export */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-1">
+          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 items-stretch sm:items-center flex-1">
               {/* Search */}
-              <div className="relative flex-1 max-w-sm w-full">
+              <div className="relative flex-1 max-w-full sm:max-w-sm">
                 <input
                   type="text"
                   placeholder="ค้นหาชื่อผู้แจ้ง/เลขรหัส"
@@ -497,96 +495,111 @@ function AdminRepairsContent() {
                 </button>
               </div>
 
-              {/* My Tasks Toggle */}
-              <button
-                onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-                className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
-                  showMyTasksOnly
-                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                    : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+              <div className="flex flex-wrap items-center gap-2">
+                {/* My Tasks Toggle */}
+                <button
+                  onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
+                  className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap ${
                     showMyTasksOnly
-                      ? "bg-amber-500 border-amber-500"
-                      : "border-gray-400"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
                   }`}
                 >
-                  {showMyTasksOnly && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </div>
-                งานของฉัน
-              </button>
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                      showMyTasksOnly
+                        ? "bg-amber-500 border-amber-500"
+                        : "border-gray-400"
+                    }`}
+                  >
+                    {showMyTasksOnly && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="xs:inline hidden">งานของฉัน</span>
+                  <span className="xs:hidden inline">งานฉัน</span>
+                </button>
 
-              {/* Real-time Status Pill */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
-                <span className="relative flex h-2 w-2">
-                  <span
-                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${autoRefreshEnabled ? "bg-green-400" : "bg-gray-400"}`}
-                  ></span>
-                  <span
-                    className={`relative inline-flex rounded-full h-2 w-2 ${autoRefreshEnabled ? "bg-green-500" : "bg-gray-500"}`}
-                  ></span>
-                </span>
-                <span className="text-xs font-medium text-green-700">
-                  {autoRefreshEnabled ? "เรียลไทม์" : "หยุดชั่วคราว"}
-                </span>
-                <span className="text-green-300">|</span>
-                <span className="text-xs text-green-600">{countdown}s</span>
-                <span className="text-green-300">|</span>
-                <Clock size={12} className="text-green-500" />
-                <span className="text-xs text-green-600">
-                  {lastUpdated.toLocaleTimeString("th-TH", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
-                </span>
+                {/* Real-time Status Pill */}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
+                  <span className="relative flex h-2 w-2">
+                    <span
+                      className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${autoRefreshEnabled ? "bg-green-400" : "bg-gray-400"}`}
+                    ></span>
+                    <span
+                      className={`relative inline-flex rounded-full h-2 w-2 ${autoRefreshEnabled ? "bg-green-500" : "bg-gray-500"}`}
+                    ></span>
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-medium text-green-700">
+                    {autoRefreshEnabled ? "เรียลไทม์" : "PAUSED"}
+                  </span>
+                  <span className="text-green-300">|</span>
+                  <span className="text-[10px] sm:text-xs text-green-600">
+                    {countdown}s
+                  </span>
+                  <span className="hidden sm:inline text-green-300">|</span>
+                  <Clock
+                    size={12}
+                    className="hidden sm:inline text-green-500"
+                  />
+                  <span className="hidden sm:inline text-xs text-green-600">
+                    {lastUpdated.toLocaleTimeString("th-TH", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                    className={`p-1.5 rounded-lg border transition-colors ${autoRefreshEnabled ? "text-orange-500 border-orange-200 hover:bg-orange-50" : "text-green-500 border-green-200 hover:bg-green-50"}`}
+                    title={
+                      autoRefreshEnabled
+                        ? "หยุดรีเฟรชอัตโนมัติ"
+                        : "เปิดรีเฟรชอัตโนมัติ"
+                    }
+                  >
+                    {autoRefreshEnabled ? (
+                      <Pause size={14} />
+                    ) : (
+                      <Play size={14} />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      fetchRepairs(false);
+                      setCountdown(15);
+                    }}
+                    className={`p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 transition-colors ${isRefreshing ? "animate-spin" : ""}`}
+                    title="รีเฟรชข้อมูล"
+                  >
+                    <RefreshCw size={14} />
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                className={`p-1.5 rounded-lg border transition-colors ${autoRefreshEnabled ? "text-orange-500 border-orange-200 hover:bg-orange-50" : "text-green-500 border-green-200 hover:bg-green-50"}`}
-                title={
-                  autoRefreshEnabled
-                    ? "หยุดรีเฟรชอัตโนมัติ"
-                    : "เปิดรีเฟรชอัตโนมัติ"
-                }
-              >
-                {autoRefreshEnabled ? <Pause size={16} /> : <Play size={16} />}
-              </button>
-              <button
-                onClick={() => {
-                  fetchRepairs(false);
-                  setCountdown(15);
-                }}
-                className={`p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 transition-colors ${isRefreshing ? "animate-spin" : ""}`}
-                title="รีเฟรชข้อมูล"
-              >
-                <RefreshCw size={16} />
-              </button>
             </div>
 
             {/* Export Button */}
             <button
               onClick={handleExportExcel}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 font-medium flex items-center gap-2 whitespace-nowrap"
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 font-medium flex items-center justify-center gap-2 whitespace-nowrap"
             >
               <Download size={16} className="text-gray-500" />
-              Export
+              <span>Export</span>
             </button>
           </div>
 
@@ -594,10 +607,10 @@ function AdminRepairsContent() {
           <div className="border-t border-gray-100" />
 
           {/* Row 2: Date Filters + Status/Priority Dropdowns */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 items-stretch sm:items-center">
             {/* Date Filtering Tabs */}
-            <div className="flex items-center gap-2">
-              <div className="inline-flex bg-gray-100 rounded-lg p-1 h-9">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex bg-gray-100 rounded-lg p-1 h-9 overflow-x-auto max-w-full">
                 {(["all", "day", "week", "month"] as const).map((f) => (
                   <button
                     key={f}
@@ -605,7 +618,7 @@ function AdminRepairsContent() {
                       setFilter(f);
                       setCurrentPage(1);
                     }}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                    className={`px-3 py-1 text-[11px] sm:text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                       filter === f
                         ? "bg-white text-gray-900 shadow-sm"
                         : "text-gray-500 hover:text-gray-700"
@@ -639,39 +652,41 @@ function AdminRepairsContent() {
             </div>
 
             {/* Spacer */}
-            <div className="flex-1" />
+            <div className="hidden lg:block flex-1" />
 
-            {/* Status Filter */}
-            <select
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            >
-              <option value="all">ทุกสถานะ</option>
-              <option value="TODAY">งานวันนี้</option>
-              <option value="PENDING">รอดำเนินการ</option>
-              <option value="IN_PROGRESS">กำลังดำเนินการ</option>
-              <option value="COMPLETED">เสร็จสิ้น</option>
-              <option value="CANCELLED">ยกเลิก</option>
-            </select>
+            <div className="grid grid-cols-2 gap-2 flex-1 sm:flex-initial">
+              {/* Status Filter */}
+              <select
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-2 border border-gray-300 rounded-lg bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                <option value="all">ทุกสถานะ</option>
+                <option value="TODAY">งานวันนี้</option>
+                <option value="PENDING">รอดำเนินการ</option>
+                <option value="IN_PROGRESS">กำลังดำเนินการ</option>
+                <option value="COMPLETED">เสร็จสิ้น</option>
+                <option value="CANCELLED">ยกเลิก</option>
+              </select>
 
-            {/* Priority Filter */}
-            <select
-              value={filterPriority}
-              onChange={(e) => {
-                setFilterPriority(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            >
-              <option value="all">ทุกความสำคัญ</option>
-              <option value="NORMAL">ปกติ</option>
-              <option value="URGENT">ด่วน</option>
-              <option value="CRITICAL">ด่วนมาก</option>
-            </select>
+              {/* Priority Filter */}
+              <select
+                value={filterPriority}
+                onChange={(e) => {
+                  setFilterPriority(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-2 border border-gray-300 rounded-lg bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              >
+                <option value="all">ทุกความสำคัญ</option>
+                <option value="NORMAL">ปกติ</option>
+                <option value="URGENT">ด่วน</option>
+                <option value="CRITICAL">ด่วนมาก</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -812,25 +827,58 @@ function AdminRepairsContent() {
           {paginatedRepairs.map((repair) => (
             <div
               key={repair.id}
-              className="bg-white rounded-lg p-4"
+              className="bg-white rounded-lg p-4 shadow-sm border border-gray-100"
               onClick={() => router.push(`/admin/repairs/${repair.ticketCode}`)}
             >
               <div className="flex justify-between items-start mb-2">
-                <span className="text-xs font-mono text-gray-500">
-                  {repair.ticketCode}
-                </span>
-                <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
-                  {statusLabels[repair.status] || repair.status}
-                </span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-mono text-gray-500">
+                    {repair.ticketCode}
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                        repair.urgency === "CRITICAL"
+                          ? "bg-red-100 text-red-700"
+                          : repair.urgency === "URGENT"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {repair.urgency === "CRITICAL"
+                        ? "ด่วนมาก"
+                        : repair.urgency === "URGENT"
+                          ? "ด่วน"
+                          : "ปกติ"}
+                    </span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        repair.status === "COMPLETED"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : repair.status === "IN_PROGRESS"
+                            ? "bg-amber-100 text-amber-700"
+                            : repair.status === "PENDING"
+                              ? "bg-sky-100 text-sky-700"
+                              : repair.status === "ASSIGNED"
+                                ? "bg-blue-100 text-blue-700"
+                                : repair.status === "WAITING_PARTS"
+                                  ? "bg-purple-100 text-purple-700"
+                                  : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {statusLabels[repair.status] || repair.status}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-gray-300" />
               </div>
-              <p className="text-sm font-medium text-gray-900 mb-1">
+              <p className="text-sm font-semibold text-gray-900 mb-1 leading-snug">
                 {repair.problemTitle}
               </p>
-              <p className="text-xs text-gray-500">{repair.location}</p>
-              <div className="flex justify-end items-center gap-2 mt-3 pt-3 border-t border-gray-100">
-                <button className="p-2 text-gray-400 hover:text-gray-600">
-                  <ChevronRight size={16} />
-                </button>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>📍 {repair.location}</span>
+                <span>•</span>
+                <span>👤 {repair.reporterName}</span>
               </div>
             </div>
           ))}
