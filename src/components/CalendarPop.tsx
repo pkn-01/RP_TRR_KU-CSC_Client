@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   ChevronDown,
+  X,
 } from "lucide-react";
 
 interface CalendarPopProps {
@@ -51,15 +52,20 @@ export default function CalendarPop({
     }
   }, [isOpen, selectedDate]);
 
-  // Handle click outside to close
+  // Handle click outside to close (Desktop only logic)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        setViewMode("days"); // Reset view on close
+        // Only close if we are not in mobile modal view
+        // Or if the target is actually outside the container
+        // Small screens use fixed centering, clicking outside container doesn't work the same
+        if (window.innerWidth >= 768) {
+          setIsOpen(false);
+          setViewMode("days");
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -75,7 +81,7 @@ export default function CalendarPop({
   };
 
   const currentYear = getYear(currentDate);
-  const years = Array.from({ length: 12 }, (_, i) => currentYear - 6 + i); // Show 12 years around current
+  const years = Array.from({ length: 24 }, (_, i) => currentYear - 11 + i); // Increased year range
   const months = [
     "มกราคม",
     "กุมภาพันธ์",
@@ -97,30 +103,30 @@ export default function CalendarPop({
     <div className="flex items-center justify-between mb-4 px-1">
       <button
         onClick={handlePrevMonth}
-        className="p-1 hover:bg-brown-50 rounded-full text-gray-500 hover:text-[#5D2E1E] transition-colors"
+        className="p-2 hover:bg-orange-50 rounded-full text-gray-400 hover:text-[#5D2E1E] transition-all"
         disabled={viewMode !== "days"}
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={22} />
       </button>
 
       <div className="flex gap-1 items-center">
         <button
           onClick={() => setViewMode(viewMode === "months" ? "days" : "months")}
-          className="flex items-center gap-1 font-bold text-[#5D2E1E] hover:bg-brown-50 px-2 py-1 rounded-md transition-colors text-sm"
+          className="flex items-center gap-1 font-bold text-[#5D2E1E] hover:bg-orange-50 px-3 py-1.5 rounded-xl transition-all text-sm sm:text-base"
         >
           {format(currentDate, "MMMM", { locale: th })}
           <ChevronDown
-            size={14}
+            size={16}
             className={`transition-transform duration-200 ${viewMode === "months" ? "rotate-180" : ""}`}
           />
         </button>
         <button
           onClick={() => setViewMode(viewMode === "years" ? "days" : "years")}
-          className="flex items-center gap-1 font-bold text-[#5D2E1E] hover:bg-brown-50 px-2 py-1 rounded-md transition-colors text-sm"
+          className="flex items-center gap-1 font-bold text-[#5D2E1E] hover:bg-orange-50 px-3 py-1.5 rounded-xl transition-all text-sm sm:text-base"
         >
           {currentYear + 543}
           <ChevronDown
-            size={14}
+            size={16}
             className={`transition-transform duration-200 ${viewMode === "years" ? "rotate-180" : ""}`}
           />
         </button>
@@ -128,10 +134,10 @@ export default function CalendarPop({
 
       <button
         onClick={handleNextMonth}
-        className="p-1 hover:bg-brown-50 rounded-full text-gray-500 hover:text-[#5D2E1E] transition-colors"
+        className="p-2 hover:bg-orange-50 rounded-full text-gray-400 hover:text-[#5D2E1E] transition-all"
         disabled={viewMode !== "days"}
       >
-        <ChevronRight size={20} />
+        <ChevronRight size={22} />
       </button>
     </div>
   );
@@ -141,17 +147,16 @@ export default function CalendarPop({
     const end = endOfMonth(currentDate);
     const daysInMonth = eachDayOfInterval({ start, end });
 
-    // Calculate empty slots for start of month
     const startDay = start.getDay();
     const emptySlots = Array.from({ length: startDay });
 
     return (
-      <>
+      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
         <div className="grid grid-cols-7 mb-2">
           {["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].map((day, idx) => (
             <div
               key={day}
-              className={`text-xs font-semibold text-center ${idx === 0 || idx === 6 ? "text-red-400" : "text-gray-400"}`}
+              className={`text-xs font-bold text-center h-8 flex items-center justify-center ${idx === 0 || idx === 6 ? "text-rose-500" : "text-gray-400"}`}
             >
               {day}
             </div>
@@ -159,7 +164,7 @@ export default function CalendarPop({
         </div>
         <div className="grid grid-cols-7 gap-1">
           {emptySlots.map((_, i) => (
-            <div key={`empty-${i}`} />
+            <div key={`empty-${i}`} className="h-10 w-10 sm:h-11 sm:w-11" />
           ))}
           {daysInMonth.map((day) => {
             const isSelected = selectedDate
@@ -172,13 +177,13 @@ export default function CalendarPop({
                 key={day.toString()}
                 onClick={() => handleDateClick(day)}
                 className={`
-                  h-9 w-9 rounded-full flex items-center justify-center text-sm transition-all
+                  h-10 w-10 sm:h-11 sm:w-11 rounded-2xl flex items-center justify-center text-sm transition-all
                   ${
                     isSelected
-                      ? "bg-[#5D2E1E] text-white shadow-md scale-105 font-medium"
+                      ? "bg-[#5D2E1E] text-white shadow-lg scale-105 font-bold"
                       : isTodayDate
-                        ? "bg-amber-100 text-[#5D2E1E] font-bold border border-amber-200"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-amber-100 text-[#5D2E1E] font-black border border-amber-200"
+                        : "text-gray-700 hover:bg-orange-50 hover:scale-105"
                   }
                 `}
               >
@@ -187,12 +192,12 @@ export default function CalendarPop({
             );
           })}
         </div>
-      </>
+      </div>
     );
   };
 
   const renderMonths = () => (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2 animate-in zoom-in-95 duration-200">
       {months.map((month, idx) => (
         <button
           key={month}
@@ -201,11 +206,11 @@ export default function CalendarPop({
             setViewMode("days");
           }}
           className={`
-            p-2 rounded-lg text-sm transition-colors
+            p-3 rounded-2xl text-sm transition-all font-medium
             ${
               getMonth(currentDate) === idx
-                ? "bg-[#5D2E1E] text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
+                ? "bg-[#5D2E1E] text-white shadow-md"
+                : "text-gray-700 hover:bg-orange-50"
             }
           `}
         >
@@ -216,7 +221,7 @@ export default function CalendarPop({
   );
 
   const renderYears = () => (
-    <div className="grid grid-cols-3 gap-2 max-h-[240px] overflow-y-auto custom-scrollbar">
+    <div className="grid grid-cols-3 gap-2 max-h-[250px] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200 p-1">
       {years.map((year) => (
         <button
           key={year}
@@ -225,11 +230,11 @@ export default function CalendarPop({
             setViewMode("days");
           }}
           className={`
-            p-2 rounded-lg text-sm transition-colors
+            p-3 rounded-2xl text-sm transition-all font-medium
             ${
               getYear(currentDate) === year
-                ? "bg-[#5D2E1E] text-white shadow-sm"
-                : "text-gray-700 hover:bg-gray-100"
+                ? "bg-[#5D2E1E] text-white shadow-md"
+                : "text-gray-700 hover:bg-orange-50"
             }
           `}
         >
@@ -246,7 +251,7 @@ export default function CalendarPop({
         className={`
           flex items-center gap-2 bg-white border rounded-full px-4 py-2 
           transition-all shadow-sm hover:shadow-md active:scale-95 group
-          ${isOpen ? "border-[#5D2E1E] ring-1 ring-[#5D2E1E]/20" : "border-gray-200 hover:border-[#5D2E1E]"}
+          ${isOpen ? "border-[#5D2E1E] ring-4 ring-[#5D2E1E]/5" : "border-gray-200 hover:border-[#5D2E1E]"}
         `}
       >
         <CalendarIcon
@@ -254,7 +259,7 @@ export default function CalendarPop({
           className={`transition-colors ${isOpen ? "text-[#5D2E1E]" : "text-gray-400 group-hover:text-[#5D2E1E]"}`}
         />
         <span
-          className={`text-sm font-medium transition-colors ${isOpen ? "text-[#5D2E1E]" : "text-gray-700 group-hover:text-[#5D2E1E]"}`}
+          className={`text-sm font-semibold transition-colors ${isOpen ? "text-[#5D2E1E]" : "text-gray-700 group-hover:text-[#5D2E1E]"}`}
         >
           {selectedDate
             ? format(selectedDate, "d MMMM yyyy", { locale: th }).replace(
@@ -265,33 +270,70 @@ export default function CalendarPop({
         </span>
         <ChevronDown
           size={16}
-          className={`text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180 text-[#5D2E1E]" : ""}`}
+          className={`text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-[#5D2E1E]" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 w-[320px] z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-          {renderHeader()}
+        <>
+          {/* Backdrop for mobile */}
+          <div
+            className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60] animate-in fade-in duration-300"
+            onClick={() => setIsOpen(false)}
+          />
 
-          <div className="min-h-[240px]">
-            {viewMode === "days" && renderDays()}
-            {viewMode === "months" && renderMonths()}
-            {viewMode === "years" && renderYears()}
-          </div>
+          <div
+            className={`
+            fixed md:absolute 
+            inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:top-full md:mt-2 md:right-0 
+            bg-white rounded-[2rem] sm:rounded-3xl 
+            shadow-2xl border border-gray-100 p-4 sm:p-6
+            w-auto max-w-[360px] mx-auto md:mx-0 sm:w-[350px] 
+            z-[70] md:z-50 
+            animate-in fade-in zoom-in-95 duration-200 
+            origin-center md:origin-top-right
+          `}
+          >
+            <div className="flex md:hidden items-center justify-between mb-2">
+              <span className="text-sm font-bold text-gray-400 ml-2">
+                เลือกวันที่
+              </span>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 text-gray-400 hover:bg-gray-100 rounded-full"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-center">
-            <button
-              onClick={() => {
-                const today = new Date();
-                handleChange(today);
-                setIsOpen(false);
-              }}
-              className="text-xs font-semibold text-[#5D2E1E] hover:underline"
-            >
-              วันนี้
-            </button>
+            {renderHeader()}
+
+            <div className="min-h-[260px] flex flex-col justify-center">
+              {viewMode === "days" && renderDays()}
+              {viewMode === "months" && renderMonths()}
+              {viewMode === "years" && renderYears()}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between px-2">
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  handleChange(today);
+                  setIsOpen(false);
+                }}
+                className="text-sm font-bold text-[#5D2E1E] hover:underline bg-orange-50 px-4 py-1.5 rounded-full transition-all"
+              >
+                วันนี้
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="hidden md:block text-sm font-medium text-gray-500 hover:text-gray-700"
+              >
+                ปิด
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
