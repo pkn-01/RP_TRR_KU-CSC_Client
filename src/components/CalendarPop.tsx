@@ -29,12 +29,14 @@ interface CalendarPopProps {
   selectedDate: Date | null;
   onChange?: (date: Date) => void;
   onDateSelect?: (date: Date) => void;
+  align?: "left" | "right";
 }
 
 export default function CalendarPop({
   selectedDate,
   onChange,
   onDateSelect,
+  align = "left",
 }: CalendarPopProps) {
   const handleChange = (date: Date) => {
     onChange?.(date);
@@ -286,13 +288,14 @@ export default function CalendarPop({
             className={`
             fixed md:absolute 
             inset-x-4 top-1/2 -translate-y-1/2 md:translate-y-0
-            md:inset-auto md:top-full md:mt-2 md:left-0 md:right-auto
+            md:inset-auto md:top-full md:mt-2 
+            ${align === "right" ? "md:right-0 md:left-auto" : "md:left-0 md:right-auto"}
             bg-white rounded-[2rem] sm:rounded-3xl 
             shadow-2xl border border-gray-100 p-4 sm:p-6
             w-auto max-w-[360px] mx-auto md:mx-0 sm:w-[350px] 
             z-[70] md:z-50 
             animate-in fade-in zoom-in-95 duration-200 
-            origin-center md:origin-top-left
+            ${align === "right" ? "md:origin-top-right" : "md:origin-top-left"} origin-center
           `}
           >
             <div className="flex md:hidden items-center justify-between mb-2">
