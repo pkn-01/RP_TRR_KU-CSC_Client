@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback } from "react";
+import { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -90,7 +90,12 @@ function AdminRepairsContent() {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
 
+  const initializedFromParams = useRef(false);
+
   useEffect(() => {
+    if (initializedFromParams.current) return;
+    initializedFromParams.current = true;
+
     const status = searchParams.get("status");
     const date = searchParams.get("date");
     const filterParam = searchParams.get("filter");
