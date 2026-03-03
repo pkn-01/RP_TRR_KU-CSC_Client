@@ -24,6 +24,7 @@ interface RepairItem {
 interface DashboardStats {
   all: {
     total: number;
+    pending: number;
     inProgress: number;
     completed: number;
     cancelled: number;
@@ -252,9 +253,10 @@ export default function AdminDashboard() {
       sheet1.mergeCells(allHeader.number, 1, allHeader.number, 2);
 
       addDetailRow("รายการซ่อมทั้งหมด", fullStats.all.total);
-      addDetailRow("กำลังดำเนินการ", fullStats.all.inProgress);
-      addDetailRow("เสร็จสิ้น", fullStats.all.completed);
-      addDetailRow("ยกเลิก", fullStats.all.cancelled);
+      addDetailRow("รอดำเนินการ (สะสม)", fullStats.all.pending);
+      addDetailRow("กำลังดำเนินการ (สะสม)", fullStats.all.inProgress);
+      addDetailRow("เสร็จสิ้น (สะสม)", fullStats.all.completed);
+      addDetailRow("ยกเลิก (สะสม)", fullStats.all.cancelled);
       sheet1.addRow([]);
 
       // Filtered Stats Header
@@ -493,12 +495,18 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Stats Cards Section */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
           <MainStatItem
             label={
               "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
             }
             value={stats?.all.total || 0}
+          />
+          <MainStatItem
+            label={
+              "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E21\u0E34\u0E19\u0E01\u0E32\u0E23"
+            }
+            value={stats?.all.pending || 0}
           />
           <MainStatItem
             label={
@@ -516,11 +524,16 @@ export default function AdminDashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
           <TodayStatCard
             label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
             value={stats?.filtered.total || 0}
             link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
+          />
+          <TodayStatCard
+            label={`\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            value={stats?.filtered.pending || 0}
+            link={`/admin/repairs?status=PENDING&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
             label={`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
@@ -801,6 +814,8 @@ function MainStatItem({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
     "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14":
       "bg-blue-600 text-white",
+    "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E21\u0E34\u0E19\u0E01\u0E32\u0E23":
+      "bg-sky-500 text-white",
     "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23":
       "bg-amber-500 text-white",
     "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19":
@@ -812,12 +827,12 @@ function MainStatItem({ label, value }: { label: string; value: number }) {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center p-3 sm:p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl ${colorClass}`}
+      className={`flex flex-col items-center justify-center p-3 sm:p-5 min-w-0 w-full rounded-xl shadow-md transition-all hover:scale-[1.05] hover:shadow-xl min-h-[90px] sm:min-h-[110px] ${colorClass}`}
     >
-      <span className="text-[10px] sm:text-sm mb-1 text-center font-bold uppercase tracking-wider leading-tight">
+      <span className="text-[10px] sm:text-xs mb-1 text-center font-bold uppercase tracking-wider leading-tight">
         {label}
       </span>
-      <span className="text-2xl sm:text-4xl font-black">{value}</span>
+      <span className="text-2xl sm:text-3xl font-black">{value}</span>
     </div>
   );
 }
@@ -834,6 +849,12 @@ function TodayStatCard({
 }) {
   let colorClass = "bg-blue-600 text-white";
 
+  if (
+    label.includes(
+      "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23",
+    )
+  )
+    colorClass = "bg-sky-500 text-white";
   if (
     label.includes(
       "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23",
@@ -854,10 +875,10 @@ function TodayStatCard({
         <ArrowUpRight className="text-white w-3.5 h-3.5 sm:w-[18px] sm:h-[18px]" />
       </div>
 
-      <span className="text-[10px] sm:text-sm mb-1 font-bold text-center leading-tight uppercase tracking-wide">
+      <span className="text-[10px] sm:text-xs mb-1 font-bold text-center leading-tight uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-2xl sm:text-4xl font-black">{value}</span>
+      <span className="text-2xl sm:text-3xl font-black">{value}</span>
     </Link>
   );
 }

@@ -876,9 +876,9 @@ function AdminRepairsContent() {
                 {repair.problemTitle}
               </p>
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <span>📍 {repair.location}</span>
+                <span>{repair.location}</span>
                 <span>•</span>
-                <span>👤 {repair.reporterName}</span>
+                <span>{repair.reporterName}</span>
               </div>
             </div>
           ))}

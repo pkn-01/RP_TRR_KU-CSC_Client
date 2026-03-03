@@ -487,20 +487,20 @@ function AdminLoansContent() {
               <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
                 <button
                   onClick={() => handleViewDetail(loan)}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-[#C700FF] text-white shadow-md"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl"
                 >
                   <FileText size={20} />
                 </button>
                 <button
                   onClick={() => handleMarkAsReturned(loan.id)}
                   disabled={loan.status === "RETURNED"}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md disabled:opacity-50"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl"
                 >
                   <Check size={20} />
                 </button>
                 <button
                   onClick={() => handleDelete(loan.id)}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 shadow-md"
+                  className="w-11 h-11 flex items-center justify-center rounded-2xl"
                 >
                   <Trash2 size={20} />
                 </button>
