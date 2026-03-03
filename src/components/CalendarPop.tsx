@@ -285,13 +285,14 @@ export default function CalendarPop({
           <div
             className={`
             fixed md:absolute 
-            inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:top-full md:mt-2 md:right-0 
+            inset-x-4 top-1/2 -translate-y-1/2 md:translate-y-0
+            md:inset-auto md:top-full md:mt-2 md:left-0 md:right-auto
             bg-white rounded-[2rem] sm:rounded-3xl 
             shadow-2xl border border-gray-100 p-4 sm:p-6
             w-auto max-w-[360px] mx-auto md:mx-0 sm:w-[350px] 
             z-[70] md:z-50 
             animate-in fade-in zoom-in-95 duration-200 
-            origin-center md:origin-top-right
+            origin-center md:origin-top-left
           `}
           >
             <div className="flex md:hidden items-center justify-between mb-2">

@@ -172,7 +172,7 @@ export default function AdminDashboard() {
     try {
       Swal.fire({
         title: "กำลังเตรียมรายงาน...",
-        text: "ระบบกำลังจัดรูปแบบไฟล์ Excel ให้สวยงาม",
+        text: "ระบบกำลังจัดรูปแบบไฟล์ Excel",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
