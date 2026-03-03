@@ -481,6 +481,7 @@ export default function AdminDashboard() {
                   const day = String(date.getDate()).padStart(2, "0");
                   setSelectedDate(`${year}-${month}-${day}`);
                 }}
+                align="right"
               />
 
               <button
