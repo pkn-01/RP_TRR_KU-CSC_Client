@@ -93,11 +93,17 @@ function AdminRepairsContent() {
   useEffect(() => {
     const status = searchParams.get("status");
     const date = searchParams.get("date");
-    const filter = searchParams.get("filter");
+    const filterParam = searchParams.get("filter");
 
     if (status) setFilterStatus(status);
-    if (date) setFilterDate(date);
-    if (filter) setFilterType(filter);
+    if (date) {
+      setFilterDate(date);
+      setSelectedDate(date);
+    }
+    if (filterParam) {
+      setFilterType(filterParam);
+      setFilter(filterParam);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -467,6 +473,9 @@ function AdminRepairsContent() {
               onClick={() => {
                 setFilterDate(null);
                 setFilterType("all");
+                setFilter("all");
+                setSelectedDate(new Date().toISOString().split("T")[0]);
+                setFilterStatus("all");
                 router.push("/admin/repairs");
               }}
               className="text-sm text-[#5D2E1F] font-medium hover:underline"
