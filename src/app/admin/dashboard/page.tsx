@@ -489,7 +489,7 @@ export default function AdminDashboard() {
                 className="flex items-center gap-1.5 bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-full shadow-sm hover:bg-gray-50 transition-all text-sm font-medium"
               >
                 <Download size={14} />
-                <span className="hidden xs:inline">Export</span>
+                <span className="hidden sm:inline">Export</span>
               </button>
             </div>
           </div>
