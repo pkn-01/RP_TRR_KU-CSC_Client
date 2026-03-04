@@ -228,14 +228,8 @@ export default function ITRepairDetailPage() {
   }, [data, isAssignedToMe]);
 
   const canPickupJob = useCallback(() => {
-    if (!data) return false;
-    return (
-      (data.status === "PENDING" || data.status === "ASSIGNED") &&
-      !data.assignees?.some(
-        (a) => a.userId === currentUserId || a.user?.id === currentUserId,
-      )
-    );
-  }, [data, currentUserId]);
+    return false; // Disabled: auto-transitions on save instead
+  }, []);
 
   const hasChanges = () => {
     if (!initialData) return false;
@@ -376,12 +370,18 @@ export default function ITRepairDetailPage() {
     try {
       setSaving(true);
 
+      // Auto-upgrade status from ASSIGNED to IN_PROGRESS on first action
+      const body: Record<string, any> = {
+        notes,
+        messageToReporter,
+      };
+      if (data.status === "ASSIGNED") {
+        body.status = "IN_PROGRESS";
+      }
+
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
-        body: {
-          notes,
-          messageToReporter,
-        },
+        body,
       });
 
       // Toast Success
