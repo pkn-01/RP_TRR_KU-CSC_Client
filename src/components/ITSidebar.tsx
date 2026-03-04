@@ -161,7 +161,7 @@ export default function ITSidebar() {
             className={`flex items-center gap-2 ${isCollapsed && !isOpen ? "hidden" : "flex"}`}
           >
             <span className="text-xl font-bold text-white tracking-wider">
-              IT-SUPPORT
+              IT-TRR
             </span>
           </Link>
 

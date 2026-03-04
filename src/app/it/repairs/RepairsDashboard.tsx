@@ -27,7 +27,7 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอดำเนินการ",
-  ASSIGNED: "มอบหมายแล้ว",
+  ASSIGNED: "รอดำเนินการ",
   IN_PROGRESS: "กำลังดำเนินการ",
   REPAIRING: "กำลังซ่อม",
   COMPLETED: "เสร็จสิ้น",
@@ -210,7 +210,7 @@ export function RepairsDashboard() {
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
           >
             <option value="all">ทุกสถานะ</option>
-            <option value="PENDING">รอดำเนินการ</option>
+            <option value="ASSIGNED">รอดำเนินการ</option>
             <option value="IN_PROGRESS">กำลังดำเนินการ</option>
             <option value="COMPLETED">เสร็จสิ้น</option>
             <option value="CANCELLED">ยกเลิก</option>
