@@ -84,24 +84,36 @@ function AdminRepairsContent() {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
 
-  const initializedFromParams = useRef(false);
-
   useEffect(() => {
-    if (initializedFromParams.current) return;
-    initializedFromParams.current = true;
-
     const status = searchParams.get("status");
     const date = searchParams.get("date");
     const filterParam = searchParams.get("filter");
 
-    if (status) setFilterStatus(status);
+    if (status) {
+      setFilterStatus(status);
+    } else {
+      setFilterStatus("all");
+    }
+
     if (date) {
       setFilterDate(date);
       setSelectedDate(date);
+    } else {
+      setFilterDate(null);
+      // Keep selectedDate as today by default if initialized,
+      // but if we want to reset when null:
+      const today = new Date();
+      setSelectedDate(
+        `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`,
+      );
     }
+
     if (filterParam) {
       setFilterType(filterParam);
       setFilter(filterParam);
+    } else {
+      setFilterType("all");
+      setFilter("all");
     }
   }, [searchParams]);
 

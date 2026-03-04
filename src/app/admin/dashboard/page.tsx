@@ -454,7 +454,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
-            {"\u0E41\u0E14\u0E0A\u0E1A\u0E2D\u0E23\u0E4C\u0E14"}
+            แดชบอร์ด
           </h1>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -475,10 +475,10 @@ export default function AdminDashboard() {
                   }}
                 >
                   {f === "day"
-                    ? "\u0E23\u0E32\u0E22\u0E27\u0E31\u0E19"
+                    ? "รายวัน"
                     : f === "week"
-                      ? "\u0E23\u0E32\u0E22\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"
-                      : "\u0E23\u0E32\u0E22\u0E40\u0E14\u0E37\u0E2D\u0E19"}
+                      ? "รายสัปดาห์"
+                      : "รายเดือน"}
                 </button>
               ))}
             </div>
@@ -513,56 +513,41 @@ export default function AdminDashboard() {
         {/* Main Stats Cards Section */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
           <MainStatItem
-            label={
-              "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"
-            }
+            label={"รายการซ่อมทั้งหมด"}
             value={stats?.all.total || 0}
           />
+          <MainStatItem label={"รอดำเนินการ"} value={stats?.all.pending || 0} />
           <MainStatItem
-            label={
-              "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E21\u0E34\u0E19\u0E01\u0E32\u0E23"
-            }
-            value={stats?.all.pending || 0}
-          />
-          <MainStatItem
-            label={
-              "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
-            }
+            label={"กำลังดำเนินการ"}
             value={stats?.all.inProgress || 0}
           />
-          <MainStatItem
-            label={"\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"}
-            value={stats?.all.completed || 0}
-          />
-          <MainStatItem
-            label={"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
-            value={stats?.all.cancelled || 0}
-          />
+          <MainStatItem label={"เสร็จสิ้น"} value={stats?.all.completed || 0} />
+          <MainStatItem label={"ยกเลิก"} value={stats?.all.cancelled || 0} />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
           <TodayStatCard
-            label={`\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`รายการซ่อม(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.total || 0}
             link={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`รอดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.pending || 0}
             link={`/admin/repairs?status=PENDING&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`กำลังดำเนินการ(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.inProgress || 0}
             link={`/admin/repairs?status=IN_PROGRESS&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`เสร็จสิ้น(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.completed || 0}
             link={`/admin/repairs?status=COMPLETED&filter=${filter}&date=${selectedDate}`}
           />
           <TodayStatCard
-            label={`\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01(${filter === "day" ? "\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49" : filter === "week" ? "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49" : "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49"})`}
+            label={`ยกเลิก(${filter === "day" ? "วันนี้" : filter === "week" ? "สัปดาห์นี้" : "เดือนนี้"})`}
             value={stats?.filtered.cancelled || 0}
             link={`/admin/repairs?status=CANCELLED&filter=${filter}&date=${selectedDate}`}
           />
@@ -572,15 +557,13 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-gray-200">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900">
-              {
-                "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14"
-              }
+              รายการแจ้งซ่อมล่าสุด
             </h2>
             <Link
-              href="/admin/repairs"
+              href={`/admin/repairs?filter=${filter}&date=${selectedDate}`}
               className="text-sm font-medium text-blue-600 hover:text-brown-800 transition-colors"
             >
-              {"\u0E14\u0E39\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14"}
+              ดูทั้งหมด
             </Link>
           </div>
 
@@ -590,27 +573,25 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E23\u0E2B\u0E31\u0E2A"}
+                    รหัส
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E40\u0E27\u0E25\u0E32"}
+                    เวลา
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E1B\u0E31\u0E0D\u0E2B\u0E32"}
+                    ปัญหา
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E2A\u0E16\u0E32\u0E19\u0E17\u0E35\u0E48"}
+                    สถานที่
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {
-                      "\u0E04\u0E27\u0E32\u0E21\u0E40\u0E23\u0E48\u0E07\u0E14\u0E48\u0E27\u0E19"
-                    }
+                    ความเร่งด่วน
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E2A\u0E16\u0E32\u0E19\u0E30"}
+                    สถานะ
                   </th>
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    {"\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23"}
+                    จัดการ
                   </th>
                 </tr>
               </thead>
@@ -656,28 +637,22 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3 text-sm">
                       {repair.status === "PENDING" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-sky-100 text-sky-700 rounded-full">
-                          {
-                            "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
-                          }
+                          รอดำเนินการ
                         </span>
                       )}
                       {repair.status === "IN_PROGRESS" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-amber-100 text-amber-700 rounded-full">
-                          {
-                            "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
-                          }
+                          กำลังดำเนินการ
                         </span>
                       )}
                       {repair.status === "COMPLETED" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                          {
-                            "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"
-                          }
+                          เสร็จสิ้น
                         </span>
                       )}
                       {repair.status === "CANCELLED" && (
                         <span className="px-2 py-1 text-xs font-semibold bg-rose-100 text-rose-700 rounded-full">
-                          {"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
+                          ยกเลิก
                         </span>
                       )}
                     </td>
@@ -698,9 +673,7 @@ export default function AdminDashboard() {
                       colSpan={7}
                       className="px-4 py-8 text-center text-gray-500 text-sm"
                     >
-                      {
-                        "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23"
-                      }
+                      ไม่มีรายการ
                     </td>
                   </tr>
                 )}
@@ -724,28 +697,22 @@ export default function AdminDashboard() {
                       </span>
                       {repair.status === "PENDING" && (
                         <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-sky-100 text-sky-700 rounded-full">
-                          {
-                            "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
-                          }
+                          รอดำเนินการ
                         </span>
                       )}
                       {repair.status === "IN_PROGRESS" && (
                         <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">
-                          {
-                            "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23"
-                          }
+                          กำลังดำเนินการ
                         </span>
                       )}
                       {repair.status === "COMPLETED" && (
                         <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">
-                          {
-                            "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"
-                          }
+                          เสร็จสิ้น
                         </span>
                       )}
                       {repair.status === "CANCELLED" && (
                         <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">
-                          {"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"}
+                          ยกเลิก
                         </span>
                       )}
                     </div>
@@ -770,9 +737,7 @@ export default function AdminDashboard() {
             ))}
             {(!stats?.recentRepairs || stats.recentRepairs.length === 0) && (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                {
-                  "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23"
-                }
+                ไม่มีรายการ
               </div>
             )}
           </div>
@@ -781,31 +746,23 @@ export default function AdminDashboard() {
         {/* Department Statistics */}
         <div>
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-            {
-              "\u0E08\u0E33\u0E19\u0E27\u0E19\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E41\u0E08\u0E49\u0E07\u0E0B\u0E48\u0E2D\u0E21\u0E02\u0E2D\u0E07\u0E41\u0E15\u0E48\u0E25\u0E30\u0E41\u0E1C\u0E19\u0E01"
-            }
+            จำนวนรายการแจ้งซ่อมของแต่ละแผนก
             <span className="text-xs sm:text-sm font-normal text-gray-500 ml-2">
               (
               {filter === "day"
-                ? `\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48 ${formatDisplayDate(selectedDate)}`
+                ? `วันที่ ${formatDisplayDate(selectedDate)}`
                 : filter === "week"
-                  ? `\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E02\u0E2D\u0E07 ${formatDisplayDate(selectedDate)}`
-                  : `\u0E40\u0E14\u0E37\u0E2D\u0E19 ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
+                  ? `สัปดาห์ของ ${formatDisplayDate(selectedDate)}`
+                  : `เดือน ${new Date(selectedDate).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}`}
               )
             </span>
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
-            {departmentStats.length > 0 ? (
-              departmentStats.map((dept) => (
-                <DepartmentCard key={dept.department} stat={dept} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8 text-gray-500 text-sm">
-                {
-                  "\u0E44\u0E21\u0E48\u0E21\u0E35\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E43\u0E19\u0E0A\u0E48\u0E27\u0E07\u0E40\u0E27\u0E25\u0E32\u0E17\u0E35\u0E48\u0E40\u0E25\u0E37\u0E2D\u0E01"
-                }
-              </div>
-            )}
+            {departmentStats.length > 0
+              ? departmentStats.map((dept) => (
+                  <DepartmentCard key={dept.department} stat={dept} />
+                ))
+              : "ไม่มีข้อมูลในช่วงเวลาที่เลือก"}
           </div>
         </div>
       </div>
@@ -828,15 +785,11 @@ function StatCard({ label, value }: { label: string; value: number }) {
 // Main Stat Item Component (Internal use for the main card)
 function MainStatItem({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
-    "\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E0B\u0E48\u0E2D\u0E21\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14":
-      "bg-blue-600 text-white",
-    "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E21\u0E34\u0E19\u0E01\u0E32\u0E23":
-      "bg-sky-500 text-white",
-    "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23":
-      "bg-amber-500 text-white",
-    "\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19":
-      "bg-emerald-600 text-white",
-    "\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01": "bg-rose-600 text-white",
+    รายการซ่อมทั้งหมด: "bg-blue-600 text-white",
+    รอดำเนินการ: "bg-sky-500 text-white",
+    กำลังดำเนินการ: "bg-amber-500 text-white",
+    เสร็จสิ้น: "bg-emerald-600 text-white",
+    ยกเลิก: "bg-rose-600 text-white",
   };
 
   const colorClass = colorMap[label] || "bg-blue-600 text-white";
@@ -865,22 +818,10 @@ function TodayStatCard({
 }) {
   let colorClass = "bg-blue-600 text-white";
 
-  if (
-    label.includes(
-      "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23",
-    )
-  )
-    colorClass = "bg-sky-500 text-white";
-  if (
-    label.includes(
-      "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23",
-    )
-  )
-    colorClass = "bg-amber-500 text-white";
-  if (label.includes("\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19"))
-    colorClass = "bg-emerald-600 text-white";
-  if (label.includes("\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"))
-    colorClass = "bg-rose-600 text-white";
+  if (label.includes("รอดำเนินการ")) colorClass = "bg-sky-500 text-white";
+  if (label.includes("กำลังดำเนินการ")) colorClass = "bg-amber-500 text-white";
+  if (label.includes("เสร็จสิ้น")) colorClass = "bg-emerald-600 text-white";
+  if (label.includes("ยกเลิก")) colorClass = "bg-rose-600 text-white";
 
   return (
     <Link
@@ -915,29 +856,19 @@ function DepartmentCard({ stat }: { stat: DepartmentStat }) {
       </div>
       <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm">
         <div className="flex justify-between font-bold text-blue-600 border-r-4 border-blue-400 pr-2 bg-blue-50 py-1.5 rounded-l">
-          <span>
-            {
-              "\u0E23\u0E2D\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23 :"
-            }
-          </span>
+          <span>รอดำเนินการ :</span>
           <span>{stat.pending}</span>
         </div>
         <div className="flex justify-between font-bold text-amber-600 border-r-4 border-amber-500 pr-2 bg-amber-50 py-1.5 rounded-l">
-          <span>
-            {
-              "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23 :"
-            }
-          </span>
+          <span>กำลังดำเนินการ :</span>
           <span>{stat.inProgress}</span>
         </div>
         <div className="flex justify-between font-bold text-emerald-600 border-r-4 border-emerald-500 pr-2 bg-emerald-50 py-1.5 rounded-l">
-          <span>
-            {"\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19 :"}
-          </span>
+          <span>เสร็จสิ้น :</span>
           <span>{stat.completed}</span>
         </div>
         <div className="flex justify-between font-bold text-rose-600 border-r-4 border-rose-500 pr-2 bg-rose-50 py-1.5 rounded-l">
-          <span>{"\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01 :"}</span>
+          <span>ยกเลิก :</span>
           <span>{stat.cancelled}</span>
         </div>
       </div>
