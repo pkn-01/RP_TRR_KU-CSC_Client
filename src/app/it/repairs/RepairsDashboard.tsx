@@ -43,8 +43,8 @@ export function RepairsDashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const itemsPerPage = 10;
 
   // Get current user ID on mount
   useEffect(() => {
@@ -213,7 +213,7 @@ export function RepairsDashboard() {
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
           >
             <option value="all">ทุกสถานะ</option>
-            <option value="PENDING">รอรับงาน</option>
+            <option value="PENDING">รอดำเนินการ</option>
             <option value="IN_PROGRESS">กำลังดำเนินการ</option>
             <option value="COMPLETED">เสร็จสิ้น</option>
             <option value="CANCELLED">ยกเลิก</option>
@@ -236,10 +236,10 @@ export function RepairsDashboard() {
         </div>
 
         {/* ===== Desktop Table ===== */}
-        <div className="hidden md:block bg-white rounded-lg overflow-hidden">
+        <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-gray-200 bg-gray-50/80">
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   รหัส
                 </th>
@@ -253,10 +253,10 @@ export function RepairsDashboard() {
                   สถานที่
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                  สถานะ
+                  ความเร่งด่วน
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
-                  ความเร่งด่วน
+                  สถานะ
                 </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600 text-right">
                   จัดการ
@@ -295,19 +295,22 @@ export function RepairsDashboard() {
                       <span className="text-sm font-mono text-gray-900">
                         {repair.ticketCode}
                       </span>
-                      <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-400">
-                        <Clock size={12} />
-                        {new Date(repair.createdAt).toLocaleDateString("th-TH")}
-                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm text-gray-700">
+                        {new Date(repair.createdAt).toLocaleDateString(
+                          "th-TH",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "2-digit",
+                          },
+                        )}{" "}
                         {new Date(repair.createdAt).toLocaleTimeString(
                           "th-TH",
                           {
                             hour: "2-digit",
                             minute: "2-digit",
-                            second: "2-digit",
                           },
                         )}
                       </span>
@@ -325,23 +328,6 @@ export function RepairsDashboard() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 text-xs font-medium rounded-full ${
-                          repair.status === "COMPLETED"
-                            ? "bg-green-100 text-green-700"
-                            : repair.status === "IN_PROGRESS"
-                              ? "bg-amber-100 text-amber-700"
-                              : repair.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : repair.status === "CANCELLED"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        {statusLabels[repair.status] || repair.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 text-xs font-medium rounded-full ${
                           repair.urgency === "CRITICAL"
                             ? "bg-red-100 text-red-700"
                             : repair.urgency === "URGENT"
@@ -354,6 +340,25 @@ export function RepairsDashboard() {
                           : repair.urgency === "URGENT"
                             ? "ด่วน"
                             : "ปกติ"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full ${
+                          repair.status === "COMPLETED"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : repair.status === "IN_PROGRESS"
+                              ? "bg-amber-100 text-amber-700"
+                              : repair.status === "PENDING"
+                                ? "bg-sky-100 text-sky-700"
+                                : repair.status === "ASSIGNED"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : repair.status === "CANCELLED"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {statusLabels[repair.status] || repair.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -386,48 +391,67 @@ export function RepairsDashboard() {
             paginatedRepairs.map((repair) => (
               <div
                 key={repair.id}
-                className="bg-white rounded-lg p-4 active:bg-gray-50 transition-all cursor-pointer"
+                className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 active:bg-gray-50 transition-all cursor-pointer"
                 onClick={() => router.push(`/it/repairs/${repair.ticketCode}`)}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <span className="text-xs font-mono text-gray-500">
                       {repair.ticketCode}
                     </span>
-                    <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-400">
-                      <Clock size={12} />
-                      {new Date(repair.createdAt).toLocaleDateString(
-                        "th-TH",
-                      )}{" "}
-                      {new Date(repair.createdAt).toLocaleTimeString("th-TH", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                          repair.urgency === "CRITICAL"
+                            ? "bg-red-100 text-red-700"
+                            : repair.urgency === "URGENT"
+                              ? "bg-orange-100 text-orange-700"
+                              : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {repair.urgency === "CRITICAL"
+                          ? "ด่วนมาก"
+                          : repair.urgency === "URGENT"
+                            ? "ด่วน"
+                            : "ปกติ"}
+                      </span>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          repair.status === "COMPLETED"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : repair.status === "IN_PROGRESS"
+                              ? "bg-amber-100 text-amber-700"
+                              : repair.status === "PENDING"
+                                ? "bg-sky-100 text-sky-700"
+                                : repair.status === "ASSIGNED"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : repair.status === "CANCELLED"
+                                    ? "bg-red-100 text-red-700"
+                                    : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {statusLabels[repair.status] || repair.status}
+                      </span>
                     </div>
                   </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      repair.status === "COMPLETED"
-                        ? "bg-green-100 text-green-700"
-                        : repair.status === "IN_PROGRESS"
-                          ? "bg-amber-100 text-amber-700"
-                          : repair.status === "PENDING"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : repair.status === "CANCELLED"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {statusLabels[repair.status] || repair.status}
-                  </span>
+                  <ChevronRight size={18} className="text-gray-300" />
                 </div>
-                <p className="text-sm font-medium text-gray-900 mb-1">
+                <p className="text-sm font-semibold text-gray-900 mb-1 leading-snug">
                   {repair.problemTitle}
                 </p>
-                <p className="text-xs text-gray-500">{repair.location}</p>
-                <div className="flex justify-end items-center mt-3 pt-3 border-t border-gray-100">
-                  <span className="text-xs text-blue-600 font-medium">
-                    ดูรายละเอียด &rarr;
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span>{repair.location}</span>
+                  <span>•</span>
+                  <span>
+                    {new Date(repair.createdAt).toLocaleDateString("th-TH", {
+                      day: "numeric",
+                      month: "short",
+                      year: "2-digit",
+                    })}{" "}
+                    {new Date(repair.createdAt).toLocaleTimeString("th-TH", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
               </div>
@@ -436,25 +460,70 @@ export function RepairsDashboard() {
         </div>
 
         {/* ===== Pagination ===== */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <span className="text-sm text-gray-700">
-              {currentPage}/{totalPages}
-            </span>
-            <button
-              disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="p-2 text-gray-600 hover:bg-gray-200 rounded disabled:opacity-40"
-            >
-              <ChevronRight size={18} />
-            </button>
+        {filteredRepairs.length > 0 && (
+          <div className="flex items-center justify-end gap-6 text-sm text-gray-700">
+            {/* Rows per page selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Rows per page:</span>
+              <div className="relative">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="appearance-none bg-transparent pl-2 pr-6 py-1 cursor-pointer outline-none hover:bg-gray-50 rounded"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-500">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Display range e.g. "1-100 of 3543" */}
+            <div className="font-medium text-slate-700">
+              {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, filteredRepairs.length)} of{" "}
+              {filteredRepairs.length}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-1">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="p-1 text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:hover:text-gray-400 transition-colors"
+                title="Previous page"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="p-1 text-gray-800 hover:text-black disabled:opacity-30 disabled:hover:text-gray-800 transition-colors"
+                title="Next page"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         )}
       </div>
