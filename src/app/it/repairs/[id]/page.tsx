@@ -229,8 +229,13 @@ export default function ITRepairDetailPage() {
 
   const canPickupJob = useCallback(() => {
     if (!data) return false;
-    return data.status === "PENDING" && (data.assignees?.length || 0) === 0;
-  }, [data]);
+    return (
+      (data.status === "PENDING" || data.status === "ASSIGNED") &&
+      !data.assignees?.some(
+        (a) => a.userId === currentUserId || a.user?.id === currentUserId,
+      )
+    );
+  }, [data, currentUserId]);
 
   const hasChanges = () => {
     if (!initialData) return false;
