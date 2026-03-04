@@ -27,7 +27,7 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอดำเนินการ",
-  ASSIGNED: "รอดำเนินการ",
+  ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
   REPAIRING: "กำลังซ่อม",
   COMPLETED: "เสร็จสิ้น",
