@@ -849,18 +849,18 @@ export default function ITRepairDetailPage() {
                           {/* Content Box */}
                           <div className="ml-8 w-full">
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-1 gap-1">
-                              <p className={`text-sm font-bold ${textClass}`}>
-                                {actionLabel}
+                              <p className="text-sm font-bold">
                                 {log.assigner && (
-                                  <span className="font-semibold text-gray-500 ml-1.5">
-                                    — {log.assigner.name}
+                                  <span className="text-gray-900 mr-1.5">
+                                    {log.assigner.name}
                                   </span>
                                 )}
+                                <span className={textClass}>{actionLabel}</span>
                                 {log.assignee &&
                                   (log.action === "ASSIGN" ||
                                     log.action === "UNASSIGN") && (
-                                    <span className="font-medium text-gray-400 ml-1 text-xs">
-                                      ({log.assignee.name})
+                                    <span className="text-gray-900 ml-1.5">
+                                      {log.assignee.name}
                                     </span>
                                   )}
                               </p>
