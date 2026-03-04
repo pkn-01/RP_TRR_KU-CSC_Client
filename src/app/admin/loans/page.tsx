@@ -653,12 +653,6 @@ function AdminLoansContent() {
             </div>
 
             <div className="p-6 border-t border-gray-100 flex gap-3">
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
-              >
-                ปิดหน้าต่าง
-              </button>
               {selectedLoan.status !== "RETURNED" && (
                 <button
                   onClick={() => {
