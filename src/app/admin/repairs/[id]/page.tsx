@@ -938,11 +938,18 @@ export default function RepairDetailPage() {
                             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-1 gap-1">
                               <p className={`text-sm font-bold ${textClass}`}>
                                 {actionLabel}
-                                {log.assignee && (
-                                  <span className="font-semibold text-gray-600 ml-1.5">
-                                    — {log.assignee.name}
+                                {log.assigner && (
+                                  <span className="font-semibold text-gray-500 ml-1.5">
+                                    — {log.assigner.name}
                                   </span>
                                 )}
+                                {log.assignee &&
+                                  (log.action === "ASSIGN" ||
+                                    log.action === "UNASSIGN") && (
+                                    <span className="font-medium text-gray-400 ml-1 text-xs">
+                                      ({log.assignee.name})
+                                    </span>
+                                  )}
                               </p>
                               <p className="text-xs font-medium text-gray-500 shrink-0 flex items-center gap-1.5">
                                 {formatDate(log.createdAt)}
