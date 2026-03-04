@@ -90,7 +90,12 @@ export function RepairsDashboard() {
   /* ---------------- Stats ---------------- */
   const stats = {
     total: repairs.length,
-    inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
+    pending: repairs.filter(
+      (r) => r.status === "PENDING" || r.status === "ASSIGNED",
+    ).length,
+    inProgress: repairs.filter(
+      (r) => r.status === "IN_PROGRESS" || r.status === "REPAIRING",
+    ).length,
     completed: repairs.filter((r) => r.status === "COMPLETED").length,
     cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
   };
@@ -102,8 +107,15 @@ export function RepairsDashboard() {
       item.problemTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.reporterName?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      filterStatus === "all" ? true : item.status === filterStatus;
+    // Group PENDING and ASSIGNED together as "รอดำเนินการ"
+    let matchesStatus = true;
+    if (filterStatus !== "all") {
+      if (filterStatus === "ASSIGNED") {
+        matchesStatus = item.status === "ASSIGNED" || item.status === "PENDING";
+      } else {
+        matchesStatus = item.status === filterStatus;
+      }
+    }
 
     const matchesPriority =
       filterPriority === "all" || item.urgency === filterPriority;
@@ -161,11 +173,16 @@ export function RepairsDashboard() {
     <div className="min-h-[calc(100vh-4rem)] lg:min-h-screen bg-gray-100 p-4 lg:p-6 font-sans overflow-x-hidden">
       <div className="w-full max-w-[1400px] mx-auto space-y-5">
         {/* ===== Stat Cards ===== */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {/* รายการทั้งหมด */}
           <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-blue-600 text-white">
             <span className="text-sm font-bold mb-1">รายการทั้งหมด</span>
             <span className="text-3xl font-bold">{stats.total}</span>
+          </div>
+          {/* รอดำเนินการ */}
+          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-sky-500 text-white">
+            <span className="text-sm font-bold mb-1">รอดำเนินการ</span>
+            <span className="text-3xl font-bold">{stats.pending}</span>
           </div>
           {/* กำลังดำเนินการ */}
           <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-amber-500 text-white">
@@ -212,7 +229,9 @@ export function RepairsDashboard() {
             <option value="all">ทุกสถานะ</option>
             <option value="ASSIGNED">รอดำเนินการ</option>
             <option value="IN_PROGRESS">กำลังดำเนินการ</option>
+            <option value="REPAIRING">กำลังซ่อม</option>
             <option value="COMPLETED">เสร็จสิ้น</option>
+            <option value="WAITING_PARTS">รออะไหล่</option>
             <option value="CANCELLED">ยกเลิก</option>
           </select>
 
