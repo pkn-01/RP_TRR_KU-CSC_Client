@@ -49,9 +49,7 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอดำเนินการ",
-  ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
-  WAITING_PARTS: "รออะไหล่",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
 };
