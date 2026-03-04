@@ -49,7 +49,9 @@ interface Repair {
 
 const statusLabels: Record<string, string> = {
   PENDING: "รอดำเนินการ",
+  ASSIGNED: "มอบหมายแล้ว",
   IN_PROGRESS: "กำลังดำเนินการ",
+  WAITING_PARTS: "รออะไหล่",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
 };
@@ -72,27 +74,14 @@ function AdminRepairsContent() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Date Filtering State
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
   const [filter, setFilter] = useState("all");
-
-  // Stats
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const stats = {
-    total: repairs.length,
-    today: repairs.filter((r) => {
-      const createdAt = new Date(r.createdAt);
-      createdAt.setHours(0, 0, 0, 0);
-      return createdAt.getTime() === today.getTime();
-    }).length,
-    pending: repairs.filter((r) => r.status === "PENDING").length,
-    inProgress: repairs.filter((r) => r.status === "IN_PROGRESS").length,
-    completed: repairs.filter((r) => r.status === "COMPLETED").length,
-    cancelled: repairs.filter((r) => r.status === "CANCELLED").length,
-  };
 
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
@@ -205,7 +194,10 @@ function AdminRepairsContent() {
         rangeText: formatThai(target),
       };
     } else if (filter === "week") {
+      const day = target.getDay(); // 0=Sun, 1=Mon...
+      const diffToMonday = day === 0 ? -6 : 1 - day;
       const start = new Date(target);
+      start.setDate(target.getDate() + diffToMonday);
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
       return {
@@ -229,23 +221,6 @@ function AdminRepairsContent() {
       CRITICAL: "ด่วนที่สุด",
     };
     return labels[u] || u;
-  };
-
-  const isSameWeek = (date1: Date, date2: Date) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    d1.setHours(0, 0, 0, 0);
-    d2.setHours(0, 0, 0, 0);
-
-    const firstDay = new Date(d2);
-    const day = d2.getDay();
-    const diff = d2.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
-    firstDay.setDate(diff);
-
-    const lastDay = new Date(firstDay);
-    lastDay.setDate(firstDay.getDate() + 6);
-
-    return d1 >= firstDay && d1 <= lastDay;
   };
 
   const formatDisplayDate = (dateStr: string) => {
@@ -280,8 +255,11 @@ function AdminRepairsContent() {
       if (filter === "day") {
         matchesDate = createdAt.toDateString() === targetDate.toDateString();
       } else if (filter === "week") {
-        // Start from selectedDate and go +6 days
+        // Calendar week: Monday → Sunday
+        const day = targetDate.getDay(); // 0=Sun, 1=Mon...
+        const diffToMonday = day === 0 ? -6 : 1 - day;
         const start = new Date(targetDate);
+        start.setDate(targetDate.getDate() + diffToMonday);
         start.setHours(0, 0, 0, 0);
         const end = new Date(start);
         end.setDate(start.getDate() + 6);
@@ -512,7 +490,10 @@ function AdminRepairsContent() {
                 setFilterDate(null);
                 setFilterType("all");
                 setFilter("all");
-                setSelectedDate(new Date().toISOString().split("T")[0]);
+                const now = new Date();
+                setSelectedDate(
+                  `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+                );
                 setFilterStatus("all");
                 router.push("/admin/repairs");
               }}

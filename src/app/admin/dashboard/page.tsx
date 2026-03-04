@@ -61,7 +61,10 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState<FilterType>("day");
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
-    return today.toISOString().split("T")[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   });
 
   useEffect(() => {
@@ -108,6 +111,21 @@ export default function AdminDashboard() {
     return labels[urgency] || urgency;
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "รอดำเนินการ";
+      case "IN_PROGRESS":
+        return "กำลังดำเนินการ";
+      case "COMPLETED":
+        return "เสร็จสิ้น";
+      case "CANCELLED":
+        return "ยกเลิก";
+      default:
+        return status;
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("th-TH", {
@@ -151,7 +169,10 @@ export default function AdminDashboard() {
         rangeText: formatThai(target),
       };
     } else if (filter === "week") {
+      const day = target.getDay(); // 0=Sun, 1=Mon...
+      const diffToMonday = day === 0 ? -6 : 1 - day;
       const start = new Date(target);
+      start.setDate(target.getDate() + diffToMonday);
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
       return {
@@ -350,7 +371,7 @@ export default function AdminDashboard() {
         cell.alignment = { horizontal: "center" };
       });
 
-      const sortedRepairs = [...fullStats.recentRepairs].sort(
+      const sortedRepairs = [...(fullStats.recentRepairs || [])].sort(
         (a: any, b: any) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
@@ -362,13 +383,7 @@ export default function AdminDashboard() {
           repair.problemTitle,
           repair.location,
           getUrgencyLabel(repair.urgency),
-          repair.status === "PENDING"
-            ? "รอดำเนินการ"
-            : repair.status === "IN_PROGRESS"
-              ? "กำลังดำเนินการ"
-              : repair.status === "COMPLETED"
-                ? "เสร็จสิ้น"
-                : "ยกเลิก",
+          getStatusLabel(repair.status),
         ]);
 
         // Alternating row color
