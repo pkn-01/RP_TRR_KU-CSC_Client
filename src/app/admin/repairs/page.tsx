@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, Suspense, useCallback, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  Suspense,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -146,22 +153,42 @@ function AdminRepairsContent() {
     fetchRepairs();
   }, [fetchRepairs]);
 
-  // Auto-refresh countdown logic
+  // Auto-refresh logic - decoupled countdown from fetch
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
     if (autoRefreshEnabled) {
-      timer = setInterval(() => {
+      setCountdown(15);
+      refreshTimerRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
-            fetchRepairs(false);
-            return 15;
+            return 0; // Signal to fetch
           }
           return prev - 1;
         });
       }, 1000);
     }
-    return () => clearInterval(timer);
-  }, [autoRefreshEnabled, fetchRepairs]);
+
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [autoRefreshEnabled]);
+
+  // Trigger fetch when countdown reaches 0
+  useEffect(() => {
+    if (countdown === 0 && autoRefreshEnabled) {
+      fetchRepairs(false).then(() => {
+        setCountdown(15);
+      });
+    }
+  }, [countdown, autoRefreshEnabled, fetchRepairs]);
 
   const getDateRangeInfo = () => {
     const target = new Date(selectedDate);
@@ -450,6 +477,12 @@ function AdminRepairsContent() {
     }
   };
 
+  // Memoize the Date object so CalendarPop doesn't get a new reference every render
+  const calendarDate = useMemo(() => {
+    const [y, m, d] = selectedDate.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }, [selectedDate]);
+
   if (loading) {
     return <Loading />;
   }
@@ -557,7 +590,7 @@ function AdminRepairsContent() {
                     ></span>
                   </span>
                   <span className="text-[10px] sm:text-xs font-medium text-green-700">
-                    {autoRefreshEnabled ? "เรียลไทม์" : "PAUSED"}
+                    {autoRefreshEnabled ? "เรียลไทม์" : "หยุด"}
                   </span>
                   <span className="text-green-300">|</span>
                   <span className="text-[10px] sm:text-xs text-green-600">
@@ -651,10 +684,7 @@ function AdminRepairsContent() {
 
               {filter !== "all" && (
                 <CalendarPop
-                  selectedDate={(() => {
-                    const [y, m, d] = selectedDate.split("-").map(Number);
-                    return new Date(y, m - 1, d);
-                  })()}
+                  selectedDate={calendarDate}
                   onDateSelect={(date: Date) => {
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, "0");
