@@ -29,10 +29,8 @@ const statusLabels: Record<string, string> = {
   PENDING: "รอดำเนินการ",
   ASSIGNED: "รอดำเนินการ",
   IN_PROGRESS: "กำลังดำเนินการ",
-  REPAIRING: "กำลังซ่อม",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
-  WAITING_PARTS: "รออะไหล่",
 };
 
 export function RepairsDashboard() {
