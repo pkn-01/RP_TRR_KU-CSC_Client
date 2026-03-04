@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, Suspense, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -329,7 +331,10 @@ function ITLoansContent() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
               />
-              <Search className="absolute right-3 top-2.5 text-gray-400" size={18} />
+              <Search
+                className="absolute right-3 top-2.5 text-gray-400"
+                size={18}
+              />
             </div>
 
             {/* Status Filter */}
@@ -395,7 +400,10 @@ function ITLoansContent() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {paginatedLoans.map((loan) => (
-                <tr key={loan.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={loan.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-gray-900">
@@ -411,7 +419,9 @@ function ITLoansContent() {
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-700 font-medium">
-                        {loan.borrowerName || (loan.borrowedBy as any)?.name || "-"}
+                        {loan.borrowerName ||
+                          (loan.borrowedBy as any)?.name ||
+                          "-"}
                       </span>
                       {loan.borrowerDepartment && (
                         <span className="text-xs text-gray-500 mt-1">
@@ -478,10 +488,7 @@ function ITLoansContent() {
               ))}
               {paginatedLoans.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-12 text-center"
-                  >
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <EmptyState />
                   </td>
                 </tr>
@@ -493,7 +500,10 @@ function ITLoansContent() {
         {/* Mobile Cards */}
         <div className="md:hidden space-y-3">
           {paginatedLoans.map((loan) => (
-            <div key={loan.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div
+              key={loan.id}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+            >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <h3 className="text-sm font-bold text-gray-900 leading-tight">
@@ -509,19 +519,23 @@ function ITLoansContent() {
                   {statusConfig[loan.status]?.label || loan.status}
                 </span>
               </div>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-xs text-gray-600">
                   <User size={14} className="text-gray-400" />
-                  <span className="font-semibold">{loan.borrowerName || (loan.borrowedBy as any)?.name || "-"}</span>
+                  <span className="font-semibold">
+                    {loan.borrowerName || (loan.borrowedBy as any)?.name || "-"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-500">
-                   <Building2 size={14} className="text-gray-400" />
-                   <span>{loan.borrowerDepartment || "-"}</span>
+                  <Building2 size={14} className="text-gray-400" />
+                  <span>{loan.borrowerDepartment || "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-gray-500">
-                   <Calendar size={14} className="text-gray-400" />
-                   <span>{new Date(loan.borrowDate).toLocaleDateString("th-TH")}</span>
+                  <Calendar size={14} className="text-gray-400" />
+                  <span>
+                    {new Date(loan.borrowDate).toLocaleDateString("th-TH")}
+                  </span>
                 </div>
               </div>
 
@@ -606,21 +620,23 @@ function ITLoansContent() {
             <div className="p-8 space-y-8 max-h-[75vh] overflow-y-auto">
               {/* Item Info */}
               <div className="bg-gray-50/80 p-6 rounded-2xl border border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-900 leading-tight">
-                    {selectedLoan.itemName}
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-                    <Package size={16} />
-                    จำนวน: {selectedLoan.quantity} รายการ
+                <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                  {selectedLoan.itemName}
+                </h3>
+                <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                  <Package size={16} />
+                  จำนวน: {selectedLoan.quantity} รายการ
+                </div>
+                {selectedLoan.description && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                      รายละเอียด
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                      {selectedLoan.description}
+                    </p>
                   </div>
-                  {selectedLoan.description && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">รายละเอียด</p>
-                      <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                        {selectedLoan.description}
-                      </p>
-                    </div>
-                  )}
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-2">
@@ -632,24 +648,35 @@ function ITLoansContent() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 uppercase font-bold">ชื่อ-นามสกุล</span>
+                      <span className="text-[10px] text-gray-400 uppercase font-bold">
+                        ชื่อ-นามสกุล
+                      </span>
                       <span className="text-sm text-gray-800 font-semibold">
-                        {selectedLoan.borrowerName || (selectedLoan.borrowedBy as any)?.name}
+                        {selectedLoan.borrowerName ||
+                          (selectedLoan.borrowedBy as any)?.name}
                       </span>
                     </div>
-                    {(selectedLoan.borrowerDepartment || (selectedLoan.borrowedBy as any)?.department) && (
+                    {(selectedLoan.borrowerDepartment ||
+                      (selectedLoan.borrowedBy as any)?.department) && (
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-gray-400 uppercase font-bold">แผนก/ส่วนงาน</span>
+                        <span className="text-[10px] text-gray-400 uppercase font-bold">
+                          แผนก/ส่วนงาน
+                        </span>
                         <span className="text-sm text-gray-800 font-medium">
-                          {selectedLoan.borrowerDepartment || (selectedLoan.borrowedBy as any)?.department}
+                          {selectedLoan.borrowerDepartment ||
+                            (selectedLoan.borrowedBy as any)?.department}
                         </span>
                       </div>
                     )}
-                    {(selectedLoan.borrowerPhone || (selectedLoan.borrowedBy as any)?.phoneNumber) && (
+                    {(selectedLoan.borrowerPhone ||
+                      (selectedLoan.borrowedBy as any)?.phoneNumber) && (
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-gray-400 uppercase font-bold">เบอร์โทรศัพท์</span>
+                        <span className="text-[10px] text-gray-400 uppercase font-bold">
+                          เบอร์โทรศัพท์
+                        </span>
                         <span className="text-sm text-gray-800 font-medium font-mono">
-                          {selectedLoan.borrowerPhone || (selectedLoan.borrowedBy as any)?.phoneNumber}
+                          {selectedLoan.borrowerPhone ||
+                            (selectedLoan.borrowedBy as any)?.phoneNumber}
                         </span>
                       </div>
                     )}
@@ -664,33 +691,45 @@ function ITLoansContent() {
                   </h4>
                   <div className="space-y-3">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 uppercase font-bold">วันที่ยืม</span>
-                      <span className="text-sm text-gray-800 font-semibold">
-                        {new Date(selectedLoan.borrowDate).toLocaleDateString("th-TH", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <span className="text-[10px] text-gray-400 uppercase font-bold">
+                        วันที่ยืม
                       </span>
-                    </div>
-                    {selectedLoan.returnDate ? (
-                      <div className="flex flex-col p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                        <span className="text-[10px] text-emerald-600 uppercase font-extrabold">คืนสำเร็จเมื่อ</span>
-                        <span className="text-sm text-emerald-700 font-bold">
-                          {new Date(selectedLoan.returnDate).toLocaleDateString("th-TH", {
+                      <span className="text-sm text-gray-800 font-semibold">
+                        {new Date(selectedLoan.borrowDate).toLocaleDateString(
+                          "th-TH",
+                          {
                             day: "numeric",
                             month: "long",
                             year: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
-                          })}
+                          },
+                        )}
+                      </span>
+                    </div>
+                    {selectedLoan.returnDate ? (
+                      <div className="flex flex-col p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <span className="text-[10px] text-emerald-600 uppercase font-extrabold">
+                          คืนสำเร็จเมื่อ
+                        </span>
+                        <span className="text-sm text-emerald-700 font-bold">
+                          {new Date(selectedLoan.returnDate).toLocaleDateString(
+                            "th-TH",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
                         </span>
                       </div>
                     ) : (
-                       <div className="flex flex-col">
-                        <span className="text-[10px] text-amber-600 uppercase font-bold">สถานะปัจจุบัน</span>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-amber-600 uppercase font-bold">
+                          สถานะปัจจุบัน
+                        </span>
                         <span className="text-sm text-amber-700 font-bold flex items-center gap-1.5 mt-0.5">
                           <Clock size={14} />
                           กำลังถูกยืม
@@ -715,12 +754,12 @@ function ITLoansContent() {
                   ยืนยันการคืนอุปกรณ์
                 </button>
               )}
-               <button
-                  onClick={() => setShowDetailModal(false)}
-                  className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
-                >
-                  ปิด
-                </button>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
+              >
+                ปิด
+              </button>
             </div>
           </div>
         </div>
@@ -839,7 +878,9 @@ function ITLoansContent() {
               </button>
               <button
                 onClick={handleAddLoan}
-                disabled={submitting || !formData.itemName || !formData.borrowerName}
+                disabled={
+                  submitting || !formData.itemName || !formData.borrowerName
+                }
                 className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-xl shadow-lg hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
               >
                 {submitting ? (
@@ -928,13 +969,7 @@ function FormTextArea({
   );
 }
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function StatCard({ label, value }: { label: string; value: number }) {
   const colorMap: Record<string, string> = {
     "รายการยืมทั้งหมด (IT)": "bg-blue-600 text-white",
     กำลังยืม: "bg-amber-500 text-white",
@@ -950,7 +985,9 @@ function StatCard({
       <span className="text-xs sm:text-sm mb-1 text-center whitespace-nowrap font-bold uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-2xl sm:text-4xl font-black tracking-tight">{value}</span>
+      <span className="text-2xl sm:text-4xl font-black tracking-tight">
+        {value}
+      </span>
     </div>
   );
 }
