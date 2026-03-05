@@ -314,9 +314,6 @@ export default function StockClient() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-2.5 bg-blue-50 rounded-lg">
-              <Package size={20} className="text-blue-600" />
-            </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 รายการทั้งหมด
@@ -325,9 +322,6 @@ export default function StockClient() {
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-2.5 bg-green-50 rounded-lg">
-              <CheckCircle2 size={20} className="text-green-600" />
-            </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 มีของในสต๊อก
@@ -338,9 +332,6 @@ export default function StockClient() {
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-2.5 bg-yellow-50 rounded-lg">
-              <AlertTriangle size={20} className="text-yellow-600" />
-            </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 สินค้าใกล้หมด
@@ -351,9 +342,6 @@ export default function StockClient() {
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-2.5 bg-red-50 rounded-lg">
-              <XCircle size={20} className="text-red-600" />
-            </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 สินค้าหมด
@@ -495,7 +483,7 @@ export default function StockClient() {
                               }}
                               className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             >
-                              <PackagePlus size={18} />
+                             <Plus size={18} />
                             </button>
                             <button
                               onClick={() => {
