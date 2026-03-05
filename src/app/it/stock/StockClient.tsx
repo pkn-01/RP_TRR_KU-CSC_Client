@@ -282,38 +282,101 @@ export default function StockClient() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
 
-        const mappedData: Partial<StockItem>[] = jsonData.map((row) => {
-          // Normalize row keys (trim and find matches)
+        // อ่าน header ตาม column ลำดับเป็น fallback
+        const rawRows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+        }) as any[][];
+        const headerRow =
+          rawRows.length > 0
+            ? rawRows[0].map((h: any) => String(h ?? "").trim())
+            : [];
+
+        const mappedData: Partial<StockItem>[] = jsonData.map((row, rowIdx) => {
           const keys = Object.keys(row);
+
+          // ฟังก์ชัน match ที่ยืดหยุ่นกว่าเดิม — ใช้ includes แทน exact match
           const getVal = (possibleNames: string[]) => {
             const foundKey = keys.find((k) =>
-              possibleNames.some(
-                (pn) => k.trim().toLowerCase() === pn.toLowerCase(),
-              ),
+              possibleNames.some((pn) => {
+                const kNorm = k.trim().toLowerCase();
+                const pnNorm = pn.toLowerCase();
+                return (
+                  kNorm === pnNorm ||
+                  kNorm.includes(pnNorm) ||
+                  pnNorm.includes(kNorm)
+                );
+              }),
             );
-            return foundKey ? String(row[foundKey]).trim() : "";
+            if (!foundKey) return "";
+            const val = row[foundKey];
+            if (val === null || val === undefined) return "";
+            return String(val).trim();
           };
 
-          const name = getVal(["ยี่ห้อ", "Brand", "ยี่ห้อ_1"]); // Col A
-          const code = getVal(["รหัส", "Code", "Model"]); // Col B
+          let name = getVal(["ยี่ห้อ", "brand", "ชื่อ", "name", "ชื่อสินค้า"]);
+          let code = getVal(["รหัส", "code", "model", "รหัสสินค้า", "sku"]);
 
-          // Fallback logic for Category (Col C)
-          // If Col C is also named "ยี่ห้อ", XLSX naming it "ยี่ห้อ_1" or "ยี่ห้อ_2"
-          let category = getVal(["สี/ประเภท", "Color", "Type", "Category"]);
+          let category = getVal([
+            "สี/ประเภท",
+            "สี",
+            "ประเภท",
+            "color",
+            "type",
+            "category",
+            "หมวดหมู่",
+          ]);
+          // Fallback: column ที่มี suffix _1 หรือ _2 (XLSX จะเปลี่ยนชื่อ column ซ้ำ)
           if (!category) {
             const altKey = keys.find(
               (k) => k.includes("_1") || k.includes("_2"),
             );
-            if (altKey) category = String(row[altKey]).trim();
+            if (altKey) {
+              const val = row[altKey];
+              if (val !== null && val !== undefined) {
+                category = String(val).trim();
+              }
+            }
           }
 
-          const quantity =
-            parseInt(getVal(["จำนวน", "Qty", "Quantity"]) || "0") || 0;
+          let quantity =
+            parseInt(
+              getVal(["จำนวน", "qty", "quantity", "stock", "จำนวนคงเหลือ"]) ||
+                "0",
+            ) || 0;
+
+          // Fallback: ถ้า name หรือ code ยังว่าง ให้ลอง map ตาม column ลำดับ (A=name, B=code, C=category, D=qty)
+          if (!name || !code) {
+            const dataRow = rawRows[rowIdx + 1]; // +1 เพราะ row 0 = header
+            if (dataRow && dataRow.length >= 2) {
+              if (!name && dataRow[0] !== null && dataRow[0] !== undefined) {
+                name = String(dataRow[0]).trim();
+              }
+              if (!code && dataRow[1] !== null && dataRow[1] !== undefined) {
+                code = String(dataRow[1]).trim();
+              }
+              if (
+                !category &&
+                dataRow[2] !== null &&
+                dataRow[2] !== undefined
+              ) {
+                category = String(dataRow[2]).trim();
+              }
+              if (
+                !quantity &&
+                dataRow[3] !== null &&
+                dataRow[3] !== undefined
+              ) {
+                quantity = parseInt(String(dataRow[3])) || 0;
+              }
+            }
+          }
 
           return { name, code, category, quantity };
         });
 
         const validItems = mappedData.filter((i) => i.code && i.name);
+        const skippedCount = mappedData.length - validItems.length;
+
         if (validItems.length === 0) {
           Swal.fire(
             "ไม่พบข้อมูล",
@@ -321,6 +384,14 @@ export default function StockClient() {
             "warning",
           );
           return;
+        }
+
+        // แจ้งเตือนถ้ามีรายการที่ถูกกรองออก
+        if (skippedCount > 0) {
+          console.warn(
+            `⚠️ Bulk import: ข้ามไป ${skippedCount} แถว (ไม่มี code หรือ name)`,
+          );
+          console.table(mappedData.filter((i) => !i.code || !i.name));
         }
 
         setImportData(validItems);
@@ -342,10 +413,23 @@ export default function StockClient() {
       setIsImporting(true);
       const result = await stockService.bulkImportStockItems(importData);
 
+      const errorCount = result.errors?.length || 0;
+      let htmlMsg = `สร้างใหม่: ${result.created} รายการ<br/>อัปเดต: ${result.updated} รายการ`;
+      if (errorCount > 0) {
+        htmlMsg += `<br/><span style="color:red">ผิดพลาด: ${errorCount} รายการ</span>`;
+        htmlMsg += `<br/><small>${result.errors
+          .slice(0, 5)
+          .map((e: any) => `${e.code}: ${e.error}`)
+          .join("<br/>")}</small>`;
+        if (errorCount > 5)
+          htmlMsg += `<br/><small>...และอีก ${errorCount - 5} รายการ</small>`;
+      }
+
       Swal.fire({
-        icon: "success",
-        title: "นำเข้าข้อมูลสำเร็จ",
-        html: `สร้างใหม่: ${result.created} รายการ<br/>อัปเดต: ${result.updated} รายการ`,
+        icon: errorCount > 0 ? "warning" : "success",
+        title:
+          errorCount > 0 ? "นำเข้าข้อมูลบางส่วนสำเร็จ" : "นำเข้าข้อมูลสำเร็จ",
+        html: htmlMsg,
       });
 
       setIsImportModalOpen(false);
