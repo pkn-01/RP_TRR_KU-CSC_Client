@@ -679,7 +679,7 @@ export default function StockClient() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="p-2 border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 border border-gray-300"
                 >
                   <ChevronLeft size={16} />
                 </button>
@@ -689,7 +689,7 @@ export default function StockClient() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="p-2 border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 border border-gray-300"
                 >
                   <ChevronRight size={16} />
                 </button>
