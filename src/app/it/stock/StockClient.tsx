@@ -39,6 +39,7 @@ export default function StockClient() {
     null,
   );
   const [isNewCategory, setIsNewCategory] = useState(false);
+  const [isNewBrand, setIsNewBrand] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [withdrawItem, setWithdrawItem] = useState<StockItem | null>(null);
   const [withdrawData, setWithdrawData] = useState({
@@ -78,6 +79,11 @@ export default function StockClient() {
   const categories = useMemo(() => {
     const cats = new Set(items.map((i) => i.category).filter(Boolean));
     return Array.from(cats).sort();
+  }, [items]);
+
+  const brands = useMemo(() => {
+    const b = new Set(items.map((i) => i.name).filter(Boolean));
+    return Array.from(b).sort();
   }, [items]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -315,6 +321,7 @@ export default function StockClient() {
                   category: "",
                 });
                 setIsNewCategory(false);
+                setIsNewBrand(false);
                 setIsModalOpen(true);
               }}
               className="flex items-center gap-2 bg-[#795548] text-white px-4 py-2 rounded-lg hover:bg-[#6d4c41] transition-colors text-sm font-medium"
@@ -519,6 +526,7 @@ export default function StockClient() {
                               onClick={() => {
                                 setEditingItem(item);
                                 setIsNewCategory(false);
+                                setIsNewBrand(false);
                                 setIsModalOpen(true);
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -634,15 +642,65 @@ export default function StockClient() {
                 <label className="text-sm font-semibold text-gray-700">
                   ยี่ห้อ <span className="text-red-500">*</span>
                 </label>
-                <input
-                  required
-                  type="text"
-                  value={editingItem?.name || ""}
-                  onChange={(e) =>
-                    setEditingItem({ ...editingItem!, name: e.target.value })
-                  }
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
-                />
+                {!isNewBrand ? (
+                  <select
+                    value={editingItem?.name || ""}
+                    onChange={(e) => {
+                      if (e.target.value === "__new_brand__") {
+                        setIsNewBrand(true);
+                        setEditingItem({
+                          ...editingItem!,
+                          name: "",
+                        });
+                      } else {
+                        setEditingItem({
+                          ...editingItem!,
+                          name: e.target.value,
+                        });
+                      }
+                    }}
+                    required
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
+                  >
+                    <option value="">-- เลือกยี่ห้อ --</option>
+                    {brands.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                    <option value="__new_brand__">+ เพิ่มยี่ห้อใหม่...</option>
+                  </select>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="พิมพ์ชื่อยี่ห้อใหม่"
+                      value={editingItem?.name || ""}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem!,
+                          name: e.target.value,
+                        })
+                      }
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsNewBrand(false);
+                        setEditingItem({
+                          ...editingItem!,
+                          name: "",
+                        });
+                      }}
+                      className="px-3 py-2 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      ยกเลิก
+                    </button>
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
