@@ -338,14 +338,15 @@ function ITLoansContent() {
                       >
                         <FileText size={20} />
                       </button>
-                      <button
-                        onClick={() => handleMarkAsReturned(loan.id)}
-                        disabled={loan.status === "RETURNED"}
-                        className="w-10 h-10 flex items-center justify-center rounded-2xl "
-                        title="คืนอุปกรณ์"
-                      >
-                        <Check size={20} />
-                      </button>
+                      {loan.status !== "RETURNED" && (
+                        <button
+                          onClick={() => handleMarkAsReturned(loan.id)}
+                          className="w-10 h-10 flex items-center justify-center rounded-2xl "
+                          title="คืนอุปกรณ์"
+                        >
+                          <Check size={20} />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDelete(loan.id)}
                         className="w-10 h-10 flex items-center justify-center rounded-2xl "
@@ -410,13 +411,14 @@ function ITLoansContent() {
                 >
                   <FileText size={20} />
                 </button>
-                <button
-                  onClick={() => handleMarkAsReturned(loan.id)}
-                  disabled={loan.status === "RETURNED"}
-                  className="w-11 h-11 flex items-center justify-center rounded-2xl"
-                >
-                  <Check size={20} />
-                </button>
+                {loan.status !== "RETURNED" && (
+                  <button
+                    onClick={() => handleMarkAsReturned(loan.id)}
+                    className="w-11 h-11 flex items-center justify-center rounded-2xl"
+                  >
+                    <Check size={20} />
+                  </button>
+                )}
                 <button
                   onClick={() => handleDelete(loan.id)}
                   className="w-11 h-11 flex items-center justify-center rounded-2xl"
