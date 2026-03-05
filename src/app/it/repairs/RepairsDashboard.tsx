@@ -121,34 +121,8 @@ export function RepairsDashboard() {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
-  // Sort repairs: ASSIGNED/PENDING first, then by date
+  // Sort repairs: newest first
   const sortedRepairs = [...filteredRepairs].sort((a, b) => {
-    const getStatusPriority = (status: string) => {
-      switch (status) {
-        case "ASSIGNED":
-        case "PENDING":
-          return 3;
-        case "IN_PROGRESS":
-        case "REPAIRING":
-        case "WAITING_PARTS":
-          return 2;
-        case "COMPLETED":
-          return 1;
-        case "CANCELLED":
-          return 0;
-        default:
-          return 0;
-      }
-    };
-
-    const priorityA = getStatusPriority(a.status);
-    const priorityB = getStatusPriority(b.status);
-
-    if (priorityA !== priorityB) {
-      return priorityB - priorityA;
-    }
-
-    // If same priority, sort by date (newest first)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
