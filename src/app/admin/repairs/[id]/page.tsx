@@ -17,7 +17,7 @@ type Status =
   | "IN_PROGRESS"
   | "WAITING_PARTS"
   | "COMPLETED"
-  | "CANCELLED";
+  | "CANCELLED";  
 
 type Urgency = "NORMAL" | "URGENT" | "CRITICAL";
 

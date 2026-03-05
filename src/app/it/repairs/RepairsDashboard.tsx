@@ -26,8 +26,6 @@ interface Repair {
 }
 
 const statusLabels: Record<string, string> = {
-  PENDING: "รอดำเนินการ",
-  ASSIGNED: "รอดำเนินการ",
   IN_PROGRESS: "กำลังดำเนินการ",
   COMPLETED: "เสร็จสิ้น",
   CANCELLED: "ยกเลิก",
@@ -88,9 +86,6 @@ export function RepairsDashboard() {
   /* ---------------- Stats ---------------- */
   const stats = {
     total: repairs.length,
-    pending: repairs.filter(
-      (r) => r.status === "PENDING" || r.status === "ASSIGNED",
-    ).length,
     inProgress: repairs.filter(
       (r) => r.status === "IN_PROGRESS" || r.status === "REPAIRING",
     ).length,
@@ -108,11 +103,7 @@ export function RepairsDashboard() {
     // Group PENDING and ASSIGNED together as "รอดำเนินการ"
     let matchesStatus = true;
     if (filterStatus !== "all") {
-      if (filterStatus === "ASSIGNED") {
-        matchesStatus = item.status === "ASSIGNED" || item.status === "PENDING";
-      } else {
-        matchesStatus = item.status === filterStatus;
-      }
+      matchesStatus = item.status === filterStatus;
     }
 
     const matchesPriority =
@@ -176,16 +167,11 @@ export function RepairsDashboard() {
     <div className="min-h-[calc(100vh-4rem)] lg:min-h-screen bg-gray-100 p-4 lg:p-6 font-sans overflow-x-hidden">
       <div className="w-full max-w-[1400px] mx-auto space-y-5">
         {/* ===== Stat Cards ===== */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {/* รายการทั้งหมด */}
           <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-blue-600 text-white">
             <span className="text-sm font-bold mb-1">รายการทั้งหมด</span>
             <span className="text-3xl font-bold">{stats.total}</span>
-          </div>
-          {/* รอดำเนินการ */}
-          <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-sky-500 text-white">
-            <span className="text-sm font-bold mb-1">รอดำเนินการ</span>
-            <span className="text-3xl font-bold">{stats.pending}</span>
           </div>
           {/* กำลังดำเนินการ */}
           <div className="rounded-xl p-4 flex flex-col items-center justify-center min-h-[90px] shadow-md bg-amber-500 text-white">
@@ -230,7 +216,6 @@ export function RepairsDashboard() {
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none"
           >
             <option value="all">ทุกสถานะ</option>
-            <option value="ASSIGNED">รอดำเนินการ</option>
             <option value="IN_PROGRESS">กำลังดำเนินการ</option>
             <option value="COMPLETED">เสร็จสิ้น</option>
             <option value="CANCELLED">ยกเลิก</option>
