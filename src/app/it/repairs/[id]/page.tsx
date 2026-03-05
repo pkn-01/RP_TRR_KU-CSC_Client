@@ -65,7 +65,7 @@ interface RepairDetail {
 
 const STATUS_LABEL: Record<Status, string> = {
   PENDING: "รอดำเนินการ",
-  ASSIGNED: "มอบหมายแล้ว",
+  ASSIGNED: "รอดำเนินการ",
   IN_PROGRESS: "กำลังดำเนินการ",
   WAITING_PARTS: "รออะไหล่",
   COMPLETED: "เสร็จสิ้น",
