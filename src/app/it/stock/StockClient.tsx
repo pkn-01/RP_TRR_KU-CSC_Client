@@ -37,6 +37,7 @@ export default function StockClient() {
   const [editingItem, setEditingItem] = useState<Partial<StockItem> | null>(
     null,
   );
+  const [isNewCategory, setIsNewCategory] = useState(false);
   const [withdrawItem, setWithdrawItem] = useState<StockItem | null>(null);
   const [withdrawData, setWithdrawData] = useState({
     quantity: 1,
@@ -301,6 +302,7 @@ export default function StockClient() {
                   category: "",
                   minStock: 0,
                 });
+                setIsNewCategory(false);
                 setIsModalOpen(true);
               }}
               className="flex items-center gap-2 bg-[#795548] text-white px-4 py-2 rounded-lg hover:bg-[#6d4c41] transition-colors text-sm font-medium"
@@ -510,6 +512,7 @@ export default function StockClient() {
                               title="แก้ไข"
                               onClick={() => {
                                 setEditingItem(item);
+                                setIsNewCategory(false);
                                 setIsModalOpen(true);
                               }}
                               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -640,42 +643,35 @@ export default function StockClient() {
                   <label className="text-sm font-semibold text-gray-700">
                     หมวดหมู่
                   </label>
-                  <select
-                    value={
-                      editingItem?.category &&
-                      categories.includes(editingItem.category)
-                        ? editingItem.category
-                        : editingItem?.category
-                          ? "__new__"
-                          : ""
-                    }
-                    onChange={(e) => {
-                      if (e.target.value === "__new__") {
-                        setEditingItem({
-                          ...editingItem!,
-                          category: "",
-                        });
-                      } else {
-                        setEditingItem({
-                          ...editingItem!,
-                          category: e.target.value,
-                        });
-                      }
-                    }}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
-                  >
-                    <option value="">-- เลือกหมวดหมู่ --</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat!}>
-                        {cat}
-                      </option>
-                    ))}
-                    <option value="__new__">+ เพิ่มหมวดหมู่ใหม่...</option>
-                  </select>
-                  {editingItem?.category !== undefined &&
-                    !categories.includes(editingItem?.category || "") &&
-                    (editingItem?.category === "" ||
-                      !categories.includes(editingItem?.category || "")) && (
+                  {!isNewCategory ? (
+                    <select
+                      value={editingItem?.category || ""}
+                      onChange={(e) => {
+                        if (e.target.value === "__new__") {
+                          setIsNewCategory(true);
+                          setEditingItem({
+                            ...editingItem!,
+                            category: "",
+                          });
+                        } else {
+                          setEditingItem({
+                            ...editingItem!,
+                            category: e.target.value,
+                          });
+                        }
+                      }}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
+                    >
+                      <option value="">-- เลือกหมวดหมู่ --</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat!}>
+                          {cat}
+                        </option>
+                      ))}
+                      <option value="__new__">+ เพิ่มหมวดหมู่ใหม่...</option>
+                    </select>
+                  ) : (
+                    <div className="flex gap-2">
                       <input
                         type="text"
                         placeholder="พิมพ์ชื่อหมวดหมู่ใหม่"
@@ -686,10 +682,24 @@ export default function StockClient() {
                             category: e.target.value,
                           })
                         }
-                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] mt-2"
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
                         autoFocus
                       />
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsNewCategory(false);
+                          setEditingItem({
+                            ...editingItem!,
+                            category: "",
+                          });
+                        }}
+                        className="px-3 py-2 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        ยกเลิก
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">
