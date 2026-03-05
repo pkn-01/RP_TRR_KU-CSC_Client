@@ -6,9 +6,24 @@ export interface StockItem {
   name: string;
   quantity: number;
   category: string;
-  location: string;
+  minStock: number;
   createdAt: string;
   updatedAt: string;
+  _count?: { transactions: number };
+}
+
+export interface StockTransaction {
+  id: number;
+  stockItemId: number;
+  type: "IN" | "OUT";
+  quantity: number;
+  previousQty: number;
+  newQty: number;
+  reference?: string;
+  note?: string;
+  userId?: number;
+  createdAt: string;
+  stockItem?: StockItem;
 }
 
 export const stockService = {
@@ -28,11 +43,15 @@ export const stockService = {
     return apiFetch(`/api/stock/${id}`, "PUT", data);
   },
 
-  async withdrawStockItem(id: number, data: { quantity: number; reference?: string; note?: string; userId?: number }): Promise<any> {
+  async withdrawStockItem(id: number, data: { quantity: number; reference?: string; note?: string; userId?: number }): Promise<StockTransaction> {
     return apiFetch(`/api/stock/${id}/withdraw`, "POST", data);
   },
 
-  async getTransactions(stockItemId?: number): Promise<any[]> {
+  async addStockItem(id: number, data: { quantity: number; reference?: string; note?: string; userId?: number }): Promise<StockTransaction> {
+    return apiFetch(`/api/stock/${id}/add-stock`, "POST", data);
+  },
+
+  async getTransactions(stockItemId?: number): Promise<StockTransaction[]> {
     const query = stockItemId ? `?stockItemId=${stockItemId}` : "";
     return apiFetch(`/api/stock/transactions${query}`);
   },
