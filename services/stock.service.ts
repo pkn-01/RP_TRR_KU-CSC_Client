@@ -28,6 +28,15 @@ export const stockService = {
     return apiFetch(`/api/stock/${id}`, "PUT", data);
   },
 
+  async withdrawStockItem(id: number, data: { quantity: number; reference?: string; note?: string; userId?: number }): Promise<any> {
+    return apiFetch(`/api/stock/${id}/withdraw`, "POST", data);
+  },
+
+  async getTransactions(stockItemId?: number): Promise<any[]> {
+    const query = stockItemId ? `?stockItemId=${stockItemId}` : "";
+    return apiFetch(`/api/stock/transactions${query}`);
+  },
+
   async deleteStockItem(id: number): Promise<void> {
     return apiFetch(`/api/stock/${id}`, "DELETE");
   },

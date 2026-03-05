@@ -13,6 +13,8 @@ import {
   AlertCircle,
   CheckCircle2,
   X,
+  Minus,
+  History,
 } from "lucide-react";
 import { stockService, StockItem } from "@/services/stock.service";
 import Swal from "sweetalert2";
@@ -28,6 +30,12 @@ export default function StockClient() {
   const [editingItem, setEditingItem] = useState<Partial<StockItem> | null>(
     null,
   );
+  const [withdrawItem, setWithdrawItem] = useState<StockItem | null>(null);
+  const [withdrawData, setWithdrawData] = useState({
+    quantity: 1,
+    reference: "",
+    note: "",
+  });
 
   const fetchItems = useCallback(async () => {
     try {
@@ -79,6 +87,36 @@ export default function StockClient() {
     }
   };
 
+  const handleWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!withdrawItem) return;
+
+    try {
+      const userId = localStorage.getItem("userId");
+      await stockService.withdrawStockItem(withdrawItem.id, {
+        ...withdrawData,
+        userId: userId ? parseInt(userId) : undefined,
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "เบิกสินค้าสำเร็จ",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+
+      setWithdrawItem(null);
+      setWithdrawData({ quantity: 1, reference: "", note: "" });
+      fetchItems();
+    } catch (error: any) {
+      Swal.fire(
+        "ข้อผิดพลาด",
+        error.message || "ไม่สามารถเบิกสินค้าได้",
+        "error",
+      );
+    }
+  };
+
   const handleDelete = async (id: number) => {
     const result = await Swal.fire({
       title: "ยืนยันการลบ?",
@@ -112,7 +150,6 @@ export default function StockClient() {
       ชื่อสินค้า: item.name,
       จำนวนคงเหลือ: item.quantity,
       หมวดหมู่: item.category || "-",
-      สถานที่เก็บ: item.location || "-",
       อัปเดตล่าสุด: new Date(item.updatedAt).toLocaleDateString("th-TH"),
     }));
 
@@ -143,21 +180,13 @@ export default function StockClient() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              เช็คสต๊อก / บันทึกจำนวน
-            </h1>
-            <p className="text-gray-500">
-              จัดการข้อมูลวัสดุอุปกรณ์และครุภัณฑ์ IT
-            </p>
-          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportExcel}
               className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Download size={18} />
-              <span>ส่งออก Excel</span>
+              <span>Export</span>
             </button>
             <button
               onClick={() => {
@@ -166,7 +195,6 @@ export default function StockClient() {
                   name: "",
                   quantity: 0,
                   category: "",
-                  location: "",
                 });
                 setIsModalOpen(true);
               }}
@@ -181,18 +209,12 @@ export default function StockClient() {
         {/* Stats Card */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-              <Package size={24} />
-            </div>
             <div>
               <p className="text-sm text-gray-500">รายการทั้งหมด</p>
               <p className="text-2xl font-bold">{items.length}</p>
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-              <CheckCircle2 size={24} />
-            </div>
             <div>
               <p className="text-sm text-gray-500">มีของในสต๊อก</p>
               <p className="text-2xl font-bold text-green-600">
@@ -201,9 +223,6 @@ export default function StockClient() {
             </div>
           </div>
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div className="p-3 bg-red-50 text-red-600 rounded-lg">
-              <AlertCircle size={24} />
-            </div>
             <div>
               <p className="text-sm text-gray-500">สินค้าหมด</p>
               <p className="text-2xl font-bold text-red-600">
@@ -244,9 +263,6 @@ export default function StockClient() {
                   </th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-600">
                     หมวดหมู่
-                  </th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-600">
-                    สถานที่เก็บ
                   </th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-600">
                     จำนวนคงเหลือ
@@ -290,9 +306,6 @@ export default function StockClient() {
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {item.category || "-"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {item.location || "-"}
-                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-bold ${
@@ -308,6 +321,20 @@ export default function StockClient() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setWithdrawItem(item);
+                              setWithdrawData({
+                                quantity: 1,
+                                reference: "",
+                                note: "",
+                              });
+                            }}
+                            className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                            title="เบิกสินค้า"
+                          >
+                            <Minus size={18} />
+                          </button>
                           <button
                             onClick={() => {
                               setEditingItem(item);
@@ -443,22 +470,6 @@ export default function StockClient() {
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-semibold text-gray-700">
-                  สถานที่เก็บ
-                </label>
-                <input
-                  type="text"
-                  value={editingItem?.location || ""}
-                  onChange={(e) =>
-                    setEditingItem({
-                      ...editingItem!,
-                      location: e.target.value,
-                    })
-                  }
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
-                />
-              </div>
               <div className="pt-4 flex items-center gap-3">
                 <button
                   type="button"
@@ -472,6 +483,92 @@ export default function StockClient() {
                   className="flex-1 py-2 rounded-lg bg-[#795548] text-white hover:bg-[#6d4c41] transition-colors"
                 >
                   บันทึก
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Withdrawal Modal */}
+      {withdrawItem && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-orange-600 text-white">
+              <h2 className="text-lg font-bold text-white">
+                เบิกสินค้า: {withdrawItem.name}
+              </h2>
+              <button
+                onClick={() => setWithdrawItem(null)}
+                className="hover:bg-white/10 p-1 rounded transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleWithdraw} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-gray-700">
+                  จำนวนที่เบิก (คงเหลือ: {withdrawItem.quantity})
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  max={withdrawItem.quantity}
+                  value={withdrawData.quantity}
+                  onChange={(e) =>
+                    setWithdrawData({
+                      ...withdrawData,
+                      quantity: parseInt(e.target.value) || 1,
+                    })
+                  }
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-gray-700">
+                  เลขอ้างอิง / ใบงาน (ถ้ามี)
+                </label>
+                <input
+                  type="text"
+                  placeholder="เช่น REP-20240305-001"
+                  value={withdrawData.reference}
+                  onChange={(e) =>
+                    setWithdrawData({
+                      ...withdrawData,
+                      reference: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-semibold text-gray-700">
+                  หมายเหตุ
+                </label>
+                <textarea
+                  placeholder="ระบุเหตุผลการเบิก"
+                  value={withdrawData.note}
+                  onChange={(e) =>
+                    setWithdrawData({ ...withdrawData, note: e.target.value })
+                  }
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 min-h-[80px]"
+                />
+              </div>
+              <div className="pt-4 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setWithdrawItem(null)}
+                  className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  disabled={withdrawItem.quantity <= 0}
+                  className="flex-1 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  ยืนยันการเบิก
                 </button>
               </div>
             </form>
