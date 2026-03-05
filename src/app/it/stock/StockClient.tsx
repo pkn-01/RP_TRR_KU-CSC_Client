@@ -38,6 +38,7 @@ export default function StockClient() {
     null,
   );
   const [isNewCategory, setIsNewCategory] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [withdrawItem, setWithdrawItem] = useState<StockItem | null>(null);
   const [withdrawData, setWithdrawData] = useState({
     quantity: 1,
@@ -211,6 +212,33 @@ export default function StockClient() {
     }
   };
 
+  const handleDeleteCategory = async (name: string) => {
+    const result = await Swal.fire({
+      title: `ลบหมวดหมู่ "${name}"?`,
+      text: "รายการสินค้าในหมวดหมู่นี้ทั้งหมดจะถูกเปลี่ยนเป็น 'ไม่ระบุหมวดหมู่'",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await stockService.deleteCategory(name);
+        await fetchItems();
+        Swal.fire("สำเร็จ", "ลบหมวดหมู่เรียบร้อยแล้ว", "success");
+      } catch (error: any) {
+        Swal.fire(
+          "ข้อผิดพลาด",
+          error.message || "ไม่สามารถลบหมวดหมู่ได้",
+          "error",
+        );
+      }
+    }
+  };
+
   const handleExportExcel = () => {
     const exportData = filteredItems.map((item) => ({
       รหัสสินค้า: item.code,
@@ -354,21 +382,30 @@ export default function StockClient() {
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] text-sm"
             />
           </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
-          >
-            <option value="">หมวดหมู่ทั้งหมด</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat!}>
-                {cat}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
+            >
+              <option value="">หมวดหมู่ทั้งหมด</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat!}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => setIsCategoryModalOpen(true)}
+              title="จัดการหมวดหมู่"
+              className="p-2 text-gray-400 hover:text-[#795548] hover:bg-[#795548]/5 rounded-lg transition-colors border border-gray-200"
+            >
+              <Edit2 size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Table */}
@@ -961,6 +998,57 @@ export default function StockClient() {
                 className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-white transition-colors text-sm font-medium"
               >
                 ปิด
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Category Management Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 text-gray-700">
+              <h2 className="text-lg font-bold">จัดการหมวดหมู่</h2>
+              <button
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="hover:bg-gray-200 p-1.5 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              {categories.length === 0 ? (
+                <p className="text-center text-gray-400 py-8 text-sm">
+                  ยังไม่มีหมวดหมู่
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {categories.map((cat) => (
+                    <div
+                      key={cat}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100"
+                    >
+                      <span className="text-sm font-medium text-gray-700">
+                        {cat}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteCategory(cat!)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                        title="ลบหมวดหมู่"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-100 bg-gray-50 text-right">
+              <button
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                ปิดหน้าต่าง
               </button>
             </div>
           </div>

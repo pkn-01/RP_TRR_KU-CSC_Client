@@ -58,4 +58,8 @@ export const stockService = {
   async deleteStockItem(id: number): Promise<void> {
     return apiFetch(`/api/stock/${id}`, "DELETE");
   },
+
+  async deleteCategory(name: string): Promise<any> {
+    return apiFetch(`/api/stock/categories/${encodeURIComponent(name)}`, "DELETE");
+  },
 };
