@@ -62,4 +62,8 @@ export const stockService = {
   async deleteCategory(name: string): Promise<any> {
     return apiFetch(`/api/stock/categories/${encodeURIComponent(name)}`, "DELETE");
   },
+
+  async bulkImportStockItems(items: Partial<StockItem>[]): Promise<{ created: number; updated: number; total: number }> {
+    return apiFetch("/api/stock/bulk-import", "POST", { items });
+  },
 };

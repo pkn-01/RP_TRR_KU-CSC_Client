@@ -18,6 +18,7 @@ import {
   Package,
   CheckCircle2,
   XCircle,
+  Upload,
 } from "lucide-react";
 import {
   stockService,
@@ -58,6 +59,10 @@ export default function StockClient() {
   );
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importData, setImportData] = useState<Partial<StockItem>[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -264,6 +269,68 @@ export default function StockClient() {
     );
   };
 
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        const mappedData: Partial<StockItem>[] = jsonData.map((row) => ({
+          name: String(row["ยี่ห้อ"] || row["Brand"] || "").trim(),
+          code: String(row["รหัส"] || row["Code"] || row["Model"] || "").trim(),
+          category: String(
+            row["สี/ประเภท"] || row["Color"] || row["Type"] || "",
+          ).trim(),
+          quantity: parseInt(
+            row["จำนวน"] || row["Qty"] || row["Quantity"] || "0",
+          ),
+        }));
+
+        setImportData(mappedData.filter((i) => i.code && i.name));
+        setIsImportModalOpen(true);
+        // Reset input
+        e.target.value = "";
+      } catch (error) {
+        console.error("Import error:", error);
+        Swal.fire("ข้อผิดพลาด", "ไม่สามารถอ่านไฟล์ Excel ได้", "error");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const confirmImport = async () => {
+    if (importData.length === 0) return;
+
+    try {
+      setIsImporting(true);
+      const result = await stockService.bulkImportStockItems(importData);
+
+      Swal.fire({
+        icon: "success",
+        title: "นำเข้าข้อมูลสำเร็จ",
+        html: `สร้างใหม่: ${result.created} รายการ<br/>อัปเดต: ${result.updated} รายการ`,
+      });
+
+      setIsImportModalOpen(false);
+      fetchItems();
+    } catch (error: any) {
+      Swal.fire(
+        "ข้อผิดพลาด",
+        error.message || "ไม่สามารถนำเข้าข้อมูลได้",
+        "error",
+      );
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const filteredItems = items.filter((item) => {
     const matchSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -312,6 +379,22 @@ export default function StockClient() {
               <Download size={16} />
               Export
             </button>
+            <div className="relative">
+              <input
+                type="file"
+                accept=".xlsx, .xls"
+                onChange={handleFileImport}
+                className="hidden"
+                id="import-excel"
+              />
+              <label
+                htmlFor="import-excel"
+                className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium cursor-pointer"
+              >
+                <Upload size={16} />
+                Import
+              </label>
+            </div>
             <button
               onClick={() => {
                 setEditingItem({
@@ -1085,6 +1168,99 @@ export default function StockClient() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Preview Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-blue-600 text-white">
+              <div className="flex items-center gap-2">
+                <Upload size={20} />
+                <h2 className="text-lg font-bold text-white">
+                  ตรวจสอบข้อมูลก่อนนำเข้า
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="hover:bg-white/10 px-2 py-1 rounded transition-colors text-sm text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 bg-blue-50 border-b border-blue-100 text-sm text-blue-700">
+              <p>
+                พบข้อมูลทั้งหมด <strong>{importData.length}</strong> รายการ
+                กรุณาตรวจสอบความถูกต้องก่อนกดบันทึก
+              </p>
+              <p className="mt-1 text-xs opacity-80">
+                * หากมีรหัส (Code) ซ้ำกับในระบบ
+                ระบบจะทำการอัปเดตข้อมูลแทนการเพิ่มใหม่
+              </p>
+            </div>
+            <div className="overflow-y-auto flex-1">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr className="border-b border-gray-100">
+                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      ยี่ห้อ
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      รหัส
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase">
+                      สี/ประเภท
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase text-right">
+                      จำนวน
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {importData.map((item, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50/50">
+                      <td className="px-4 py-2.5 text-sm">{item.name}</td>
+                      <td className="px-4 py-2.5 text-sm font-mono text-gray-600">
+                        {item.code}
+                      </td>
+                      <td className="px-4 py-2.5 text-sm text-gray-600">
+                        {item.category || "-"}
+                      </td>
+                      <td className="px-4 py-2.5 text-sm text-right font-medium">
+                        {item.quantity}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-6 border-t border-gray-100 flex items-center gap-3 bg-gray-50">
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(false)}
+                disabled={isImporting}
+                className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium disabled:opacity-50"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                onClick={confirmImport}
+                disabled={isImporting || importData.length === 0}
+                className="flex-1 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isImporting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    กำลังนำเข้า...
+                  </>
+                ) : (
+                  "ยืนยันนำเข้าข้อมูล"
+                )}
+              </button>
             </div>
           </div>
         </div>
