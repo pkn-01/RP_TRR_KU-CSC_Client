@@ -815,89 +815,97 @@ export default function ITRepairDetailPage() {
               <div className="pl-3 py-2">
                 {data.assignmentHistory && data.assignmentHistory.length > 0 ? (
                   <div className="space-y-8 relative before:absolute before:inset-0 before:left-[11px] before:-ml-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-gray-200 before:via-gray-200 before:to-transparent">
-                    {data.assignmentHistory.map((log) => {
-                      const { text, images } = parseHistoryNote(log.note);
-                      const actionLabel = getActionLabel(log.action, text);
-                      let colorClass = "bg-gray-400 bg-white border-gray-300";
-                      let textClass = "text-gray-900";
+                    {[...data.assignmentHistory]
+                      .sort(
+                        (a, b) =>
+                          new Date(a.createdAt).getTime() -
+                          new Date(b.createdAt).getTime(),
+                      )
+                      .map((log) => {
+                        const { text, images } = parseHistoryNote(log.note);
+                        const actionLabel = getActionLabel(log.action, text);
+                        let colorClass = "bg-gray-400 bg-white border-gray-300";
+                        let textClass = "text-gray-900";
 
-                      // Assign colors based on action manually
-                      if (
-                        log.action.includes("STATUS") ||
-                        log.action === "RESOLVE"
-                      ) {
-                        colorClass = "bg-green-100 border-green-500";
-                        textClass = "text-green-800";
-                      } else if (
-                        log.action === "ASSIGN" ||
-                        log.action === "ACCEPT"
-                      ) {
-                        colorClass = "bg-blue-100 border-blue-500";
-                        textClass = "text-blue-800";
-                      }
+                        // Assign colors based on action manually
+                        if (
+                          log.action.includes("STATUS") ||
+                          log.action === "RESOLVE"
+                        ) {
+                          colorClass = "bg-green-100 border-green-500";
+                          textClass = "text-green-800";
+                        } else if (
+                          log.action === "ASSIGN" ||
+                          log.action === "ACCEPT"
+                        ) {
+                          colorClass = "bg-blue-100 border-blue-500";
+                          textClass = "text-blue-800";
+                        }
 
-                      return (
-                        <div
-                          key={log.id}
-                          className="relative flex items-start gap-5"
-                        >
-                          {/* Timeline dot */}
+                        return (
                           <div
-                            className={`absolute left-0 w-6 h-6 rounded-full border-4 ${colorClass} shadow-sm z-10 -ml-1`}
-                          ></div>
+                            key={log.id}
+                            className="relative flex items-start gap-5"
+                          >
+                            {/* Timeline dot */}
+                            <div
+                              className={`absolute left-0 w-6 h-6 rounded-full border-4 ${colorClass} shadow-sm z-10 -ml-1`}
+                            ></div>
 
-                          {/* Content Box */}
-                          <div className="ml-8 w-full">
-                            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-1 gap-1">
-                              <p className="text-sm font-bold">
-                                {log.assigner && (
-                                  <span className="text-gray-900 mr-1.5">
-                                    {log.assigner.name}
-                                  </span>
-                                )}
-                                <span className={textClass}>{actionLabel}</span>
-                                {log.assignee &&
-                                  (log.action === "ASSIGN" ||
-                                    log.action === "UNASSIGN") && (
-                                    <span className="text-gray-900 ml-1.5">
-                                      {log.assignee.name}
+                            {/* Content Box */}
+                            <div className="ml-8 w-full">
+                              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-1 gap-1">
+                                <p className="text-sm font-bold">
+                                  {log.assigner && (
+                                    <span className="text-gray-900 mr-1.5">
+                                      {log.assigner.name}
                                     </span>
                                   )}
-                              </p>
-                              <p className="text-xs font-medium text-gray-500 shrink-0 flex items-center gap-1.5">
-                                {formatDate(log.createdAt)}
-                              </p>
-                            </div>
-
-                            {text && (
-                              <p className="text-sm text-gray-700 bg-gray-50 p-3.5 rounded-xl border border-gray-100 mt-2.5 shadow-sm leading-relaxed">
-                                {text}
-                              </p>
-                            )}
-
-                            {images.length > 0 && (
-                              <div className="mt-3.5 grid grid-cols-2 md:grid-cols-3 gap-3">
-                                {images.map((imgUrl, idx) => (
-                                  <a
-                                    key={idx}
-                                    href={imgUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block rounded-xl overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity aspect-video shadow-sm"
-                                  >
-                                    <img
-                                      src={imgUrl}
-                                      alt={`evidence-${idx}`}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </a>
-                                ))}
+                                  <span className={textClass}>
+                                    {actionLabel}
+                                  </span>
+                                  {log.assignee &&
+                                    (log.action === "ASSIGN" ||
+                                      log.action === "UNASSIGN") && (
+                                      <span className="text-gray-900 ml-1.5">
+                                        {log.assignee.name}
+                                      </span>
+                                    )}
+                                </p>
+                                <p className="text-xs font-medium text-gray-500 shrink-0 flex items-center gap-1.5">
+                                  {formatDate(log.createdAt)}
+                                </p>
                               </div>
-                            )}
+
+                              {text && (
+                                <p className="text-sm text-gray-700 bg-gray-50 p-3.5 rounded-xl border border-gray-100 mt-2.5 shadow-sm leading-relaxed">
+                                  {text}
+                                </p>
+                              )}
+
+                              {images.length > 0 && (
+                                <div className="mt-3.5 grid grid-cols-2 md:grid-cols-3 gap-3">
+                                  {images.map((imgUrl, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={imgUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="block rounded-xl overflow-hidden border border-gray-200 hover:opacity-80 transition-opacity aspect-video shadow-sm"
+                                    >
+                                      <img
+                                        src={imgUrl}
+                                        alt={`evidence-${idx}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 ) : (
                   <div className="text-center py-10">
