@@ -282,18 +282,48 @@ export default function StockClient() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
 
-        const mappedData: Partial<StockItem>[] = jsonData.map((row) => ({
-          name: String(row["ยี่ห้อ"] || row["Brand"] || "").trim(),
-          code: String(row["รหัส"] || row["Code"] || row["Model"] || "").trim(),
-          category: String(
-            row["สี/ประเภท"] || row["Color"] || row["Type"] || "",
-          ).trim(),
-          quantity: parseInt(
-            row["จำนวน"] || row["Qty"] || row["Quantity"] || "0",
-          ),
-        }));
+        const mappedData: Partial<StockItem>[] = jsonData.map((row) => {
+          // Normalize row keys (trim and find matches)
+          const keys = Object.keys(row);
+          const getVal = (possibleNames: string[]) => {
+            const foundKey = keys.find((k) =>
+              possibleNames.some(
+                (pn) => k.trim().toLowerCase() === pn.toLowerCase(),
+              ),
+            );
+            return foundKey ? String(row[foundKey]).trim() : "";
+          };
 
-        setImportData(mappedData.filter((i) => i.code && i.name));
+          const name = getVal(["ยี่ห้อ", "Brand", "ยี่ห้อ_1"]); // Col A
+          const code = getVal(["รหัส", "Code", "Model"]); // Col B
+
+          // Fallback logic for Category (Col C)
+          // If Col C is also named "ยี่ห้อ", XLSX naming it "ยี่ห้อ_1" or "ยี่ห้อ_2"
+          let category = getVal(["สี/ประเภท", "Color", "Type", "Category"]);
+          if (!category) {
+            const altKey = keys.find(
+              (k) => k.includes("_1") || k.includes("_2"),
+            );
+            if (altKey) category = String(row[altKey]).trim();
+          }
+
+          const quantity =
+            parseInt(getVal(["จำนวน", "Qty", "Quantity"]) || "0") || 0;
+
+          return { name, code, category, quantity };
+        });
+
+        const validItems = mappedData.filter((i) => i.code && i.name);
+        if (validItems.length === 0) {
+          Swal.fire(
+            "ไม่พบข้อมูล",
+            "กรุณาตรวจสอบว่าชื่อหัวคอลัมน์ใน Excel ถูกต้อง (ยี่ห้อ, รหัส, จำนวน)",
+            "warning",
+          );
+          return;
+        }
+
+        setImportData(validItems);
         setIsImportModalOpen(true);
         // Reset input
         e.target.value = "";
