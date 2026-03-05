@@ -70,6 +70,7 @@ export default function ITSidebar() {
   const menuItems: MenuItem[] = [
     { icon: Wrench, label: "รายการแจ้งซ่อม", href: "/it/repairs" },
     { icon: ClipboardClock, label: "บันทึกการยืม", href: "/it/loans" },
+    { icon: Package, label: "เช็คสต๊อก", href: "/it/stock" },
   ];
 
   const isActive = useCallback(
