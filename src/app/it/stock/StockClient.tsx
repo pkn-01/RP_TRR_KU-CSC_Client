@@ -483,7 +483,7 @@ export default function StockClient() {
                               }}
                               className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             >
-                             <Plus size={18} />
+                              <Plus size={18} />
                             </button>
                             <button
                               onClick={() => {
@@ -640,17 +640,56 @@ export default function StockClient() {
                   <label className="text-sm font-semibold text-gray-700">
                     หมวดหมู่
                   </label>
-                  <input
-                    type="text"
-                    value={editingItem?.category || ""}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem!,
-                        category: e.target.value,
-                      })
+                  <select
+                    value={
+                      editingItem?.category &&
+                      categories.includes(editingItem.category)
+                        ? editingItem.category
+                        : editingItem?.category
+                          ? "__new__"
+                          : ""
                     }
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
-                  />
+                    onChange={(e) => {
+                      if (e.target.value === "__new__") {
+                        setEditingItem({
+                          ...editingItem!,
+                          category: "",
+                        });
+                      } else {
+                        setEditingItem({
+                          ...editingItem!,
+                          category: e.target.value,
+                        });
+                      }
+                    }}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
+                  >
+                    <option value="">-- เลือกหมวดหมู่ --</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat!}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="__new__">+ เพิ่มหมวดหมู่ใหม่...</option>
+                  </select>
+                  {editingItem?.category !== undefined &&
+                    !categories.includes(editingItem?.category || "") &&
+                    (editingItem?.category === "" ||
+                      !categories.includes(editingItem?.category || "")) && (
+                      <input
+                        type="text"
+                        placeholder="พิมพ์ชื่อหมวดหมู่ใหม่"
+                        value={editingItem?.category || ""}
+                        onChange={(e) =>
+                          setEditingItem({
+                            ...editingItem!,
+                            category: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] mt-2"
+                        autoFocus
+                      />
+                    )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">
