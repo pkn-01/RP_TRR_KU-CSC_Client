@@ -370,12 +370,14 @@ export default function ITRepairDetailPage() {
     try {
       setSaving(true);
 
-      // Don't auto-change status here — prevents unwanted reporter notifications
-      // Status changes use explicit actions: handlePickupJob, handleCompleteClick, handleCancelClick
+      // Auto-upgrade status from ASSIGNED to IN_PROGRESS on first action
       const body: Record<string, any> = {
         notes,
         messageToReporter,
       };
+      if (data.status === "ASSIGNED") {
+        body.status = "IN_PROGRESS";
+      }
 
       await apiFetch(`/api/repairs/${data.id}`, {
         method: "PUT",
