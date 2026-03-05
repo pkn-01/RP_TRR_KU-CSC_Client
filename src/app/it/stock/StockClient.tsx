@@ -2,6 +2,23 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
+  Download,
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  Minus,
+  PackagePlus,
+  History,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  AlertTriangle,
+  Package,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
+import {
   stockService,
   StockItem,
   StockTransaction,
@@ -270,9 +287,10 @@ export default function StockClient() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportExcel}
-              className="bg-white border border-gray-300 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+              className="flex items-center gap-2 bg-white border border-gray-300 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
             >
-              Export ▼
+              <Download size={16} />
+              Export
             </button>
             <button
               onClick={() => {
@@ -285,50 +303,75 @@ export default function StockClient() {
                 });
                 setIsModalOpen(true);
               }}
-              className="bg-[#795548] text-white px-4 py-2 rounded-lg hover:bg-[#6d4c41] transition-colors text-sm font-medium"
+              className="flex items-center gap-2 bg-[#795548] text-white px-4 py-2 rounded-lg hover:bg-[#6d4c41] transition-colors text-sm font-medium"
             >
-              + เพิ่มรายการใหม่
+              <Plus size={16} />
+              เพิ่มรายการใหม่
             </button>
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-              รายการทั้งหมด
-            </p>
-            <p className="text-2xl font-bold mt-1">{items.length}</p>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-2.5 bg-blue-50 rounded-lg">
+              <Package size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                รายการทั้งหมด
+              </p>
+              <p className="text-2xl font-bold mt-1">{items.length}</p>
+            </div>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-              มีของในสต๊อก
-            </p>
-            <p className="text-2xl font-bold mt-1 text-green-600">
-              {items.filter((i) => i.quantity > 0).length}
-            </p>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-2.5 bg-green-50 rounded-lg">
+              <CheckCircle2 size={20} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                มีของในสต๊อก
+              </p>
+              <p className="text-2xl font-bold mt-1 text-green-600">
+                {items.filter((i) => i.quantity > 0).length}
+              </p>
+            </div>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-              สินค้าใกล้หมด
-            </p>
-            <p className="text-2xl font-bold mt-1 text-yellow-600">
-              {lowStockCount}
-            </p>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-2.5 bg-yellow-50 rounded-lg">
+              <AlertTriangle size={20} className="text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                สินค้าใกล้หมด
+              </p>
+              <p className="text-2xl font-bold mt-1 text-yellow-600">
+                {lowStockCount}
+              </p>
+            </div>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">
-              สินค้าหมด
-            </p>
-            <p className="text-2xl font-bold mt-1 text-red-600">
-              {items.filter((i) => i.quantity <= 0).length}
-            </p>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="p-2.5 bg-red-50 rounded-lg">
+              <XCircle size={20} className="text-red-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                สินค้าหมด
+              </p>
+              <p className="text-2xl font-bold mt-1 text-red-600">
+                {items.filter((i) => i.quantity <= 0).length}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Filter & Search */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={16}
+            />
             <input
               type="text"
               placeholder="ค้นหารหัสสินค้า ชื่อสินค้า หรือหมวดหมู่..."
@@ -337,7 +380,7 @@ export default function StockClient() {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-4 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] text-sm"
             />
           </div>
           <select
@@ -441,6 +484,7 @@ export default function StockClient() {
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1 flex-wrap">
                             <button
+                              title="รับสินค้าเข้า"
                               onClick={() => {
                                 setAddStockItem(item);
                                 setAddStockData({
@@ -449,9 +493,9 @@ export default function StockClient() {
                                   note: "",
                                 });
                               }}
-                              className="px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             >
-                              รับเข้า
+                              <PackagePlus size={18} />
                             </button>
                             <button
                               onClick={() => {
@@ -462,31 +506,34 @@ export default function StockClient() {
                                   note: "",
                                 });
                               }}
-                              className="px-2.5 py-1 text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-md hover:bg-orange-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               disabled={item.quantity <= 0}
                             >
-                              เบิก
+                              <Minus size={18} />
                             </button>
                             <button
+                              title="ดูประวัติ"
                               onClick={() => handleViewTransactions(item)}
-                              className="px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-50 border border-purple-200 rounded-md hover:bg-purple-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                             >
-                              ประวัติ
+                              <History size={18} />
                             </button>
                             <button
+                              title="แก้ไข"
                               onClick={() => {
                                 setEditingItem(item);
                                 setIsModalOpen(true);
                               }}
-                              className="px-2.5 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             >
-                              แก้ไข
+                              <Edit2 size={18} />
                             </button>
                             <button
+                              title="ลบ"
                               onClick={() => handleDelete(item.id)}
-                              className="px-2.5 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             >
-                              ลบ
+                              <Trash2 size={18} />
                             </button>
                           </div>
                         </td>
@@ -514,9 +561,9 @@ export default function StockClient() {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  ◀ ก่อนหน้า
+                  <ChevronLeft size={16} />
                 </button>
                 <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
                   {currentPage} / {totalPages}
@@ -524,9 +571,9 @@ export default function StockClient() {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 border border-gray-300 rounded-md hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  ถัดไป ▶
+                  <ChevronRight size={16} />
                 </button>
               </div>
             </div>
@@ -548,7 +595,7 @@ export default function StockClient() {
                 onClick={() => setIsModalOpen(false)}
                 className="hover:bg-white/10 px-2 py-1 rounded transition-colors text-sm"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
@@ -668,7 +715,7 @@ export default function StockClient() {
                 onClick={() => setWithdrawItem(null)}
                 className="hover:bg-white/10 px-2 py-1 rounded transition-colors text-sm"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             <form onSubmit={handleWithdraw} className="p-6 space-y-4">
@@ -754,7 +801,7 @@ export default function StockClient() {
                 onClick={() => setAddStockItem(null)}
                 className="hover:bg-white/10 px-2 py-1 rounded transition-colors text-sm"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             <form onSubmit={handleAddStock} className="p-6 space-y-4">
@@ -838,7 +885,7 @@ export default function StockClient() {
                 onClick={() => setTransactionItem(null)}
                 className="hover:bg-white/10 px-2 py-1 rounded transition-colors text-sm"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             <div className="overflow-y-auto flex-1">
