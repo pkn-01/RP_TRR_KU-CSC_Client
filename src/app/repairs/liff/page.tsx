@@ -14,8 +14,22 @@ function RepairLiffContent() {
 
     const init = async () => {
       try {
+        // Check action parameter from Rich Menu
+        const action = searchParams.get("action");
+
         // Check if lineUserId is already provided in URL (from Rich Menu or external link)
         const urlLineUserId = searchParams.get("lineUserId");
+
+        // Route to my-tickets page for "status" action
+        if (action === "status") {
+          if (urlLineUserId) {
+            window.location.href = `/repairs/liff/my-tickets?lineUserId=${urlLineUserId}`;
+          } else {
+            // Let my-tickets page handle LIFF init itself
+            window.location.href = `/repairs/liff/my-tickets`;
+          }
+          return;
+        }
 
         if (urlLineUserId) {
           // Already have lineUserId, redirect to form directly
