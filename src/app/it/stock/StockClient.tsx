@@ -215,8 +215,8 @@ export default function StockClient() {
 
   const handleDeleteCategory = async (name: string) => {
     const result = await Swal.fire({
-      title: `ลบหมวดหมู่ "${name}"?`,
-      text: "รายการสินค้าในหมวดหมู่นี้ทั้งหมดจะถูกเปลี่ยนเป็น 'ไม่ระบุหมวดหมู่'",
+      title: `ลบสี/ประเภท "${name}"?`,
+      text: "รายการสินค้าในสี/ประเภทนี้ทั้งหมดจะถูกเปลี่ยนเป็น 'ไม่ระบุ'",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -229,11 +229,11 @@ export default function StockClient() {
       try {
         await stockService.deleteCategory(name);
         await fetchItems();
-        Swal.fire("สำเร็จ", "ลบหมวดหมู่เรียบร้อยแล้ว", "success");
+        Swal.fire("สำเร็จ", "ลบสี/ประเภทเรียบร้อยแล้ว", "success");
       } catch (error: any) {
         Swal.fire(
           "ข้อผิดพลาด",
-          error.message || "ไม่สามารถลบหมวดหมู่ได้",
+          error.message || "ไม่สามารถลบสี/ประเภทได้",
           "error",
         );
       }
@@ -242,10 +242,10 @@ export default function StockClient() {
 
   const handleExportExcel = () => {
     const exportData = filteredItems.map((item) => ({
-      รหัสสินค้า: item.code,
-      ชื่อสินค้า: item.name,
-      จำนวนคงเหลือ: item.quantity,
-      หมวดหมู่: item.category || "-",
+      ยี่ห้อ: item.name,
+      รหัส: item.code,
+      "สี/ประเภท": item.category || "-",
+      จำนวน: item.quantity,
       อัปเดตล่าสุด: new Date(item.updatedAt).toLocaleDateString("th-TH"),
     }));
 
@@ -366,7 +366,7 @@ export default function StockClient() {
             />
             <input
               type="text"
-              placeholder="ค้นหารหัสสินค้า ชื่อสินค้า หรือหมวดหมู่..."
+              placeholder="ค้นหายี่ห้อ, รหัส หรือ สี/ประเภท..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -384,7 +384,7 @@ export default function StockClient() {
               }}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
             >
-              <option value="">หมวดหมู่ทั้งหมด</option>
+              <option value="">สี/ประเภททั้งหมด</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat!}>
                   {cat}
@@ -393,7 +393,7 @@ export default function StockClient() {
             </select>
             <button
               onClick={() => setIsCategoryModalOpen(true)}
-              title="จัดการหมวดหมู่"
+              title="จัดการสี/ประเภท"
               className="p-2 text-gray-400 hover:text-[#795548] hover:bg-[#795548]/5 rounded-lg transition-colors border border-gray-200"
             >
               <BookX size={18} />
@@ -408,16 +408,16 @@ export default function StockClient() {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    ยี่ห้อ
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     รหัส
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    รายการ
+                    สี/ประเภท
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    หมวดหมู่
-                  </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    คงเหลือ
+                    จำนวน
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     สถานะ
@@ -454,13 +454,13 @@ export default function StockClient() {
                         key={item.id}
                         className="hover:bg-gray-50/50 transition-colors"
                       >
-                        <td className="px-6 py-4 font-mono text-sm text-gray-600">
-                          {item.code}
-                        </td>
                         <td className="px-6 py-4">
                           <p className="font-medium text-gray-900">
                             {item.name}
                           </p>
+                        </td>
+                        <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                          {item.code}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {item.category || "-"}
@@ -599,7 +599,7 @@ export default function StockClient() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">
-                    รหัสสินค้า <span className="text-red-500">*</span>
+                    รหัส <span className="text-red-500">*</span>
                   </label>
                   <input
                     required
@@ -613,7 +613,7 @@ export default function StockClient() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">
-                    จำนวนคงเหลือ <span className="text-red-500">*</span>
+                    จำนวน <span className="text-red-500">*</span>
                   </label>
                   <input
                     required
@@ -632,7 +632,7 @@ export default function StockClient() {
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-semibold text-gray-700">
-                  ชื่อรายการ/ยี่ห้อ <span className="text-red-500">*</span>
+                  ยี่ห้อ <span className="text-red-500">*</span>
                 </label>
                 <input
                   required
@@ -647,7 +647,7 @@ export default function StockClient() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-sm font-semibold text-gray-700">
-                    หมวดหมู่
+                    สี/ประเภท
                   </label>
                   {!isNewCategory ? (
                     <select
@@ -668,19 +668,19 @@ export default function StockClient() {
                       }}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548] bg-white"
                     >
-                      <option value="">-- เลือกหมวดหมู่ --</option>
+                      <option value="">-- เลือกสี/ประเภท --</option>
                       {categories.map((cat) => (
                         <option key={cat} value={cat!}>
                           {cat}
                         </option>
                       ))}
-                      <option value="__new__">+ เพิ่มหมวดหมู่ใหม่...</option>
+                      <option value="__new__">+ เพิ่มสี/ประเภทใหม่...</option>
                     </select>
                   ) : (
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="พิมพ์ชื่อหมวดหมู่ใหม่"
+                        placeholder="พิมพ์สี/ประเภทใหม่"
                         value={editingItem?.category || ""}
                         onChange={(e) =>
                           setEditingItem({
@@ -993,7 +993,7 @@ export default function StockClient() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden flex flex-col max-h-[80vh]">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 text-gray-700">
-              <h2 className="text-lg font-bold">จัดการหมวดหมู่</h2>
+              <h2 className="text-lg font-bold">จัดการสี/ประเภท</h2>
               <button
                 onClick={() => setIsCategoryModalOpen(false)}
                 className="hover:bg-gray-200 p-1.5 rounded-lg transition-colors"
@@ -1004,7 +1004,7 @@ export default function StockClient() {
             <div className="p-4 overflow-y-auto">
               {categories.length === 0 ? (
                 <p className="text-center text-gray-400 py-8 text-sm">
-                  ยังไม่มีหมวดหมู่
+                  ยังไม่มีสี/ประเภท
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -1019,7 +1019,7 @@ export default function StockClient() {
                       <button
                         onClick={() => handleDeleteCategory(cat!)}
                         className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        title="ลบหมวดหมู่"
+                        title="ลบสี/ประเภท"
                       >
                         <Trash2 size={16} />
                       </button>
