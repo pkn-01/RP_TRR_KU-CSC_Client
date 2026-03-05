@@ -464,7 +464,7 @@ export default function RepairDetailPage() {
       // Auto upgrade status if assigned from pending. The user requested:
       // "เมื่อสถานะเป็น รอรับงาน เมื่อมีการบันทึก สถานะจะเป็น กำลังดำเนินการตลอด"
       if (data.status === "PENDING" && assigneeIds.length > 0) {
-        finalStatus = "ASSIGNED";
+        finalStatus = "IN_PROGRESS";
       }
 
       await apiFetch(`/api/repairs/${data.id}`, {
