@@ -6,7 +6,6 @@ export interface StockItem {
   name: string;
   quantity: number;
   category: string;
-  minStock: number;
   createdAt: string;
   updatedAt: string;
   _count?: { transactions: number };

@@ -216,7 +216,6 @@ export default function StockClient() {
       รหัสสินค้า: item.code,
       ชื่อสินค้า: item.name,
       จำนวนคงเหลือ: item.quantity,
-      จำนวนขั้นต่ำ: item.minStock || 0,
       หมวดหมู่: item.category || "-",
       อัปเดตล่าสุด: new Date(item.updatedAt).toLocaleDateString("th-TH"),
     }));
@@ -251,26 +250,19 @@ export default function StockClient() {
         label: "หมด",
         bg: "bg-red-100",
         text: "text-red-700",
-        border: "border-red-200",
       };
-    if (item.minStock > 0 && item.quantity <= item.minStock)
+    if (item.quantity <= 5)
       return {
         label: "ใกล้หมด",
         bg: "bg-yellow-100",
         text: "text-yellow-700",
-        border: "border-yellow-200",
       };
     return {
       label: "ปกติ",
       bg: "bg-green-100",
       text: "text-green-700",
-      border: "border-green-200",
     };
   };
-
-  const lowStockCount = items.filter(
-    (i) => i.minStock > 0 && i.quantity > 0 && i.quantity <= i.minStock,
-  ).length;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-8">
@@ -300,7 +292,6 @@ export default function StockClient() {
                   name: "",
                   quantity: 0,
                   category: "",
-                  minStock: 0,
                 });
                 setIsNewCategory(false);
                 setIsModalOpen(true);
@@ -314,7 +305,7 @@ export default function StockClient() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
@@ -330,16 +321,6 @@ export default function StockClient() {
               </p>
               <p className="text-2xl font-bold mt-1 text-green-600">
                 {items.filter((i) => i.quantity > 0).length}
-              </p>
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
-                สินค้าใกล้หมด
-              </p>
-              <p className="text-2xl font-bold mt-1 text-yellow-600">
-                {lowStockCount}
               </p>
             </div>
           </div>
@@ -450,11 +431,6 @@ export default function StockClient() {
                           <p className="font-medium text-gray-900">
                             {item.name}
                           </p>
-                          {item.minStock > 0 && (
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              ขั้นต่ำ: {item.minStock}
-                            </p>
-                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {item.category || "-"}
@@ -700,24 +676,6 @@ export default function StockClient() {
                       </button>
                     </div>
                   )}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">
-                    จำนวนขั้นต่ำ
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={editingItem?.minStock ?? 0}
-                    onChange={(e) =>
-                      setEditingItem({
-                        ...editingItem!,
-                        minStock: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="0 = ไม่แจ้งเตือน"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#795548]/20 focus:border-[#795548]"
-                  />
                 </div>
               </div>
               <div className="pt-4 flex items-center gap-3">
