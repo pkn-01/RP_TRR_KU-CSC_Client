@@ -268,9 +268,6 @@ function MyTicketsContent() {
       <header className="sticky top-0 z-30 bg-[#5D3A29] text-white shadow-lg">
         <div className="max-w-3xl mx-auto px-4 py-5">
           <h1 className="text-xl font-bold">รายการแจ้งซ่อมของฉัน</h1>
-          <p className="text-white/70 text-sm mt-0.5">
-            ติดตามสถานะการแจ้งซ่อมทั้งหมด
-          </p>
         </div>
       </header>
 

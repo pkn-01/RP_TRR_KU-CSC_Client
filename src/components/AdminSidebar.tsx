@@ -83,12 +83,17 @@ export default function AdminSidebar() {
     // { icon: Wrench, label: "งานของฉัน", href: "/admin/repairs?filter=mine" },
     { icon: ClipboardClock, label: "รายการยืมทั้งหมด", href: "/admin/loans" },
     // { icon:ClipboardList,label: "เช็คสต็อก", href: "/admin/stock" },
+    { icon: UserRoundCog, label: "จัดการสมาชิก", href: "/admin/users" },
+    { icon: Users, label: "จัดการแผนก", href: "/admin/departments" },
     {
       icon: Settings,
       label: "ตั้งค่า",
       subItems: [
-        { icon: UserRoundCog, label: "จัดการสมาชิก", href: "/admin/users" },
-        { icon: Users, label: "จัดการแผนก", href: "/admin/departments" },
+        {
+          icon: Database,
+          label: "จัดการข้อมูล",
+          href: "/admin/data-management",
+        },
       ],
     },
   ];

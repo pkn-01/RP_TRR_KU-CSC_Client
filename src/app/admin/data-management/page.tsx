@@ -350,6 +350,15 @@ export default function DataManagementPage() {
                   กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ
                 </p>
               </div>
+
+              {(selectedTypes.includes("repairs") ||
+                selectedTypes.includes("tickets")) && (
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 items-start">
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    📎 ไฟล์แนบที่อยู่บน Cloudinary จะถูกลบออกด้วยโดยอัตโนมัติ
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
