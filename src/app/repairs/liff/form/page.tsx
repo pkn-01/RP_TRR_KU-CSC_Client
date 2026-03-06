@@ -368,7 +368,7 @@ function RepairFormContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white justify-center items-center">
+    <div className="min-h-screen bg-white">
       {isLoading && (
         <Loading
           fullScreen

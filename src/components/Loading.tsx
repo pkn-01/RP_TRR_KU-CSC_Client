@@ -45,11 +45,11 @@ export default function Loading({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="flex flex-col items-center justify-center gap-4">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white/95 rounded-2xl shadow-2xl px-8 py-10 mx-6 flex flex-col items-center justify-center gap-5 max-w-sm w-full animate-[fadeIn_0.2s_ease-out]">
           {spinner}
           {message && (
-            <p className="text-white text-sm font-medium tracking-wide">
+            <p className="text-gray-700 text-sm font-medium text-center leading-relaxed">
               {message}
             </p>
           )}
