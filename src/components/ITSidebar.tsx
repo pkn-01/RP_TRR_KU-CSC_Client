@@ -1,3 +1,4 @@
+// ===== แถบเมนูข้างฝ่าย IT | IT Sidebar Component =====
 "use client";
 
 import { useState, useCallback, useEffect } from "react";

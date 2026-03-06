@@ -1,3 +1,4 @@
+// ===== บริการอัปโหลดไฟล์ | File Upload Service =====
 import { resizeImage } from "@/utils/imageResize";
 
 /**

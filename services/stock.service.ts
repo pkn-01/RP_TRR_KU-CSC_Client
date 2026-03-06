@@ -1,3 +1,4 @@
+// ===== บริการจัดการสต็อก | Stock Service =====
 import { apiFetch } from "./api";
 
 export interface StockItem {

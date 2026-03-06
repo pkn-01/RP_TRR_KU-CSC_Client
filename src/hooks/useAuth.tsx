@@ -1,3 +1,4 @@
+// ===== ฮุกจัดการการยืนยันตัวตน | Authentication Hook =====
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/lib/authService";

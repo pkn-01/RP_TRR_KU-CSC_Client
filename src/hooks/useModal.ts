@@ -1,5 +1,6 @@
 "use client";
 
+// ===== ฮุกจัดการ Modal | Modal Management Hook =====
 import { useState, useCallback } from "react";
 
 export function useModal(initialState = false) {

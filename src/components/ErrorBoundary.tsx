@@ -1,3 +1,4 @@
+// ===== จัดการข้อผิดพลาดหน้าเว็บ | Error Boundary Component =====
 "use client";
 
 import React from "react";

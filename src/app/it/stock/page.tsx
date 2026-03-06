@@ -1,4 +1,5 @@
-import StockClient from  "./StockClient"
+// ===== สต็อกฝ่าย IT | IT Stock =====
+import StockClient from "./StockClient";
 
 export const metadata = {
   title: "เช็คสต๊อก | IT-TRR",

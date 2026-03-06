@@ -1,3 +1,4 @@
+// ===== บริการจัดการแผนก | Department Service =====
 import { apiFetch } from './api';
 
 export interface Department {

@@ -1,5 +1,6 @@
 "use client";
 
+// ===== หน้าต่างสำเร็จ | Success Modal Component =====
 import React from "react";
 import { Check } from "lucide-react";
 

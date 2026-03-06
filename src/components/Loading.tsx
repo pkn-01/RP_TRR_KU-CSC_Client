@@ -1,5 +1,6 @@
 "use client";
 
+// ===== หน้าจอโหลด | Loading Component =====
 import React from "react";
 
 interface LoadingProps {

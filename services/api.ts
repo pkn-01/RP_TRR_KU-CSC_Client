@@ -1,3 +1,4 @@
+// ===== บริการเรียกใช้ API | API Fetch Service =====
 // Use environment variable, or fallback to production URL, then localhost for dev
 const getBaseUrl = () => {
   // If running on client side, use relative path (Next.js Proxy)
@@ -25,7 +26,7 @@ interface FetchOptions extends RequestInit {
 }
 
 export async function apiFetch(url: string, options?: string | FetchOptions | "GET" | "POST" | "PUT" | "DELETE", body?: any) {
-  // SECURITY/SSR: Guard against server-side rendering where localStorage is undefined
+  //  SECURITY/SSR: Guard against server-side rendering where localStorage is undefined
   const token = typeof window !== 'undefined'
     ? (localStorage.getItem("access_token") || localStorage.getItem("token"))
     : null;
@@ -72,7 +73,7 @@ export async function apiFetch(url: string, options?: string | FetchOptions | "G
     
     let fullUrl;
     if (API_URL === "") {
-        // Local relative path (proxy)
+        //  Local relative path (proxy)
         fullUrl = apiPath;
     } else {
         // Absolute URL
@@ -114,7 +115,7 @@ export async function apiFetch(url: string, options?: string | FetchOptions | "G
     const text = await res.text();
     return text ? JSON.parse(text) : null;
   } catch (error) {
-    // Handle network errors (Failed to fetch)
+    // จัดการข้อผิดพลาดเครือข่าย (Failed to fetch)
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
       const targetUrl = API_URL + url;
       throw new Error(`ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ (${targetUrl}) กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต`);

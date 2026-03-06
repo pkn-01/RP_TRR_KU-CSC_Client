@@ -1,4 +1,4 @@
-// services/lineOAuthService.ts
+// ===== บริการล็อกอินผ่าน LINE | LINE OAuth Service =====
 // Helper service for LINE OAuth integration
 
 export interface LineAuthResponse {

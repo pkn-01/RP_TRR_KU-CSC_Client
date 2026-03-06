@@ -1,3 +1,4 @@
+// ===== จัดการแผนก | Department Modal Component =====
 "use client";
 
 import React, { useState, useEffect } from "react";

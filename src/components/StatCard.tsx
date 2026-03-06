@@ -1,5 +1,6 @@
 "use client";
 
+// ===== การ์ดแสดงสถิติ | Stat Card Component =====
 import React from "react";
 
 interface SimpleCardProps {

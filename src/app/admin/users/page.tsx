@@ -1,3 +1,4 @@
+// ===== จัดการผู้ใช้ | User Management (Admin) =====
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";

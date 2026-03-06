@@ -1,3 +1,4 @@
+// ===== ฮุกตรวจสอบสิทธิ์การเข้าถึง | Role Access Hook =====
 "use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
@@ -21,7 +22,11 @@ interface RoleAccessContext {
 
 const RoleContext = createContext<RoleAccessContext | null>(null);
 
-export function RoleAccessProvider({ children }: { children: React.ReactNode }) {
+export function RoleAccessProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

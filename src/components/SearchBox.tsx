@@ -1,5 +1,6 @@
 "use client";
 
+// ===== ช่องค้นหา | Search Box Component =====
 import React, { useState, useCallback } from "react";
 import { Search, X } from "lucide-react";
 

@@ -1,4 +1,6 @@
-import { ChangeEvent } from 'react';
+// ===== อัปโหลดไฟล์ | File Upload Component =====
+"use client";
+import { ChangeEvent } from "react";
 
 interface FileUploadProps {
   label: string;
@@ -13,13 +15,13 @@ export default function FileUpload({
   label,
   onChange,
   multiple = true,
-  accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx',
+  accept = ".pdf,.jpg,.jpeg,.png,.doc,.docx",
   maxSize = 10,
   required = false,
 }: FileUploadProps) {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     // Validate file size
     const validFiles = files.filter((file) => {
       const fileSizeInMB = file.size / (1024 * 1024);

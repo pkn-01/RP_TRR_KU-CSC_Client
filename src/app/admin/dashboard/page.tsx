@@ -1,3 +1,4 @@
+// ===== แดชบอร์ดแอดมิน | Admin Dashboard =====
 "use client";
 
 import { useState, useEffect } from "react";

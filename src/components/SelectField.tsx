@@ -13,7 +13,7 @@ export default function SelectField({
   value,
   onChange,
   options,
-  placeholder = '-- เลือก --',
+  placeholder = "-- เลือก --",
   required = false,
   disabled = false,
 }: SelectFieldProps) {
@@ -31,9 +31,10 @@ export default function SelectField({
         disabled={disabled}
         required={required}
         className={`w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-900 font-medium transition-all duration-200 outline-none appearance-none cursor-pointer
-          ${disabled 
-            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' 
-            : 'hover:border-slate-300 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500'
+          ${
+            disabled
+              ? "bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200"
+              : "hover:border-slate-300 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500"
           }
         `}
       >

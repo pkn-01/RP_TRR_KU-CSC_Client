@@ -1,3 +1,4 @@
+// ===== โปรไฟล์ผู้ใช้ | User Profile =====
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -49,11 +50,11 @@ export default function ProfilePage() {
     department: "",
   });
 
-  // Profile picture upload
+  // อัปโหลดรูปโปรไฟล์ | Profile picture upload
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // LINE Linking State
+  // สถานะการเชื่อมต่อ LINE | LINE Linking State
   const [lineLink, setLineLink] = useState<LineOALink | null>(null);
   const [lineLinkLoading, setLineLinkLoading] = useState(true);
   const [linkingInProgress, setLinkingInProgress] = useState(false);
@@ -124,7 +125,7 @@ export default function ProfilePage() {
       if (response.ok) {
         const data = await response.json();
         if (data.linkingUrl) {
-          // Open LINE linking in new tab
+          // เปิดหน้าต่างใหม่เพื่อเชื่อมต่อ LINE | Open new window to link LINE
           window.open(data.linkingUrl, "_blank");
         }
       }

@@ -181,7 +181,6 @@ export function ExportDataModal({
     { value: "users", label: "ข้อมูลผู้ใช้" },
     { value: "loans", label: "บันทึกยืม-คืนอุปกรณ์" },
     { value: "analytics", label: "สถิติและรายงาน" },
-    { value: "audit-logs", label: "บันทึกการเข้าถึง" },
   ];
 
   const handleExport = async () => {

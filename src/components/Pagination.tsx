@@ -1,5 +1,6 @@
 "use client";
 
+// ===== เมนูแบ่งหน้า | Pagination Component =====
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 

@@ -1,5 +1,6 @@
 "use client";
 
+// ===== ตารางข้อมูล | Data Table Component =====
 import React from "react";
 import { Trash2, Edit2, Eye } from "lucide-react";
 

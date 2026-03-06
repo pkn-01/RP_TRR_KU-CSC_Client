@@ -1,4 +1,5 @@
-import React from 'react';
+// ===== ช่องกรอกข้อมูล | Input Field Component =====
+import React from "react";
 
 interface InputFieldProps {
   label: string;
@@ -13,7 +14,7 @@ interface InputFieldProps {
 
 export default function InputField({
   label,
-  type = 'text',
+  type = "text",
   placeholder,
   value,
   onChange,
@@ -35,13 +36,11 @@ export default function InputField({
         disabled={disabled}
         className={`w-full px-4 py-3 rounded-lg border-2 transition-colors duration-200 focus:outline-none ${
           error
-            ? 'border-red-500 focus:border-red-600 bg-red-50'
-            : 'border-gray-200 focus:border-blue-500 bg-white'
-        } ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'text-gray-900'}`}
+            ? "border-red-500 focus:border-red-600 bg-red-50"
+            : "border-gray-200 focus:border-blue-500 bg-white"
+        } ${disabled ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "text-gray-900"}`}
       />
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 }

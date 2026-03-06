@@ -1,3 +1,4 @@
+// ===== ดัชนีรวมคอมโพเนนต์ | Components Index =====
 // Dialog System
 export { DialogProvider, useDialog, DialogRenderer } from "./Dialog";
 export type { DialogConfig } from "./Dialog";

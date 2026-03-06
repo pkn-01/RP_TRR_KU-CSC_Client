@@ -1,5 +1,6 @@
 "use client";
 
+// ===== คอมโพเนนต์ป้ายสถานะ | Badge Component =====
 import React from "react";
 import { Shield, User, AlertCircle, CheckCircle, Clock } from "lucide-react";
 

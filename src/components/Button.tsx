@@ -1,43 +1,44 @@
-import React from 'react';
+// ===== คอมโพเนนต์ปุ่ม | Button Component =====
+import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "danger" | "ghost";
+  size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   fullWidth?: boolean;
 }
 
 export default function Button({
   children,
-  className = '',
-  variant = 'primary',
-  size = 'md',
+  className = "",
+  variant = "primary",
+  size = "md",
   isLoading = false,
   fullWidth = false,
   disabled,
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses = {
     primary:
-      'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-md hover:shadow-lg focus:ring-primary-500 border border-transparent',
+      "bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-md hover:shadow-lg focus:ring-primary-500 border border-transparent",
     secondary:
-      'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:ring-slate-400 shadow-sm',
+      "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:ring-slate-400 shadow-sm",
     danger:
-      'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-md focus:ring-red-500 border border-transparent',
+      "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-md focus:ring-red-500 border border-transparent",
     ghost:
-      'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-400',
+      "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-400",
   };
 
   const sizeClasses = {
-    sm: 'text-xs px-3 py-1.5 rounded-md',
-    md: 'text-sm px-4 py-2 rounded-lg',
-    lg: 'text-base px-6 py-3 rounded-xl',
+    sm: "text-xs px-3 py-1.5 rounded-md",
+    md: "text-sm px-4 py-2 rounded-lg",
+    lg: "text-base px-6 py-3 rounded-xl",
   };
 
-  const widthClass = fullWidth ? 'w-full' : '';
+  const widthClass = fullWidth ? "w-full" : "";
 
   return (
     <button

@@ -1,7 +1,15 @@
+// ===== ตารางผู้ใช้ | User Table Component =====
 "use client";
 
 import { User } from "@/services/userService";
-import { Trash2, ChevronRight, Loader2, Mail, Phone, MessageCircle } from "lucide-react";
+import {
+  Trash2,
+  ChevronRight,
+  Loader2,
+  Mail,
+  Phone,
+  MessageCircle,
+} from "lucide-react";
 
 interface UserTableProps {
   users: User[];
@@ -87,12 +95,14 @@ export default function UserTable({
                 className="group hover:bg-slate-50/80 transition-all duration-200"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-semibold text-slate-900">{user.name}</div>
+                  <div className="font-semibold text-slate-900">
+                    {user.name}
+                  </div>
                   <div className="text-xs text-slate-400">
                     {user.department || "ไม่ระบุแผนก"}
                   </div>
                 </td>
-  
+
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -113,17 +123,17 @@ export default function UserTable({
                     )}
                   </div>
                 </td>
-  
+
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold border ${getRoleStyle(
-                      user.role
+                      user.role,
                     )}`}
                   >
                     {getRoleLabel(user.role)}
                   </span>
                 </td>
-  
+
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <div className="text-sm font-semibold text-slate-700">
                     {user._count?.tickets || 0} /{" "}
@@ -132,7 +142,7 @@ export default function UserTable({
                     </span>
                   </div>
                 </td>
-  
+
                 <td className="px-6 py-4 whitespace-nowrap text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button
@@ -176,7 +186,7 @@ export default function UserTable({
               </div>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${getRoleStyle(
-                  user.role
+                  user.role,
                 )}`}
               >
                 {getRoleLabel(user.role)}
@@ -190,21 +200,26 @@ export default function UserTable({
               </div>
               {user.phoneNumber && (
                 <div className="text-sm text-slate-600 flex items-center gap-2">
-                   <span className="text-slate-400 text-xs w-16">เบอร์โทร:</span>
+                  <span className="text-slate-400 text-xs w-16">เบอร์โทร:</span>
                   {user.phoneNumber}
                 </div>
               )}
               {user.lineId && (
                 <div className="text-sm text-slate-600 flex items-center gap-2">
-                   <span className="text-slate-400 text-xs w-16">Line ID:</span>
+                  <span className="text-slate-400 text-xs w-16">Line ID:</span>
                   {user.lineId}
                 </div>
               )}
-               <div className="text-sm text-slate-600 flex items-center gap-2">
-                   <span className="text-slate-400 text-xs w-16">งาน (ส่ง/รับ):</span>
-                   <span className="font-medium">{user._count?.tickets || 0}</span> / 
-                   <span className="font-medium text-indigo-600">{user._count?.assigned || 0}</span>
-                </div>
+              <div className="text-sm text-slate-600 flex items-center gap-2">
+                <span className="text-slate-400 text-xs w-16">
+                  งาน (ส่ง/รับ):
+                </span>
+                <span className="font-medium">{user._count?.tickets || 0}</span>{" "}
+                /
+                <span className="font-medium text-indigo-600">
+                  {user._count?.assigned || 0}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-50">

@@ -1,3 +1,4 @@
+// ===== ยูทิลิตี้ปรับขนาดรูปภาพ | Image Resize Utility =====
 import imageCompression from "browser-image-compression";
 
 export async function resizeImage(file: File): Promise<File> {

@@ -1,5 +1,6 @@
 "use client";
 
+// ===== ฮุกจัดการการแจ้งเตือน | Notifications Hook =====
 import { useState, useCallback } from "react";
 import { NotificationType } from "@/components/Notification";
 

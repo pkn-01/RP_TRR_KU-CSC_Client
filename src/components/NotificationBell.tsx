@@ -1,15 +1,16 @@
-'use client';
+// ===== กระดิ่งแจ้งเตือน | Notification Bell Component =====
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Bell, X } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { Bell, X } from "lucide-react";
+import Link from "next/link";
 
 interface NotificationItem {
   id: number;
   type: string;
   title: string;
   message: string;
-  status: 'UNREAD' | 'READ';
+  status: "UNREAD" | "READ";
   createdAt: string;
   actionUrl?: string;
 }
@@ -31,10 +32,10 @@ export default function NotificationBell() {
 
   const fetchUnreadCount = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await fetch('/api/notifications/unread-count', {
+      const response = await fetch("/api/notifications/unread-count", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -43,15 +44,15 @@ export default function NotificationBell() {
         setUnreadCount(data.unreadCount);
       }
     } catch (error) {
-      console.error('Failed to fetch unread count:', error);
+      console.error("Failed to fetch unread count:", error);
     }
   };
 
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/notifications?limit=5', {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/notifications?limit=5", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -60,7 +61,7 @@ export default function NotificationBell() {
         setNotifications(data.data);
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      console.error("Failed to fetch notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -84,7 +85,7 @@ export default function NotificationBell() {
         <Bell size={24} className="text-gray-700" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 w-5 h-5 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
@@ -115,14 +116,14 @@ export default function NotificationBell() {
               notifications.map((notification) => (
                 <Link
                   key={notification.id}
-                  href={notification.actionUrl || '/notifications'}
+                  href={notification.actionUrl || "/notifications"}
                   onClick={() => setIsOpen(false)}
                   className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                    notification.status === 'UNREAD' ? 'bg-blue-50' : ''
+                    notification.status === "UNREAD" ? "bg-blue-50" : ""
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {notification.status === 'UNREAD' && (
+                    {notification.status === "UNREAD" && (
                       <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -133,7 +134,9 @@ export default function NotificationBell() {
                         {notification.message}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.createdAt).toLocaleString('th-TH')}
+                        {new Date(notification.createdAt).toLocaleString(
+                          "th-TH",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -163,10 +166,7 @@ export default function NotificationBell() {
 
       {/* Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
       )}
     </div>
   );

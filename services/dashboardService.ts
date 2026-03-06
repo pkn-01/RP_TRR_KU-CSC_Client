@@ -8,6 +8,7 @@
  * which is extremely wasteful. Safe to delete entirely.
  */
 
+// ===== บริการข้อมูลแดชบอร์ด | Dashboard Service =====
 import { apiFetch } from './api';
 
 export interface DashboardStats {

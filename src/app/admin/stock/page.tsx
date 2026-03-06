@@ -1,3 +1,4 @@
+// ===== จัดการสต็อก | Stock Management (Admin) =====
 "use client";
 
 import { useState, useEffect } from "react";
