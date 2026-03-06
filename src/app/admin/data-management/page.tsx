@@ -176,7 +176,6 @@ export default function DataManagementPage() {
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             จัดการข้อมูลระบบ
           </h1>
-         
         </div>
         {/* <button
           onClick={fetchDataTypes}
@@ -192,7 +191,6 @@ export default function DataManagementPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-             
               <button
                 onClick={handleSelectAll}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
@@ -222,30 +220,6 @@ export default function DataManagementPage() {
                       }`}
                     >
                       <div className="flex items-start gap-4">
-                        <div
-                          className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl shadow-sm transition-colors ${
-                            selectedTypes.includes(type.key)
-                              ? "bg-red-500 text-white"
-                              : "bg-white border border-gray-200 text-gray-500 group-hover:border-gray-300"
-                          }`}
-                        >
-                          {selectedTypes.includes(type.key) ? (
-                            <CheckCircle size={20} />
-                          ) : (
-                            (() => {
-                              const Icon =
-                                {
-                                  Wrench,
-                                  Ticket,
-                                  Clock,
-                                  Bell,
-                                  Package,
-                                  Users,
-                                }[type.icon] || Database;
-                              return <Icon size={20} />;
-                            })()
-                          )}
-                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-semibold text-gray-900">
@@ -278,7 +252,6 @@ export default function DataManagementPage() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              
               สรุปรายการ
             </h3>
 
@@ -310,7 +283,6 @@ export default function DataManagementPage() {
                     <p className="text-sm font-semibold text-blue-900 flex items-center gap-2">
                       สำรองข้อมูลก่อนลบ
                     </p>
-                  
                   </div>
                 </label>
               </div>
