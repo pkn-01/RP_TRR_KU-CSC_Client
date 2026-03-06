@@ -174,12 +174,9 @@ export default function DataManagementPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Database className="text-red-600" />
             จัดการข้อมูลระบบ
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            จัดการ ลบ และสำรองข้อมูลของระบบทั้งหมด
-          </p>
+         
         </div>
         {/* <button
           onClick={fetchDataTypes}
@@ -195,10 +192,7 @@ export default function DataManagementPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-                <CheckSquare size={20} className="text-gray-400" />
-                เลือกข้อมูลที่ต้องการจัดการ
-              </h2>
+             
               <button
                 onClick={handleSelectAll}
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
@@ -284,7 +278,7 @@ export default function DataManagementPage() {
         <div className="space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Trash2 size={20} className="text-red-500" />
+              
               สรุปรายการ
             </h3>
 
@@ -314,12 +308,9 @@ export default function DataManagementPage() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-blue-900 flex items-center gap-2">
-                      <FileSpreadsheet size={16} className="text-blue-600" />
                       สำรองข้อมูลก่อนลบ
                     </p>
-                    <p className="text-xs text-blue-700 mt-1">
-                      ระบบจะส่งออกไฟล์ Excel ให้ก่อนที่จะทำการลบข้อมูลถาวร
-                    </p>
+                  
                   </div>
                 </label>
               </div>
