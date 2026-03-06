@@ -181,13 +181,13 @@ export default function DataManagementPage() {
             จัดการ ลบ และสำรองข้อมูลของระบบทั้งหมด
           </p>
         </div>
-        <button
+        {/* <button
           onClick={fetchDataTypes}
           className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 bg-white"
           title="รีเฟรชข้อมูล"
         >
           <RefreshCcw size={20} className={loading ? "animate-spin" : ""} />
-        </button>
+        </button> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -344,21 +344,21 @@ export default function DataManagementPage() {
                 </button>
               </div>
 
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex gap-3 items-start">
+              {/* <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex gap-3 items-start">
                 <p className="text-xs text-amber-700 leading-relaxed">
                   ข้อมูลที่ถูกลบจะไม่สามารถกู้คืนได้
                   กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ
                 </p>
-              </div>
+              </div> */}
 
-              {(selectedTypes.includes("repairs") ||
+              {/* {(selectedTypes.includes("repairs") ||
                 selectedTypes.includes("tickets")) && (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3 items-start">
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    📎 ไฟล์แนบที่อยู่บน Cloudinary จะถูกลบออกด้วยโดยอัตโนมัติ
+                    ไฟล์แนบที่อยู่บน Cloudinary จะถูกลบออกด้วยโดยอัตโนมัติ
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>

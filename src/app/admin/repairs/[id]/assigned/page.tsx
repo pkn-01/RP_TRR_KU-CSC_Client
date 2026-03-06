@@ -23,20 +23,28 @@ import Loading from "@/components/Loading";
 interface RepairItem {
   id: number;
   ticketCode: string;
-  title: string;
-  description: string;
-  status: "OPEN" | "IN_PROGRESS" | "DONE";
-  priority: "LOW" | "MEDIUM" | "HIGH";
+  problemTitle: string;
+  problemDescription: string;
+  status:
+    | "PENDING"
+    | "ASSIGNED"
+    | "IN_PROGRESS"
+    | "WAITING_PARTS"
+    | "COMPLETED"
+    | "CANCELLED";
+  urgency: "NORMAL" | "URGENT" | "CRITICAL";
   equipmentName: string;
   location: string;
-  assigneeId?: number;
+  assignees?: {
+    userId: number;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      phone?: string;
+    };
+  }[];
   user?: {
-    id: number;
-    name: string;
-    email: string;
-    phone?: string;
-  };
-  assignee?: {
     id: number;
     name: string;
     email: string;
@@ -56,27 +64,42 @@ interface TechnicianInfo {
 }
 
 const statusLabels = {
-  OPEN: {
-    label: "เปิด",
-    color: "bg-yellow-100 text-yellow-800",
-    bgColor: "bg-yellow-50",
+  PENDING: {
+    label: "รอดำเนินการ",
+    color: "bg-gray-100 text-gray-800",
+    bgColor: "bg-gray-50",
+  },
+  ASSIGNED: {
+    label: "มอบหมายแล้ว",
+    color: "bg-blue-100 text-blue-800",
+    bgColor: "bg-blue-50",
   },
   IN_PROGRESS: {
     label: "กำลังดำเนินการ",
     color: "bg-blue-100 text-blue-800",
     bgColor: "bg-blue-50",
   },
-  DONE: {
+  WAITING_PARTS: {
+    label: "รออะไหล่",
+    color: "bg-yellow-100 text-yellow-800",
+    bgColor: "bg-yellow-50",
+  },
+  COMPLETED: {
     label: "เสร็จสิ้น",
     color: "bg-green-100 text-green-800",
     bgColor: "bg-green-50",
   },
+  CANCELLED: {
+    label: "ยกเลิก",
+    color: "bg-red-100 text-red-800",
+    bgColor: "bg-red-50",
+  },
 };
 
-const priorityLabels = {
-  LOW: { label: "ต่ำ", color: "bg-gray-100 text-gray-800" },
-  MEDIUM: { label: "ปานกลาง", color: "bg-yellow-100 text-yellow-800" },
-  HIGH: { label: "สูง", color: "bg-red-100 text-red-800" },
+const urgencyLabels = {
+  NORMAL: { label: "ปกติ", color: "bg-gray-100 text-gray-800" },
+  URGENT: { label: "ด่วน", color: "bg-yellow-100 text-yellow-800" },
+  CRITICAL: { label: "ด่วนที่สุด", color: "bg-red-100 text-red-800" },
 };
 
 export default function AssignRepairPage() {
@@ -104,10 +127,10 @@ export default function AssignRepairPage() {
         setError(null);
 
         // Fetch repair details
-        const repairData = await apiFetch(`/api/tickets/${repairId}`);
+        const repairData = await apiFetch(`/api/repairs/code/${repairId}`);
         setRepair(repairData);
-        if (repairData.assigneeId) {
-          setSelectedTechnician(repairData.assigneeId);
+        if (repairData.assignees && repairData.assignees.length > 0) {
+          setSelectedTechnician(repairData.assignees[0].userId);
         }
 
         // Fetch technicians (IT users)
@@ -141,9 +164,9 @@ export default function AssignRepairPage() {
       setSaving(true);
       setError(null);
 
-      await apiFetch(`/api/tickets/${repairId}`, "PUT", {
-        assigneeId: selectedTechnician,
-        status: repair?.status || "OPEN",
+      await apiFetch(`/api/repairs/${repair?.id}`, "PUT", {
+        assigneeIds: [selectedTechnician],
+        status: "ASSIGNED",
       });
 
       setSuccessMessage("มอบหมายงานเรียบร้อย");
@@ -252,7 +275,7 @@ export default function AssignRepairPage() {
                     ชื่อเรื่อง
                   </p>
                   <p className="text-lg font-semibold text-gray-900 mt-1">
-                    {repair.title}
+                    {repair.problemTitle}
                   </p>
                 </div>
               </div>
@@ -268,7 +291,7 @@ export default function AssignRepairPage() {
                     คำอธิบาย
                   </p>
                   <div className="bg-gray-50 p-4 rounded-lg text-gray-700 text-sm border border-gray-200">
-                    {repair.description}
+                    {repair.problemDescription}
                   </div>
                 </div>
               </div>
@@ -306,9 +329,9 @@ export default function AssignRepairPage() {
                       ความสำคัญ
                     </p>
                     <span
-                      className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${priorityLabels[repair.priority].color}`}
+                      className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${urgencyLabels[repair.urgency].color}`}
                     >
-                      {priorityLabels[repair.priority].label}
+                      {urgencyLabels[repair.urgency].label}
                     </span>
                   </div>
                 </div>
@@ -396,7 +419,7 @@ export default function AssignRepairPage() {
 
             <div className="space-y-4">
               {/* Technician List */}
-              {repair.assigneeId ? (
+              {repair.assignees && repair.assignees.length > 0 ? (
                 <div className="bg-white rounded-lg p-6 border-2 border-green-200 text-center">
                   <CheckCircle
                     size={48}
@@ -406,7 +429,7 @@ export default function AssignRepairPage() {
                     งานนี้ถูกมอบหมายแล้ว
                   </h3>
                   <p className="text-gray-600 mt-1">
-                    ผู้รับผิดชอบ: {repair.assignee?.name}
+                    ผู้รับผิดชอบ: {repair.assignees?.[0]?.user?.name}
                   </p>
                   <button
                     onClick={() => router.back()}
