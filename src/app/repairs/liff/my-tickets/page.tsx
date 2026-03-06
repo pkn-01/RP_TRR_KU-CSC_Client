@@ -155,7 +155,7 @@ function MyTicketsContent() {
                 });
               }
 
-              if (liff.isLoggedIn()) {
+              if (liff.isInClient() || liff.isLoggedIn()) {
                 try {
                   const profile = await liff.getProfile();
                   if (profile.userId) {
@@ -165,8 +165,10 @@ function MyTicketsContent() {
                   // Failed to get profile
                 }
               } else {
-                // Force login
-                liff.login();
+                // Force login - redirect back to my-tickets page after login
+                liff.login({
+                  redirectUri: window.location.href,
+                });
                 return;
               }
             } catch {

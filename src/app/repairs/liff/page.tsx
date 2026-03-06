@@ -20,28 +20,27 @@ function RepairLiffContent() {
         // Check if lineUserId is already provided in URL (from Rich Menu or external link)
         const urlLineUserId = searchParams.get("lineUserId");
 
-        // Route to my-tickets page for "status" action
-        if (action === "status") {
-          if (urlLineUserId) {
-            window.location.href = `/repairs/liff/my-tickets?lineUserId=${urlLineUserId}`;
+        // Helper: redirect based on action
+        const redirectByAction = (userId?: string) => {
+          const userParam = userId ? `?lineUserId=${userId}` : "";
+          if (action === "status") {
+            window.location.href = `/repairs/liff/my-tickets${userParam}`;
           } else {
-            // Let my-tickets page handle LIFF init itself
-            window.location.href = `/repairs/liff/my-tickets`;
+            window.location.href = `/repairs/liff/form${userParam}`;
           }
-          return;
-        }
+        };
 
+        // If lineUserId is already in URL, redirect immediately based on action
         if (urlLineUserId) {
-          // Already have lineUserId, redirect to form directly
-          window.location.href = `/repairs/liff/form?lineUserId=${urlLineUserId}`;
+          redirectByAction(urlLineUserId);
           return;
         }
 
         // Try to get lineUserId from LIFF SDK (optional - won't block if fails)
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID || "";
         if (!liffId) {
-          // No LIFF ID configured, redirect to form as guest
-          window.location.href = `/repairs/liff/form`;
+          // No LIFF ID configured, redirect as guest
+          redirectByAction();
           return;
         }
 
@@ -68,7 +67,7 @@ function RepairLiffContent() {
             try {
               const profile = await liff.getProfile();
               if (profile.userId) {
-                window.location.href = `/repairs/liff/form?lineUserId=${profile.userId}`;
+                redirectByAction(profile.userId);
                 return;
               }
             } catch {
@@ -76,16 +75,21 @@ function RepairLiffContent() {
             }
           }
 
-          // No login available, redirect to form as guest
-          window.location.href = `/repairs/liff/form`;
+          // No login available, redirect as guest
+          redirectByAction();
         } catch {
-          // LIFF init failed, redirect to form as guest
-          window.location.href = `/repairs/liff/form`;
+          // LIFF init failed, redirect as guest
+          redirectByAction();
         }
       } catch (err) {
-        console.error("Init Error:", err);
         if (isMounted) {
-          window.location.href = `/repairs/liff/form`;
+          // Fallback: check action before redirecting
+          const action = searchParams.get("action");
+          if (action === "status") {
+            window.location.href = `/repairs/liff/my-tickets`;
+          } else {
+            window.location.href = `/repairs/liff/form`;
+          }
         }
       }
     };
