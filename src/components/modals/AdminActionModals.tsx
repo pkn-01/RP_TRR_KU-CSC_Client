@@ -92,7 +92,7 @@ export function DeleteRepairModal({
             <div className="p-6 space-y-4">
               <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
                 <p className="text-red-400 text-sm font-medium">
-                  ⚠️ การกระทำนี้ไม่สามารถยกเลิกได้
+                  การกระทำนี้ไม่สามารถยกเลิกได้
                 </p>
                 <p className="text-slate-300 text-sm mt-2">
                   การลบข้อมูลนี้จะลบทั้งหมดออกจากระบบ

@@ -626,44 +626,8 @@ function RepairRecordsManagementContent() {
 
               {/* Action Buttons */}
               <div className="mt-4 space-y-2.5">
-                {/* Refresh */}
-                <button
-                  onClick={() => fetchRepairs(false)}
-                  className="w-full py-2.5 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all flex items-center justify-center gap-2 text-sm"
-                >
-                  <RefreshCw
-                    size={16}
-                    className={isRefreshing ? "animate-spin" : ""}
-                  />
-                  รีเฟรชข้อมูล
-                </button>
-
-                {/* Export Excel */}
-                <button
-                  onClick={handleExportExcel}
-                  disabled={filteredRepairs.length === 0}
-                  className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Download size={16} />
-                  ส่งออก Excel ({filteredRepairs.length})
-                </button>
-
                 {/* Bulk Delete — Prominent Danger Zone */}
                 <div className="border-t border-gray-100 pt-3 mt-3">
-                  <div className="bg-red-50 border border-red-100 rounded-xl p-3 mb-2.5">
-                    <div className="flex gap-2 items-start">
-                      <AlertTriangle
-                        size={16}
-                        className="text-red-500 mt-0.5 shrink-0"
-                      />
-                      <p className="text-xs text-red-600 leading-relaxed">
-                        การลบข้อมูลตามช่วงเวลาจะ
-                        <strong>ลบทั้งหมดถาวร</strong>
-                        ในช่วงที่เลือก และไม่สามารถกู้คืนได้
-                      </p>
-                    </div>
-                  </div>
-
                   <button
                     onClick={handleBulkDelete}
                     disabled={
