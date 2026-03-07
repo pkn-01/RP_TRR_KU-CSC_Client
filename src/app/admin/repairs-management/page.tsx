@@ -69,6 +69,11 @@ function RepairRecordsManagementContent() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterUrgency, setFilterUrgency] = useState("all");
 
+  // Reset pagination when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   // Date Range
   const [startDate, setStartDate] = useState<Date | null>(() => {
     const d = new Date();
@@ -348,13 +353,15 @@ function RepairRecordsManagementContent() {
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6">
       <div className="max-w-[1400px] mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            จัดการข้อมูลรายการแจ้งซ่อม
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            เลือกช่วงวันที่เพื่อดู, ส่งออก หรือลบข้อมูลรายการแจ้งซ่อม
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              จัดการข้อมูลรายการแจ้งซ่อม
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              เลือกช่วงวันที่เพื่อดูข้อมูลรายการแจ้งซ่อม
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -362,26 +369,29 @@ function RepairRecordsManagementContent() {
           <div className="lg:col-span-2 space-y-4">
             {/* Search & Filters Row */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Search */}
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Search — takes more space */}
+                <div className="relative flex-1">
                   <Search
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                     size={16}
                   />
                   <input
                     type="text"
-                    placeholder="ค้นหา รหัส, ปัญหา, ผู้แจ้ง..."
+                    placeholder="ค้นหา รหัส, ปัญหา, ผู้แจ้ง, สถานที่..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                   />
                 </div>
                 {/* Status */}
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                  onChange={(e) => {
+                    setFilterStatus(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="sm:w-44 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
                 >
                   <option value="all">สถานะ: ทั้งหมด</option>
                   {Object.entries(statusLabels).map(([val, label]) => (
@@ -393,8 +403,11 @@ function RepairRecordsManagementContent() {
                 {/* Priority */}
                 <select
                   value={filterUrgency}
-                  onChange={(e) => setFilterUrgency(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                  onChange={(e) => {
+                    setFilterUrgency(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="sm:w-48 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
                 >
                   <option value="all">ความเร่งด่วน: ทั้งหมด</option>
                   {Object.entries(urgencyLabels).map(([val, label]) => (
@@ -626,8 +639,8 @@ function RepairRecordsManagementContent() {
 
               {/* Action Buttons */}
               <div className="mt-4 space-y-2.5">
-                {/* Bulk Delete — Prominent Danger Zone */}
-                <div className="border-t border-gray-100 pt-3 mt-3">
+                {/* Bulk Delete */}
+                <div className="border-t border-gray-100 pt-3">
                   <button
                     onClick={handleBulkDelete}
                     disabled={
