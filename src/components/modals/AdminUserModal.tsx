@@ -128,9 +128,6 @@ export default function AdminUserModal({
               <h2 className="text-lg font-bold text-slate-900">
                 {isEditMode ? "แก้ไขผู้ใช้" : "เพิ่มผู้ใช้ใหม่"}
               </h2>
-              <p className="text-xs text-slate-500">
-                {isEditMode ? `ID: ${user?.id}` : "กรอกข้อมูลด้านล่าง"}
-              </p>
             </div>
           </div>
           <button
@@ -156,6 +153,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
+                  autoComplete="off"
                   className={`w-full px-4 py-2.5 border ${
                     errors.name
                       ? "border-rose-300 bg-rose-50"
@@ -181,12 +179,13 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
+                  autoComplete="off"
                   className={`w-full px-4 py-2.5 border ${
                     errors.email
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
                   } focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm`}
-                  placeholder="email@example.com"
+                  placeholder="it@email.com"
                 />
               </div>
               {errors.email && (
@@ -216,7 +215,7 @@ export default function AdminUserModal({
             {/* Password Section */}
             <div className="pt-4 border-t border-slate-100">
               <h4 className="text-sm font-semibold text-slate-700 mb-3">
-                {isEditMode ? "เปลี่ยนรหัสผ่าน (ไม่บังคับ)" : "รหัสผ่าน"}
+                {isEditMode ? "เปลี่ยนรหัสผ่าน" : "รหัสผ่าน"}
               </h4>
               <div className="space-y-3">
                 <div className="relative">
@@ -224,6 +223,7 @@ export default function AdminUserModal({
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
                     className={`w-full px-4 py-2.5 border ${
                       errors.password
                         ? "border-rose-300 bg-rose-50"
@@ -247,6 +247,7 @@ export default function AdminUserModal({
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
                   className={`w-full px-4 py-2.5 border ${
                     errors.confirmPassword
                       ? "border-rose-300 bg-rose-50"
