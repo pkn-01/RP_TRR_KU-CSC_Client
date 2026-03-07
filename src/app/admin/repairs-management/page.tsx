@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -56,7 +56,7 @@ const urgencyLabels: Record<string, string> = {
   CRITICAL: "ด่วนที่สุด",
 };
 
-export default function RepairRecordsManagementPage() {
+function RepairRecordsManagementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -534,5 +534,13 @@ export default function RepairRecordsManagementPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RepairRecordsManagementPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <RepairRecordsManagementContent />
+    </Suspense>
   );
 }
