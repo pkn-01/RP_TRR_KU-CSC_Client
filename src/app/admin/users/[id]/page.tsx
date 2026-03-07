@@ -78,11 +78,11 @@ export default function EditUserPage() {
         await userService.changePassword(userId, password);
       }
 
-      await Swal.fire("Success", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
+      await Swal.fire("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
       router.push("/admin/users");
     } catch (err) {
       console.error("Save failed:", err);
-      Swal.fire("Error", "เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
+      Swal.fire("ผิดพลาด", "เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
     } finally {
       setIsSaving(false);
     }

@@ -267,16 +267,9 @@ export default function AdminUserModal({
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50">
           <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-md hover:shadow-lg"
-          >
-            ยกเลิก
-          </button>
-          <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg shadow-blue-200 transition-all disabled:opacity-50"
+            className="px-6 py-2.5 bg-blue-600 text-white"
           >
             {isLoading ? (
               <>
