@@ -13,12 +13,6 @@ import {
   CalendarDays,
   AlertTriangle,
   Loader2,
-  Filter,
-  ArrowRight,
-  FileText,
-  Clock,
-  MapPin,
-  User,
 } from "lucide-react";
 import { apiFetch } from "@/services/api";
 import CalendarPop from "@/components/CalendarPop";
@@ -58,7 +52,7 @@ const statusLabels: Record<string, string> = {
 
 const urgencyLabels: Record<string, string> = {
   NORMAL: "ปกติ",
-  URGENT: "ด่าน",
+  URGENT: "ด่วน",
   CRITICAL: "ด่วนที่สุด",
 };
 
@@ -85,7 +79,7 @@ function RepairRecordsManagementContent() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12);
+  const [itemsPerPage] = useState(15);
 
   const fetchRepairs = useCallback(
     async (showLoading = true) => {
@@ -98,13 +92,11 @@ function RepairRecordsManagementContent() {
         if (endDate) params.append("endDate", endDate.toISOString());
         if (filterStatus !== "all") params.append("status", filterStatus);
         if (filterUrgency !== "all") params.append("urgency", filterUrgency);
-        if (searchTerm.trim()) params.append("search", searchTerm.trim());
 
         const data = await apiFetch(`/api/repairs?${params.toString()}`);
         setRepairs((data as Repair[]) || []);
         setCurrentPage(1);
       } catch (err) {
-        console.error("Fetch error:", err);
         Swal.fire({
           icon: "error",
           title: "เกิดข้อผิดพลาด",
@@ -115,23 +107,31 @@ function RepairRecordsManagementContent() {
         setIsRefreshing(false);
       }
     },
-    [startDate, endDate, filterStatus, filterUrgency, searchTerm],
+    [startDate, endDate, filterStatus, filterUrgency],
   );
 
-  // Debounced search/filter effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchRepairs(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm, filterStatus, filterUrgency, startDate, endDate]);
+    fetchRepairs();
+  }, [fetchRepairs]);
+
+  const filteredRepairs = useMemo(() => {
+    return repairs.filter((item) => {
+      const term = searchTerm.toLowerCase();
+      return (
+        item.ticketCode.toLowerCase().includes(term) ||
+        item.problemTitle?.toLowerCase().includes(term) ||
+        item.reporterName?.toLowerCase().includes(term) ||
+        item.location?.toLowerCase().includes(term)
+      );
+    });
+  }, [repairs, searchTerm]);
 
   const paginatedRepairs = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return repairs.slice(start, start + itemsPerPage);
-  }, [repairs, currentPage, itemsPerPage]);
+    return filteredRepairs.slice(start, start + itemsPerPage);
+  }, [filteredRepairs, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(repairs.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredRepairs.length / itemsPerPage);
 
   // ===== ACTION HANDLERS =====
 
@@ -173,13 +173,13 @@ function RepairRecordsManagementContent() {
     const result = await Swal.fire({
       title: "⚠️ ยืนยันการล้างข้อมูล",
       html: `<div style="text-align:left; font-size:14px; line-height:1.8;">
-        <p>คุณกำลังจะ <b style="color:#dc2626;">ลบข้อมูลทั้งหมด</b> ในช่วงวันที่:</p>
+        <p>คุณกำลังจะ <b style="color:#dc2626;">ลบข้อมูลทั้งหมด</b> ในช่วง:</p>
         <p style="background:#fef2f2; padding:8px 12px; border-radius:8px; margin:8px 0; text-align:center; font-weight:bold; color:#dc2626;">
           ${startDate.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
           &nbsp;—&nbsp;
           ${endDate.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
         </p>
-        <p style="color:#6b7280; font-size:13px;">พบข้อมูล <b>${repairs.length}</b> รายการในช่วงที่เลือก</p>
+        <p style="color:#6b7280; font-size:13px;">พบข้อมูล <b>${filteredRepairs.length}</b> รายการในช่วงนี้</p>
         <p style="color:#dc2626; font-size:13px; margin-top:4px;">การดำเนินการนี้ไม่สามารถย้อนกลับได้!</p>
       </div>`,
       icon: "warning",
@@ -235,7 +235,7 @@ function RepairRecordsManagementContent() {
   };
 
   const handleExportExcel = async () => {
-    if (repairs.length === 0) {
+    if (filteredRepairs.length === 0) {
       Swal.fire({ icon: "info", title: "ไม่มีข้อมูลสำหรับส่งออก" });
       return;
     }
@@ -284,7 +284,7 @@ function RepairRecordsManagementContent() {
       sheet.addRow([
         `ช่วงวันที่: ${startDate?.toLocaleDateString("th-TH")} - ${endDate?.toLocaleDateString("th-TH")}`,
       ]);
-      sheet.addRow([`จำนวนทั้งหมด: ${repairs.length} รายการ`]);
+      sheet.addRow([`จำนวนทั้งหมด: ${filteredRepairs.length} รายการ`]);
       sheet.addRow([]);
 
       const headerRow = sheet.addRow(headers);
@@ -307,7 +307,7 @@ function RepairRecordsManagementContent() {
         { key: "assignees", width: 30 },
       ];
 
-      repairs.forEach((repair) => {
+      filteredRepairs.forEach((repair) => {
         const row = sheet.addRow([
           repair.ticketCode,
           new Date(repair.createdAt).toLocaleString("th-TH"),
@@ -342,249 +342,181 @@ function RepairRecordsManagementContent() {
     }
   };
 
+  if (loading && repairs.length === 0) return <Loading />;
+
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
-      <div className="max-w-[1400px] mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              จัดการข้อมูลรายการแจ้งซ่อม
-            </h1>
-            <p className="text-slate-500 font-medium">
-              ตรวจสอบ กรองข้อมูล และล้างข้อมูลตามช่วงเวลาที่ต้องการ
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => fetchRepairs(true)}
-              className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-2xl font-semibold hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm"
-            >
-              <RefreshCw
-                size={18}
-                className={
-                  isRefreshing || loading
-                    ? "animate-spin"
-                    : "group-hover:rotate-180 transition-transform duration-500"
-                }
-              />
-              <span>รีเฟรช</span>
-            </button>
-            <button
-              onClick={handleExportExcel}
-              disabled={repairs.length === 0}
-              className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-2xl font-semibold hover:bg-slate-800 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-            >
-              <Download size={18} />
-              <span>ส่งออก Excel</span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6">
+      <div className="max-w-[1400px] mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            จัดการข้อมูลรายการแจ้งซ่อม
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            เลือกช่วงวันที่เพื่อดู, ส่งออก หรือลบข้อมูลรายการแจ้งซ่อม
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Main Content Area */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Filter Bar */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 p-6">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ===== LEFT: Data Table ===== */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Search & Filters Row */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Search */}
-                <div className="md:col-span-6 relative group">
+                <div className="relative">
                   <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
-                    size={20}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    size={16}
                   />
                   <input
                     type="text"
-                    placeholder="รหัสตั๋ว, ปัญหา, ผู้แจ้ง, สถานที่..."
+                    placeholder="ค้นหา รหัส, ปัญหา, ผู้แจ้ง..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-transparent rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400 font-medium"
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
                   />
                 </div>
-
-                {/* Status Filter */}
-                <div className="md:col-span-3 relative">
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-transparent rounded-2xl text-sm appearance-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-semibold text-slate-700"
-                  >
-                    <option value="all">ทุกสถานะ</option>
-                    {Object.entries(statusLabels).map(([val, label]) => (
-                      <option key={val} value={val}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                  <Filter
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={16}
-                  />
-                </div>
-
-                {/* Urgency Filter */}
-                <div className="md:col-span-3 relative">
-                  <select
-                    value={filterUrgency}
-                    onChange={(e) => setFilterUrgency(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-transparent rounded-2xl text-sm appearance-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-semibold text-slate-700"
-                  >
-                    <option value="all">ทุกระดับ</option>
-                    {Object.entries(urgencyLabels).map(([val, label]) => (
-                      <option key={val} value={val}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                  <AlertTriangle
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                    size={16}
-                  />
-                </div>
+                {/* Status */}
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="all">สถานะ: ทั้งหมด</option>
+                  {Object.entries(statusLabels).map(([val, label]) => (
+                    <option key={val} value={val}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                {/* Priority */}
+                <select
+                  value={filterUrgency}
+                  onChange={(e) => setFilterUrgency(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="all">ความเร่งด่วน: ทั้งหมด</option>
+                  {Object.entries(urgencyLabels).map(([val, label]) => (
+                    <option key={val} value={val}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            {/* Data Table */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden min-h-[500px] flex flex-col">
+            {/* Table */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100">
-                      <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">
-                        ตั๋ว / วันที่
+                    <tr className="bg-gray-50/80 border-b border-gray-100">
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        รหัส
                       </th>
-                      <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">
-                        ปัญหา / ผู้แจ้ง
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        วันที่แจ้ง
                       </th>
-                      <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em]">
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        ปัญหา
+                      </th>
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                         สถานที่
                       </th>
-                      <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] text-center">
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
                         สถานะ
                       </th>
-                      <th className="px-6 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] text-right">
-                        การจัดการ
+                      <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
+                        จัดการ
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={5} className="py-24 text-center">
-                          <div className="flex flex-col items-center gap-4">
-                            <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
-                            <p className="text-slate-400 font-medium animate-pulse">
-                              กำลังดึงข้อมูล...
-                            </p>
+                  <tbody className="divide-y divide-gray-50">
+                    {paginatedRepairs.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-50/50 transition-colors group"
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="text-sm font-mono font-medium text-gray-600">
+                            {item.ticketCode}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(item.createdAt).toLocaleDateString(
+                              "th-TH",
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(item.createdAt).toLocaleTimeString(
+                              "th-TH",
+                              { hour: "2-digit", minute: "2-digit" },
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 max-w-[200px]">
+                          <div
+                            className="text-sm font-medium text-gray-900 truncate"
+                            title={item.problemTitle}
+                          >
+                            {item.problemTitle}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {item.reporterName}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                          {item.location}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                              item.status === "COMPLETED"
+                                ? "bg-green-50 text-green-600 border border-green-100"
+                                : item.status === "PENDING"
+                                  ? "bg-blue-50 text-blue-600 border border-blue-100"
+                                  : item.status === "CANCELLED"
+                                    ? "bg-red-50 text-red-600 border border-red-100"
+                                    : "bg-amber-50 text-amber-600 border border-amber-100"
+                            }`}
+                          >
+                            {statusLabels[item.status] || item.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() =>
+                                router.push(`/admin/repairs/${item.ticketCode}`)
+                              }
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                              title="ดูรายละเอียด"
+                            >
+                              <ExternalLink size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDelete(item.id, item.ticketCode)
+                              }
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                              title="ลบรายการนี้"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </td>
                       </tr>
-                    ) : paginatedRepairs.length > 0 ? (
-                      paginatedRepairs.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-slate-50/50 transition-colors group"
-                        >
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <div className="flex flex-col">
-                              <span className="text-sm font-bold text-slate-700 font-mono tracking-tight">
-                                {item.ticketCode}
-                              </span>
-                              <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-1 font-medium">
-                                <Clock size={12} />
-                                {new Date(item.createdAt).toLocaleDateString(
-                                  "th-TH",
-                                  {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "2-digit",
-                                  },
-                                )}
-                                <span>
-                                  {new Date(item.createdAt).toLocaleTimeString(
-                                    "th-TH",
-                                    { hour: "2-digit", minute: "2-digit" },
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5 min-w-[200px]">
-                            <div className="flex flex-col">
-                              <span
-                                className="text-sm font-bold text-slate-800 line-clamp-1"
-                                title={item.problemTitle}
-                              >
-                                {item.problemTitle}
-                              </span>
-                              <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium">
-                                <User size={12} className="text-slate-400" />
-                                {item.reporterName}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5 whitespace-nowrap">
-                            <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                              <MapPin size={14} className="text-slate-300" />
-                              {item.location}
-                            </div>
-                          </td>
-                          <td className="px-6 py-5 whitespace-nowrap text-center">
-                            <span
-                              className={`inline-flex px-3 py-1 rounded-xl text-[11px] font-extrabold shadow-sm border ${
-                                item.status === "COMPLETED"
-                                  ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                                  : item.status === "PENDING"
-                                    ? "bg-sky-50 text-sky-600 border-sky-100"
-                                    : item.status === "CANCELLED"
-                                      ? "bg-rose-50 text-rose-600 border-rose-100"
-                                      : "bg-amber-50 text-amber-600 border-amber-100"
-                              }`}
-                            >
-                              {statusLabels[item.status] || item.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5 whitespace-nowrap text-right">
-                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() =>
-                                  router.push(
-                                    `/admin/repairs/${item.ticketCode}`,
-                                  )
-                                }
-                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                title="ดูรายละเอียด"
-                              >
-                                <ExternalLink size={18} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDelete(item.id, item.ticketCode)
-                                }
-                                className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                                title="ลบรายการ"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
+                    ))}
+                    {paginatedRepairs.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="py-24 text-center">
-                          <div className="flex flex-col items-center gap-4 text-slate-300">
-                            <div className="p-6 bg-slate-50 rounded-full">
-                              <FileText size={48} className="stroke-[1.5]" />
-                            </div>
-                            <div>
-                              <p className="text-slate-500 font-bold text-lg">
-                                ไม่พบข้อมูลที่ต้องการ
-                              </p>
-                              <p className="text-sm">
-                                ลองเปลี่ยนเงื่อนไขการค้นหาหรือช่วงวันที่เลือก
-                              </p>
-                            </div>
+                        <td colSpan={6} className="px-4 py-16 text-center">
+                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                            <Search size={40} className="stroke-[1]" />
+                            <p className="text-sm">
+                              ไม่พบข้อมูลที่ตรงตามเงื่อนไข
+                            </p>
                           </div>
                         </td>
                       </tr>
@@ -593,52 +525,56 @@ function RepairRecordsManagementContent() {
                 </table>
               </div>
 
-              {/* Pagination Footer */}
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    หน้า {currentPage} จาก {totalPages} ({repairs.length}{" "}
-                    รายการ)
+                <div className="px-4 py-3 bg-gray-50/30 border-t border-gray-100 flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    แสดง {(currentPage - 1) * itemsPerPage + 1}–
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      filteredRepairs.length,
+                    )}{" "}
+                    จาก {filteredRepairs.length}
                   </p>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <button
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage((p) => p - 1)}
-                      className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:border-blue-200 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm"
+                      className="p-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-white disabled:opacity-40 transition-all"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={16} />
                     </button>
-
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      let p =
-                        totalPages <= 5
-                          ? i + 1
-                          : currentPage <= 3
-                            ? i + 1
-                            : currentPage >= totalPages - 2
-                              ? totalPages - 4 + i
-                              : currentPage - 2 + i;
+                      let page: number;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
                       return (
                         <button
-                          key={p}
-                          onClick={() => setCurrentPage(p)}
-                          className={`w-10 h-10 rounded-xl text-sm font-bold transition-all shadow-sm border ${
-                            currentPage === p
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-600"
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                            currentPage === page
+                              ? "bg-blue-600 text-white"
+                              : "hover:bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {p}
+                          {page}
                         </button>
                       );
                     })}
-
                     <button
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage((p) => p + 1)}
-                      className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:border-blue-200 hover:text-blue-600 disabled:opacity-30 transition-all shadow-sm"
+                      className="p-1.5 border border-gray-200 rounded-lg text-gray-500 hover:bg-white disabled:opacity-40 transition-all"
                     >
-                      <ChevronRight size={18} />
+                      <ChevronRight size={16} />
                     </button>
                   </div>
                 </div>
@@ -646,119 +582,76 @@ function RepairRecordsManagementContent() {
             </div>
           </div>
 
-          {/* Action Sidebar */}
-          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
-            {/* Control Center */}
-            <div className="bg-white rounded-[32px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-              <div className="bg-blue-600 p-8 text-white relative overflow-hidden">
-                <div className="relative z-10">
-                  <h3 className="text-xl font-bold flex items-center gap-2">
-                    <CalendarDays size={24} />
-                    ระบุช่วงเวลา
-                  </h3>
-                  <p className="text-blue-50/70 text-sm mt-1 font-medium">
-                    จัดการมวลหมู่ข้อมูลย้อนหลัง
-                  </p>
+          {/* ===== RIGHT: Action Sidebar ===== */}
+          <div className="space-y-4">
+            {/* Date Range Card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sticky top-6">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                เลือกช่วงวันที่
+              </h3>
+
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-500 ml-0.5">
+                    ตั้งแต่วันที่
+                  </label>
+                  <CalendarPop
+                    selectedDate={startDate}
+                    onDateSelect={(d) => setStartDate(d)}
+                  />
                 </div>
-                {/* Decorative circles */}
-                <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                <div className="absolute -left-12 bottom-0 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-500 ml-0.5">
+                    ถึงวันที่
+                  </label>
+                  <CalendarPop
+                    selectedDate={endDate}
+                    onDateSelect={(d) => setEndDate(d)}
+                  />
+                </div>
               </div>
 
-              <div className="p-8 space-y-6">
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      ตั้งแต่วันที่
-                    </label>
-                    <CalendarPop
-                      selectedDate={startDate}
-                      onDateSelect={setStartDate}
-                    />
-                  </div>
-                  <div className="flex justify-center -my-2">
-                    <div className="bg-slate-100 p-2 rounded-full border-4 border-white shadow-sm relative z-10">
-                      <ArrowRight
-                        size={14}
-                        className="text-slate-400 rotate-90"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      จนถึงวันที่
-                    </label>
-                    <CalendarPop
-                      selectedDate={endDate}
-                      onDateSelect={setEndDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100 space-y-1">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                    สรุปข้อมูลที่พบ
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-slate-900 leading-none">
-                      {repairs.length}
-                    </span>
-                    <span className="text-sm font-bold text-slate-500">
+              {/* Summary */}
+              <div className="mt-4 bg-gray-50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">พบข้อมูล</span>
+                  <span className="font-bold text-gray-900 text-lg">
+                    {filteredRepairs.length}{" "}
+                    <span className="text-sm font-normal text-gray-500">
                       รายการ
                     </span>
-                  </div>
+                  </span>
                 </div>
+              </div>
 
-                {/* Bulk Delete Zone */}
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-rose-50 border border-rose-100">
-                    <AlertTriangle
-                      className="text-rose-500 shrink-0 mt-0.5"
-                      size={18}
-                    />
-                    <div className="space-y-1">
-                      <p className="text-xs font-bold text-rose-900">
-                        พื้นที่เสี่ยง (Danger Zone)
-                      </p>
-                      <p className="text-[11px] text-rose-700/80 leading-relaxed font-medium">
-                        ข้อมูลในช่วงที่เลือกจะถูกลบออกถาวรทั้งหมด
-                      </p>
-                    </div>
-                  </div>
-
+              {/* Action Buttons */}
+              <div className="mt-4 space-y-2.5">
+                {/* Bulk Delete — Prominent Danger Zone */}
+                <div className="border-t border-gray-100 pt-3 mt-3">
                   <button
                     onClick={handleBulkDelete}
                     disabled={
-                      repairs.length === 0 ||
+                      filteredRepairs.length === 0 ||
                       isDeleting ||
                       !startDate ||
                       !endDate
                     }
-                    className="w-full py-4 bg-rose-600 text-white rounded-[20px] font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 focus:ring-4 focus:ring-red-100 transition-all shadow-sm flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isDeleting ? (
                       <>
-                        <Loader2 size={20} className="animate-spin" />{" "}
-                        กำลังดำเนินการ...
+                        <Loader2 size={16} className="animate-spin" />
+                        กำลังลบข้อมูล...
                       </>
                     ) : (
                       <>
-                        <Trash2 size={20} /> ล้างข้อมูล {repairs.length} รายการ
+                        <Trash2 size={16} />
+                        ล้างข้อมูลตามช่วงเวลา ({filteredRepairs.length})
                       </>
                     )}
                   </button>
                 </div>
               </div>
-            </div>
-
-            {/* Hint Box */}
-            <div className="p-6 bg-amber-50 rounded-[28px] border border-amber-100">
-              <p className="text-xs text-amber-700 leading-relaxed font-medium">
-                💡 <strong>Tips:</strong> คุณสามารถค้นหาโดยใช้{" "}
-                <strong>รหัสตั๋ว</strong> เพื่อจัดการรายการรายบุคคล
-                หรือใช้การกรอง <strong>ช่วงวันที่</strong>{" "}
-                เพื่อลบข้อมูลประวัติเก่าๆ ได้อย่างรวดเร็ว
-              </p>
             </div>
           </div>
         </div>
