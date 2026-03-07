@@ -92,7 +92,12 @@ export default function AdminSidebar() {
       subItems: [
         {
           icon: Database,
-          label: "จัดการข้อมูล",
+          label: "จัดการข้อมูลรายการแจ้งซ่อม",
+          href: "/admin/repairs-management",
+        },
+        {
+          icon: Database,
+          label: "จัดการข้อมูลทั้งหมด",
           href: "/admin/data-management",
         },
       ],
