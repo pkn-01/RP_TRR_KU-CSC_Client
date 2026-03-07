@@ -156,7 +156,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
+                  className={`w-full px-4 py-2.5 border ${
                     errors.name
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
@@ -181,7 +181,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
+                  className={`w-full px-4 py-2.5 border ${
                     errors.email
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
@@ -205,7 +205,7 @@ export default function AdminUserModal({
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value as any })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
+                  className="w-full px-4 py-2.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm appearance-none bg-white cursor-pointer"
                 >
                   <option value="IT">ทีมไอที</option>
                   <option value="ADMIN">ผู้ดูแลระบบ</option>
@@ -224,7 +224,7 @@ export default function AdminUserModal({
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full px-4 py-2.5 rounded-xl border ${
+                    className={`w-full px-4 py-2.5 border ${
                       errors.password
                         ? "border-rose-300 bg-rose-50"
                         : "border-slate-200"
@@ -247,7 +247,7 @@ export default function AdminUserModal({
                   type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
+                  className={`w-full px-4 py-2.5 border ${
                     errors.confirmPassword
                       ? "border-rose-300 bg-rose-50"
                       : "border-slate-200"
