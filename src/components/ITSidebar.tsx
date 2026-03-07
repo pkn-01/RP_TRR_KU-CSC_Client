@@ -313,7 +313,7 @@ export default function ITSidebar() {
                 <p className="text-base font-semibold text-gray-800 truncate group-hover:text-[#795548] transition-colors">
                   {userProfile?.name || "IT Profile"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-base text-gray-500 truncate">
                   {userProfile?.email || "it@trr.com"}
                 </p>
               </div>
