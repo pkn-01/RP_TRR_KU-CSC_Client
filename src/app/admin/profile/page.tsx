@@ -34,7 +34,7 @@ interface UserProfile {
   id: number;
   name: string;
   email: string;
-  role: "USER" | "IT" | "ADMIN";
+  role: "ไอที" | "แอดมิน";
   department?: string;
   profilePicture?: string;
   createdAt: string;
@@ -325,7 +325,7 @@ export default function AdminProfilePage() {
                   บทบาท
                 </label>
                 <div className="flex items-center gap-3 px-4 py-3 bg-[#EEEEEE] rounded-lg">
-                  <span className="bg-[#C8E6C9] text-gray-800 text-sm px-3 py-1 rounded-full font-medium">
+                  <span className="text-gray-700">
                     {profile.role}
                   </span>
                 </div>
@@ -345,7 +345,6 @@ export default function AdminProfilePage() {
                   onClick={handleSave}
                   className="flex items-center gap-2 px-6 py-2 bg-[#4A3B32] text-white rounded-lg hover:bg-[#3E3129] transition-colors"
                 >
-                  <Save size={18} />
                   <span>บันทึก</span>
                 </button>
               </div>
@@ -388,9 +387,9 @@ export default function AdminProfilePage() {
         </div>
 
         {/* LINE Account Linking */}
-        {(profile.role === "IT" || profile.role === "ADMIN") && (
+        {/* {(profile.role === "IT" || profile.role === "ADMIN") && (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden relative">
-            {/* Curved Green Accent */}
+            
             <div className="absolute left-0 top-0 bottom-0 w-3">
               <svg
                 className="h-full w-full"
@@ -415,7 +414,7 @@ export default function AdminProfilePage() {
                   <Loader2 className="w-8 h-8 animate-spin text-[#22C55E]" />
                 </div>
               ) : lineLink ? (
-                /* Linked State */
+                
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                     <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
@@ -445,7 +444,7 @@ export default function AdminProfilePage() {
                   </p>
                 </div>
               ) : (
-                /* Not Linked State */
+                
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-4 bg-[#FFF9C4] rounded-lg">
                     <AlertCircle className="w-6 h-6 text-[#FBC02D] flex-shrink-0" />
@@ -486,7 +485,7 @@ export default function AdminProfilePage() {
               )}
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
