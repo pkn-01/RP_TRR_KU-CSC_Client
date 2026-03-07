@@ -210,7 +210,7 @@ export default function ITSidebar() {
                         className={`${active ? "text-[#795548]" : "text-gray-500"}`}
                       />
                       {!isCollapsed || isOpen ? (
-                        <span className="text-sm font-medium">
+                        <span className="text-base font-medium">
                           {item.label}
                         </span>
                       ) : null}
@@ -232,7 +232,7 @@ export default function ITSidebar() {
                           <Link
                             key={subItem.href}
                             href={subItem.href}
-                            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                            className={`flex items-center gap-2 px-3 py-2 text-base rounded-lg transition-colors ${
                               subActive
                                 ? "text-gray-900 font-medium"
                                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
@@ -275,7 +275,7 @@ export default function ITSidebar() {
                   className={`${active ? "text-[#795548]" : "text-gray-500"}`}
                 />
                 {!isCollapsed || isOpen ? (
-                  <span className="text-sm">{item.label}</span>
+                  <span className="text-base">{item.label}</span>
                 ) : null}
               </Link>
             );
@@ -310,7 +310,7 @@ export default function ITSidebar() {
             )}
             {!isCollapsed || isOpen ? (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-[#795548] transition-colors">
+                <p className="text-base font-semibold text-gray-800 truncate group-hover:text-[#795548] transition-colors">
                   {userProfile?.name || "IT Profile"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
@@ -324,7 +324,7 @@ export default function ITSidebar() {
             onClick={handleLogout}
             disabled={isLoggingOut}
             title={isCollapsed && !isOpen ? "ออกจากระบบ" : ""}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-sm font-medium ${isCollapsed && !isOpen ? "px-0" : ""}`}
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors text-base font-medium ${isCollapsed && !isOpen ? "px-0" : ""}`}
           >
             <LogOut
               size={18}
