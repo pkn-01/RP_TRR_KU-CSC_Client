@@ -34,7 +34,7 @@ interface UserProfile {
   id: number;
   name: string;
   email: string;
-  role: "USER" | "IT" | "ADMIN";
+  role: "ไอที" | "แอดมิน";
   department?: string;
   profilePicture?: string;
   createdAt: string;
@@ -348,13 +348,12 @@ export default function ProfilePage() {
                   บทบาท
                 </label>
                 <div className="flex items-center gap-3 px-4 py-3 bg-[#EEEEEE] rounded-lg">
-                  <span className="bg-[#C8E6C9] text-gray-800 text-sm px-3 py-1 rounded-full font-medium">
+                  <span className="text-gray-700">
                     {profile.role}
                   </span>
                 </div>
               </div>
             </div>
-
             {/* Save Button */}
             {isEditing && (
               <div className="mt-8 flex gap-3 justify-end">
@@ -398,7 +397,7 @@ export default function ProfilePage() {
                 <span className="text-gray-700">วันที่สร้างบัญชี</span>
                 <span className="text-gray-900 font-medium">
                   {new Date(profile.createdAt)
-                    .toLocaleString("th-TH")
+                    .toLocaleString("th-TH")                  
                     .replace(",", "")}
                 </span>
               </div>
@@ -411,7 +410,7 @@ export default function ProfilePage() {
         </div>
 
         {/* LINE Account Linking */}
-        {(profile.role === "IT" || profile.role === "ADMIN") && (
+        {(profile.role === "ไอที" || profile.role === "แอดมิน") && (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden relative">
             {/* Curved Green Accent */}
             <div className="absolute left-0 top-0 bottom-0 w-3">
