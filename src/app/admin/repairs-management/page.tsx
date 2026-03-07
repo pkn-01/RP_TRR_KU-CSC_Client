@@ -249,6 +249,92 @@ function RepairRecordsManagementContent() {
     }
   };
 
+  const handleDelete = async (id: string, ticketCode: string) => {
+    const result = await Swal.fire({
+      title: "ยืนยันการลบ?",
+      text: `คุณต้องการลบรายการแจ้งซ่อมรหัส ${ticketCode} ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ใช่, ลบเลย",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await apiFetch(`/api/repairs/${id}`, { method: "DELETE" });
+        Swal.fire({
+          icon: "success",
+          title: "ลบข้อมูลสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        fetchRepairs(false);
+      } catch (err) {
+        console.error("Delete error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: "ไม่สามารถลบข้อมูลได้",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!startDate || !endDate) return;
+
+    const result = await Swal.fire({
+      title: "ยืนยันการล้างข้อมูลแบบกลุ่ม?",
+      html: `คุณกำลังจะลบข้อมูล <b>ทั้งหมด</b> ในช่วงวันที่<br/><span class="text-red-600 font-bold">${startDate.toLocaleDateString("th-TH")} - ${endDate.toLocaleDateString("th-TH")}</span><br/>การดำเนินการนี้ไม่สามารถย้อนกลับได้!`,
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ยืนยันลบทั้งหมด",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "กำลังลบข้อมูล...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        const params = new URLSearchParams();
+        params.append("startDate", startDate.toISOString());
+        params.append("endDate", endDate.toISOString());
+
+        const response: any = await apiFetch(
+          `/api/repairs/bulk-delete/by-date?${params.toString()}`,
+          {
+            method: "DELETE",
+          },
+        );
+
+        Swal.fire({
+          icon: "success",
+          title: "ล้างข้อมูลสำเร็จ",
+          text: `ลบข้อมูลทั้งหมด ${response.count} รายการ`,
+        });
+        fetchRepairs(true);
+      } catch (err) {
+        console.error("Bulk delete error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: "ไม่สามารถล้างข้อมูลแบบกลุ่มได้",
+        });
+      }
+    }
+  };
+
   if (loading && repairs.length === 0) return <Loading />;
 
   return (
@@ -278,6 +364,14 @@ function RepairRecordsManagementContent() {
             >
               <Download size={18} />
               <span>ส่งออก Excel</span>
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl font-medium hover:bg-red-100 transition-all shadow-sm"
+              title="ล้างข้อมูลในช่วงวันที่ที่เลือก"
+            >
+              <Trash2 size={18} />
+              <span className="hidden sm:inline">ล้างข้อมูลตามช่วงเวลา</span>
             </button>
           </div>
         </div>
@@ -461,7 +555,7 @@ function RepairRecordsManagementContent() {
                         {statusLabels[item.status] || item.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-right space-x-1">
                       <button
                         onClick={() =>
                           router.push(`/admin/repairs/${item.ticketCode}`)
@@ -470,6 +564,13 @@ function RepairRecordsManagementContent() {
                         title="ดูรายละเอียด/จัดการ"
                       >
                         <ExternalLink size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id, item.ticketCode)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        title="ลบรายการ"
+                      >
+                        <Trash2 size={18} />
                       </button>
                     </td>
                   </tr>
