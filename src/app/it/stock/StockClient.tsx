@@ -63,7 +63,6 @@ export default function StockClient() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importData, setImportData] = useState<Partial<StockItem>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
-  const [duplicateCount, setDuplicateCount] = useState(0);
 
   const fetchItems = useCallback(async () => {
     try {
@@ -295,34 +294,23 @@ export default function StockClient() {
         const mappedData: Partial<StockItem>[] = jsonData.map((row, rowIdx) => {
           const keys = Object.keys(row);
 
-          // ฟังก์ชัน match ที่ยืดหยุ่นกว่าเดิม — ลำดับความสำคัญ: 1. Exact Match 2. Fuzzy Match
+          // ฟังก์ชัน match ที่ยืดหยุ่นกว่าเดิม — ใช้ includes แทน exact match
           const getVal = (possibleNames: string[]) => {
-            // 1. ลองหาแบบตรงตัวก่อน (Case-insensitive)
-            const exactKey = keys.find((k) =>
-              possibleNames.some(
-                (pn) => k.trim().toLowerCase() === pn.toLowerCase(),
-              ),
-            );
-
-            if (exactKey) {
-              const val = row[exactKey];
-              return val !== null && val !== undefined
-                ? String(val).trim()
-                : "";
-            }
-
-            // 2. ถ้าไม่เจอ ค่อยหาแบบ fuzzy (includes)
-            const fuzzyKey = keys.find((k) =>
+            const foundKey = keys.find((k) =>
               possibleNames.some((pn) => {
                 const kNorm = k.trim().toLowerCase();
                 const pnNorm = pn.toLowerCase();
-                return kNorm.includes(pnNorm) || pnNorm.includes(kNorm);
+                return (
+                  kNorm === pnNorm ||
+                  kNorm.includes(pnNorm) ||
+                  pnNorm.includes(kNorm)
+                );
               }),
             );
-
-            if (!fuzzyKey) return "";
-            const val = row[fuzzyKey];
-            return val !== null && val !== undefined ? String(val).trim() : "";
+            if (!foundKey) return "";
+            const val = row[foundKey];
+            if (val === null || val === undefined) return "";
+            return String(val).trim();
           };
 
           let name = getVal(["ยี่ห้อ", "brand", "ชื่อ", "name", "ชื่อสินค้า"]);
@@ -337,7 +325,6 @@ export default function StockClient() {
             "category",
             "หมวดหมู่",
           ]);
-
           // Fallback: column ที่มี suffix _1 หรือ _2 (XLSX จะเปลี่ยนชื่อ column ซ้ำ)
           if (!category) {
             const altKey = keys.find(
@@ -387,21 +374,7 @@ export default function StockClient() {
           return { name, code, category, quantity };
         });
 
-        // --- ขั้นตอนการทำ Deduplication โดยรวมจำนวนถ้า Code ซ้ำกัน ---
-        const deduplicatedMap = new Map<string, Partial<StockItem>>();
-        mappedData.forEach((item) => {
-          if (!item.code || !item.name) return;
-
-          const existing = deduplicatedMap.get(item.code);
-          if (existing) {
-            existing.quantity = (existing.quantity || 0) + (item.quantity || 0);
-          } else {
-            // ทำสำเนาเพื่อไม่ให้กระทบ data เดิมถ้าจำเป็น
-            deduplicatedMap.set(item.code, { ...item });
-          }
-        });
-
-        const validItems = Array.from(deduplicatedMap.values());
+        const validItems = mappedData.filter((i) => i.code && i.name);
         const skippedCount = mappedData.length - validItems.length;
 
         if (validItems.length === 0) {
@@ -413,19 +386,14 @@ export default function StockClient() {
           return;
         }
 
-        // แจ้งเตือนถ้ามีการรวมรายการ (Duplicate Codes)
-        const originalValidCount = mappedData.filter(
-          (i) => i.code && i.name,
-        ).length;
-        const dupCount = originalValidCount - validItems.length;
-
-        if (dupCount > 0) {
-          console.log(
-            `Deduplicated: ${originalValidCount} -> ${validItems.length} (Summed quantities)`,
+        // แจ้งเตือนถ้ามีรายการที่ถูกกรองออก
+        if (skippedCount > 0) {
+          console.warn(
+            `⚠️ Bulk import: ข้ามไป ${skippedCount} แถว (ไม่มี code หรือ name)`,
           );
+          console.table(mappedData.filter((i) => !i.code || !i.name));
         }
 
-        setDuplicateCount(dupCount);
         setImportData(validItems);
         setIsImportModalOpen(true);
         // Reset input
@@ -1340,17 +1308,11 @@ export default function StockClient() {
             <div className="p-4 bg-blue-50 border-b border-blue-100 text-sm text-blue-700">
               <p>
                 พบข้อมูลทั้งหมด <strong>{importData.length}</strong> รายการ
-                {duplicateCount > 0 && (
-                  <span className="text-orange-600 font-bold ml-2">
-                    (รวมรายการที่รหัสซ้ำกัน {duplicateCount} รายการ)
-                  </span>
-                )}
-                <br />
                 กรุณาตรวจสอบความถูกต้องก่อนกดบันทึก
               </p>
               <p className="mt-1 text-xs opacity-80">
-                * หากมีรหัส (Code) ซ้ำกับในระบบ
-                ระบบจะทำการอัปเดตข้อมูลแทนการเพิ่มใหม่
+                * หากมีข้อมูล <strong>(รหัส + ยี่ห้อ + สี/ประเภท)</strong>{" "}
+                ซ้ำกับในระบบ ระบบจะทำการอัปเดตจำนวนคงเหลือแทนการเพิ่มใหม่
               </p>
             </div>
             <div className="overflow-y-auto flex-1">
