@@ -123,17 +123,9 @@ export default function DepartmentModal({
 
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3">
             <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 disabled:opacity-50"
-            >
-              ยกเลิก
-            </button>
-            <button
               type="submit"
               disabled={isSubmitting || isLoading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
             >
               {isSubmitting ? (
                 <>
