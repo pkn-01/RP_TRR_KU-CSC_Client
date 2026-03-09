@@ -19,35 +19,7 @@ export default function DeleteRepairsPage() {
   const [selectedRepair, setSelectedRepair] = useState<Repair | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [repairs, setRepairs] = useState<Repair[]>([
-    {
-      id: "1",
-      code: "RPT-2025-001",
-      title: "เครื่องคอมพิวเตอร์ชำรุด",
-      status: "PENDING",
-      createdDate: "2025-01-27",
-      requester: "สมชาย",
-      priority: "HIGH",
-    },
-    {
-      id: "2",
-      code: "RPT-2025-002",
-      title: "เครื่องพิมพ์ไม่ทำงาน",
-      status: "COMPLETED",
-      createdDate: "2025-01-20",
-      requester: "สมหญิง",
-      priority: "MEDIUM",
-    },
-    {
-      id: "3",
-      code: "RPT-2025-003",
-      title: "ปัญหาเครือข่าย Wi-Fi",
-      status: "IN_PROGRESS",
-      createdDate: "2025-01-25",
-      requester: "ชาลี",
-      priority: "MEDIUM",
-    },
-  ]);
+  const [repairs, setRepairs] = useState<Repair[]>([]);
 
   const filteredRepairs = repairs.filter(
     (repair) =>
