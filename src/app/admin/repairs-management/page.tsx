@@ -1,4 +1,4 @@
-// ===== จัดการข้อมูลรายการแจ้งซ่อม | Repair Records Management (Admin) =====
+// ===== จัดการข้อมูลรายการแจ้งซ่อม =====
 "use client";
 
 import {

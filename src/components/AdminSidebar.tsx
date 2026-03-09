@@ -95,11 +95,6 @@ export default function AdminSidebar() {
           label: "จัดการข้อมูลรายการแจ้งซ่อม",
           href: "/admin/repairs-management",
         },
-        {
-          icon: Database,
-          label: "จัดการข้อมูลทั้งหมด",
-          href: "/admin/data-management",
-        },
       ],
     },
   ];

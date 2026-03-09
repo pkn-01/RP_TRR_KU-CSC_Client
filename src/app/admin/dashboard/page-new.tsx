@@ -7,8 +7,6 @@ import {
   Wrench,
   Users,
   Package,
-  Download,
-  Trash2,
   AlertCircle,
   Clock,
   CheckCircle,
@@ -202,24 +200,6 @@ export default function AdminDashboard() {
   }, []);
 
   const quickActions: QuickAction[] = [
-    {
-      icon: Trash2,
-      label: "ลบรายการซ่อม",
-      description: "ลบรายการซ่อมแซมออกจากระบบ",
-      href: "/admin/delete-repairs",
-      color: "text-red-500",
-      bgColor: "bg-red-900/20",
-      isNew: true,
-    },
-    {
-      icon: Download,
-      label: "นำออกข้อมูล",
-      description: "ส่งออกข้อมูลต่างๆ เป็น CSV, JSON, PDF",
-      href: "/admin/export-data",
-      color: "text-green-500",
-      bgColor: "bg-green-900/20",
-      isNew: true,
-    },
     {
       icon: Users,
       label: "จัดการผู้ใช้",
