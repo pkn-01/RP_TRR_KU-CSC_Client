@@ -23,6 +23,8 @@ import {
   ExternalLink,
   Loader2,
   AlertTriangle,
+  CalendarDays,
+  X,
 } from "lucide-react";
 import { apiFetch } from "@/services/api";
 import CalendarPop from "@/components/CalendarPop";
@@ -73,6 +75,13 @@ function RepairRecordsManagementContent() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeletePanel, setShowDeletePanel] = useState(false);
+  const [deleteStartDate, setDeleteStartDate] = useState<Date | null>(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d;
+  });
+  const [deleteEndDate, setDeleteEndDate] = useState<Date | null>(new Date());
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
   const [countdown, setCountdown] = useState(15);
@@ -289,66 +298,46 @@ function RepairRecordsManagementContent() {
     }
   };
 
+  // Count repairs in the delete date range
+  const deleteRangeCount = useMemo(() => {
+    if (!deleteStartDate || !deleteEndDate) return 0;
+    const start = new Date(deleteStartDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(deleteEndDate);
+    end.setHours(23, 59, 59, 999);
+    return repairs.filter((r) => {
+      const d = new Date(r.createdAt);
+      return d >= start && d <= end;
+    }).length;
+  }, [repairs, deleteStartDate, deleteEndDate]);
+
   const handleBulkDelete = async () => {
-    if (filteredRepairs.length === 0) return;
-
-    // Compute date range boundaries from the current filter
-    let startDate: Date | null = null;
-    let endDate: Date | null = null;
-
-    if (filter === "all") {
-      // For "all" mode, use the min/max createdAt dates from filtered repairs
-      const dates = filteredRepairs.map((r) => new Date(r.createdAt).getTime());
-      startDate = new Date(Math.min(...dates));
-      endDate = new Date(Math.max(...dates));
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(23, 59, 59, 999);
-    } else {
-      const targetDate = new Date(selectedDate);
-      if (filter === "day") {
-        startDate = new Date(targetDate);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(targetDate);
-        endDate.setHours(23, 59, 59, 999);
-      } else if (filter === "week") {
-        const day = targetDate.getDay();
-        const diffToMonday = day === 0 ? -6 : 1 - day;
-        startDate = new Date(targetDate);
-        startDate.setDate(targetDate.getDate() + diffToMonday);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
-        endDate.setHours(23, 59, 59, 999);
-      } else if (filter === "month") {
-        startDate = new Date(
-          targetDate.getFullYear(),
-          targetDate.getMonth(),
-          1,
-        );
-        endDate = new Date(
-          targetDate.getFullYear(),
-          targetDate.getMonth() + 1,
-          0,
-          23,
-          59,
-          59,
-          999,
-        );
-      }
+    if (!deleteStartDate || !deleteEndDate) return;
+    if (deleteRangeCount === 0) {
+      Swal.fire({ icon: "info", title: "ไม่พบข้อมูลในช่วงที่เลือก" });
+      return;
     }
 
-    if (!startDate || !endDate) return;
+    const startDate = new Date(deleteStartDate);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(deleteEndDate);
+    endDate.setHours(23, 59, 59, 999);
 
-    const { periodLabel, rangeText } = getDateRangeInfo();
+    const formatThai = (d: Date) =>
+      d.toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
 
     const result = await Swal.fire({
       title: "⚠️ ยืนยันการล้างข้อมูล",
       html: `<div style="text-align:left; font-size:14px; line-height:1.8;">
         <p>คุณกำลังจะ <b style="color:#dc2626;">ลบข้อมูลทั้งหมด</b> ในช่วง:</p>
         <p style="background:#fef2f2; padding:8px 12px; border-radius:8px; margin:8px 0; text-align:center; font-weight:bold; color:#dc2626;">
-          ${filter === "all" ? "ทุกช่วงเวลา" : `${periodLabel}: ${rangeText}`}
+          ${formatThai(startDate)}&nbsp;—&nbsp;${formatThai(endDate)}
         </p>
-        <p style="color:#6b7280; font-size:13px;">พบข้อมูล <b>${filteredRepairs.length}</b> รายการ</p>
+        <p style="color:#6b7280; font-size:13px;">พบข้อมูล <b>${deleteRangeCount}</b> รายการในช่วงนี้</p>
         <p style="color:#dc2626; font-size:13px; margin-top:4px;">การดำเนินการนี้ไม่สามารถย้อนกลับได้!</p>
       </div>`,
       icon: "warning",
@@ -390,6 +379,7 @@ function RepairRecordsManagementContent() {
           title: "ล้างข้อมูลสำเร็จ",
           text: `ลบข้อมูลทั้งหมด ${response.count} รายการ`,
         });
+        setShowDeletePanel(false);
         fetchRepairs(true);
       } catch (err) {
         Swal.fire({
@@ -653,24 +643,90 @@ function RepairRecordsManagementContent() {
                 <span>Export</span>
               </button>
               <button
-                onClick={handleBulkDelete}
-                disabled={filteredRepairs.length === 0 || isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 font-medium flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                onClick={() => setShowDeletePanel(!showDeletePanel)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap transition-colors ${
+                  showDeletePanel
+                    ? "bg-red-100 text-red-700 border border-red-200 hover:bg-red-200"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
               >
-                {isDeleting ? (
+                {showDeletePanel ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
-                    กำลังลบ...
+                    <X size={16} />
+                    ปิด
                   </>
                 ) : (
                   <>
                     <Trash2 size={16} />
-                    ล้างข้อมูล ({filteredRepairs.length})
+                    ล้างข้อมูล
                   </>
                 )}
               </button>
             </div>
           </div>
+
+          {/* Delete Panel */}
+          {showDeletePanel && (
+            <div className="bg-red-50/50 border border-red-200 rounded-xl p-4 space-y-3 animate-in">
+              <div className="flex items-center gap-2 text-red-700">
+                <AlertTriangle size={16} />
+                <span className="text-sm font-semibold">
+                  เลือกช่วงเวลาที่ต้องการลบข้อมูล
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-600">
+                    ตั้งแต่วันที่
+                  </label>
+                  <CalendarPop
+                    selectedDate={deleteStartDate}
+                    onDateSelect={(d) => setDeleteStartDate(d)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-gray-600">
+                    ถึงวันที่
+                  </label>
+                  <CalendarPop
+                    selectedDate={deleteEndDate}
+                    onDateSelect={(d) => setDeleteEndDate(d)}
+                  />
+                </div>
+                <div className="flex items-center gap-3 sm:ml-4">
+                  <div className="bg-white border border-red-200 rounded-lg px-3 py-2">
+                    <span className="text-xs text-gray-500">พบข้อมูล</span>
+                    <span className="ml-1 text-lg font-bold text-red-600">
+                      {deleteRangeCount}
+                    </span>
+                    <span className="ml-1 text-xs text-gray-500">รายการ</span>
+                  </div>
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={
+                      deleteRangeCount === 0 ||
+                      isDeleting ||
+                      !deleteStartDate ||
+                      !deleteEndDate
+                    }
+                    className="px-5 py-2.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 font-medium flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        กำลังลบ...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 size={16} />
+                        ลบข้อมูลทั้งหมด
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Divider */}
           <div className="border-t border-gray-100" />

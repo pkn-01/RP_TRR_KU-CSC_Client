@@ -37,7 +37,6 @@ interface Repair {
   ticketCode: string;
   createdAt: string;
   problemTitle: string;
-  problemCategory: string;
   location: string;
   reporterName: string;
   reporterPhone?: string;

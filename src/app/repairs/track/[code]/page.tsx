@@ -36,7 +36,6 @@ interface RepairTicket {
   reporterPhone?: string;
   problemTitle: string;
   problemDescription?: string;
-  problemCategory: string;
   location: string;
   status: string;
   urgency: string;

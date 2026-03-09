@@ -53,7 +53,6 @@ interface RepairDetail {
   ticketCode: string;
   title: string;
   description: string;
-  category: string;
   location: string;
   status: Status;
   urgency: Urgency;
@@ -350,7 +349,6 @@ export default function RepairDetailPage() {
       ticketCode: res.ticketCode,
       title: res.problemTitle,
       description: res.problemDescription,
-      category: res.problemCategory,
       location: res.location,
       status: res.status,
       urgency: res.urgency,

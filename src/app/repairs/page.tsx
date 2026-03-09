@@ -14,16 +14,6 @@ import { AlertCircle, CheckCircle2, Loader2, Upload, X } from "lucide-react";
 import { apiFetch } from "@/services/api";
 import { uploadData } from "@/services/uploadService";
 
-const PROBLEM_CATEGORIES = [
-  { value: "HARDWARE", label: "💻 Hardware (คอมพิวเตอร์, อุปกรณ์)" },
-  { value: "SOFTWARE", label: "📱 Software (โปรแกรม, ระบบ)" },
-  { value: "NETWORK", label: "🌐 Network (อินเทอร์เน็ต, Wi-Fi)" },
-  { value: "PERIPHERAL", label: "🖥️ Peripheral (เมาส์, คีย์บอร์ด, จอภาพ)" },
-  { value: "EMAIL_OFFICE365", label: "📧 Email/Office 365" },
-  { value: "ACCOUNT_PASSWORD", label: "🔐 Account/Password" },
-  { value: "OTHER", label: "🔧 อื่นๆ" },
-];
-
 const URGENCY_LEVELS = [
   { value: "NORMAL", label: "🟢 ปกติ (สามารถทำงานได้ต่อ)", emoji: "🟢" },
   {
@@ -62,7 +52,6 @@ function RepairPageContent() {
     reporterDepartment: "",
     reporterPhone: "",
     reporterLineId: "",
-    problemCategory: "",
     problemTitle: "",
     problemDescription: "",
     location: "",
@@ -127,9 +116,6 @@ function RepairPageContent() {
     if (!formData.reporterDepartment) {
       newErrors.reporterDepartment = "กรุณาเลือกแผนก";
     }
-    if (!formData.problemCategory) {
-      newErrors.problemCategory = "กรุณาเลือกประเภทปัญหา";
-    }
     if (!formData.problemTitle.trim()) {
       newErrors.problemTitle = "กรุณาระบุหัวข้อปัญหา";
     }
@@ -159,7 +145,6 @@ function RepairPageContent() {
         reporterLineId:
           formData.reporterLineId || (lineUserId ? lineUserId : undefined),
         lineUserId: lineUserId || undefined, // สำหรับส่ง LINE notification กลับไปหาผู้แจ้ง
-        problemCategory: formData.problemCategory,
         problemTitle: formData.problemTitle,
         problemDescription: formData.problemDescription,
         location: formData.location,
@@ -515,52 +500,6 @@ function RepairPageContent() {
             </div>
 
             <div className="h-px bg-gray-200 dark:bg-slate-700 my-6" />
-
-            {/* ประเภทปัญหา */}
-            <div className="space-y-3">
-              <label className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <span className="w-1.5 h-6 bg-blue-600 rounded-full inline-block"></span>
-                เลือกประเภทปัญหา <span className="text-red-500">*</span>
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {PROBLEM_CATEGORIES.map((category) => (
-                  <label
-                    key={category.value}
-                    className={`
-                      relative flex items-center p-4 border rounded-xl cursor-pointer transition-all duration-200
-                      ${
-                        formData.problemCategory === category.value
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-500 dark:border-blue-500"
-                          : "border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transform hover:scale-[1.01]"
-                      }
-                    `}
-                  >
-                    <input
-                      type="radio"
-                      name="problemCategory"
-                      value={category.value}
-                      checked={formData.problemCategory === category.value}
-                      onChange={handleInputChange}
-                      className="w-5 h-5 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-slate-600"
-                    />
-                    <span
-                      className={`ml-3 font-medium ${
-                        formData.problemCategory === category.value
-                          ? "text-blue-700 dark:text-blue-300"
-                          : "text-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {category.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {errors.problemCategory && (
-                <p className="text-red-500 text-xs mt-1 font-medium">
-                  {errors.problemCategory}
-                </p>
-              )}
-            </div>
 
             {/* ปัญหาที่พบ */}
             <div className="space-y-2">

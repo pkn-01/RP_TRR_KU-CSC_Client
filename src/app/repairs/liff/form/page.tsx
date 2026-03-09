@@ -308,7 +308,6 @@ function RepairFormContent() {
         problemDescription: formData.details,
         location: formData.location,
         urgency: formData.urgency,
-        problemCategory: "OTHER",
       };
 
       const response = await uploadData(

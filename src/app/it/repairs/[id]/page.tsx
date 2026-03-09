@@ -48,7 +48,6 @@ interface RepairDetail {
   ticketCode: string;
   title: string;
   description: string;
-  category: string;
   location: string;
   status: Status;
   assignees: Assignee[];
@@ -260,7 +259,6 @@ export default function ITRepairDetailPage() {
       ticketCode: res.ticketCode,
       title: res.problemTitle,
       description: res.problemDescription,
-      category: res.problemCategory,
       location: res.location,
       status: res.status,
       assignees: assignees,
