@@ -105,10 +105,14 @@ function RepairRecordsManagementContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
-  // Reset pagination when search term changes
+  // Selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Reset pagination and selection when search term changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+    setSelectedIds(new Set());
+  }, [searchTerm, filterStatus, filterUrgency, filter, selectedDate]);
 
   const fetchRepairs = useCallback(async (showLoading = true) => {
     try {
@@ -393,6 +397,77 @@ function RepairRecordsManagementContent() {
     }
   };
 
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (
+      selectedIds.size === paginatedRepairs.length &&
+      paginatedRepairs.length > 0
+    ) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedRepairs.map((r) => r.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) return;
+
+    const result = await Swal.fire({
+      title: "ยืนยันการลบรายการที่เลือก?",
+      text: `คุณกำลังจะลบรายการแจ้งซ่อมจำนวน ${selectedIds.size} รายการ ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ใช่, ลบเลย",
+      cancelButtonText: "ยกเลิก",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "กำลังลบข้อมูล...",
+          text: "กรุณารอสักครู่",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        await apiFetch("/api/repairs/bulk-delete/by-ids", {
+          method: "DELETE",
+          body: JSON.stringify({
+            ids: Array.from(selectedIds).map((id) => Number(id)),
+          }),
+        });
+
+        Swal.fire({
+          icon: "success",
+          title: "ลบข้อมูลสำเร็จ",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        setSelectedIds(new Set());
+        fetchRepairs(false);
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: "ไม่สามารถลบข้อมูลแบบกลุ่มได้",
+        });
+      }
+    }
+  };
+
   const handleExportExcel = async () => {
     if (filteredRepairs.length === 0) {
       Swal.fire({ icon: "info", title: "ไม่มีข้อมูลสำหรับส่งออก" });
@@ -635,6 +710,15 @@ function RepairRecordsManagementContent() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2">
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={handleDeleteSelected}
+                  className="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 flex items-center gap-2 transition-all shadow-sm"
+                >
+                  <Trash2 size={16} />
+                  <span>ลบที่เลือก ({selectedIds.size})</span>
+                </button>
+              )}
               <button
                 onClick={handleExportExcel}
                 className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm hover:bg-gray-50 font-medium flex items-center justify-center gap-2 whitespace-nowrap"
@@ -819,6 +903,19 @@ function RepairRecordsManagementContent() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50/80">
+                <th className="px-4 py-4 w-10">
+                  <div className="flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={
+                        paginatedRepairs.length > 0 &&
+                        selectedIds.size === paginatedRepairs.length
+                      }
+                      onChange={handleToggleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </div>
+                </th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-600">
                   รหัส
                 </th>
@@ -851,6 +948,19 @@ function RepairRecordsManagementContent() {
                     router.push(`/admin/repairs/${repair.ticketCode}`)
                   }
                 >
+                  <td
+                    className="px-4 py-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(repair.id)}
+                        onChange={() => handleToggleSelect(repair.id)}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <span className="text-sm font-mono text-gray-900">
                       {repair.ticketCode}
@@ -946,7 +1056,7 @@ function RepairRecordsManagementContent() {
               {paginatedRepairs.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     <div className="flex flex-col items-center gap-2">
@@ -970,9 +1080,20 @@ function RepairRecordsManagementContent() {
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-mono text-gray-500">
-                    {repair.ticketCode}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(repair.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleToggleSelect(repair.id);
+                      }}
+                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer mb-1"
+                    />
+                    <span className="text-xs font-mono text-gray-500">
+                      {repair.ticketCode}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span
                       className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
